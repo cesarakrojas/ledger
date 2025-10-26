@@ -1,0 +1,290 @@
+/* Custom Styles */
+
+/* Toast notification styles */
+#toastContainer {
+    pointer-events: none;
+}
+
+#toastContainer .toast {
+    pointer-events: all;
+}
+
+.toast {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Smooth transitions */
+* {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    /* Remove outer padding on mobile */
+    #app {
+        padding: 0 !important;
+    }
+
+    /* Ensure full width on mobile */
+    .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+
+    /* Touch-friendly tap targets */
+    button,
+    a,
+    select,
+    input {
+        min-height: 44px;
+    }
+
+    /* Prevent text selection on buttons */
+    button {
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+    }
+
+    /* Better form inputs on mobile */
+    input[type="date"],
+    input[type="number"],
+    input[type="text"],
+    select,
+    textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    /* Modal optimizations */
+    #formModal > div {
+        width: calc(100% - 20px);
+        max-height: 90vh;
+        overflow-y: auto;
+        margin: 10px auto;
+    }
+}
+
+/* Print styles */
+@media print {
+    /* Hide non-essential elements */
+    button,
+    #formModal,
+    #loading,
+    nav {
+        display: none !important;
+    }
+
+    /* Optimize table for printing */
+    table {
+        page-break-inside: auto;
+    }
+
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    /* Use full width */
+    .container {
+        max-width: 100% !important;
+    }
+}
+
+/* Focus styles for accessibility */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Input validation styles */
+input:invalid:not(:placeholder-shown),
+textarea:invalid:not(:placeholder-shown) {
+    border-color: #ef4444;
+}
+
+input:valid:not(:placeholder-shown),
+textarea:valid:not(:placeholder-shown) {
+    border-color: #10b981;
+}
+
+/* Form error display */
+.field-error {
+    color: #dc2626;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+/* Disabled state */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Modal backdrop blur effect */
+#formModal {
+    backdrop-filter: blur(2px);
+}
+
+/* Smooth modal transition */
+#formModal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#formModal:not(.hidden) {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Card hover effects */
+.hover\:bg-gray-50:hover {
+    background-color: #f9fafb;
+}
+
+/* Badge styles enhancement */
+.rounded-full {
+    white-space: nowrap;
+}
+
+/* Responsive text truncation */
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Break words on mobile for amounts */
+@media (max-width: 768px) {
+    .break-all {
+        word-break: break-all;
+    }
+}
+
+/* Animation for elements */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Success/Error message styling */
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.alert-success {
+    background-color: #d1fae5;
+    border: 1px solid #6ee7b7;
+    color: #065f46;
+}
+
+.alert-error {
+    background-color: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+/* Loading state for buttons */
+.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.6s linear infinite;
+}
+
+/* Table responsive enhancements */
+@media (max-width: 1024px) {
+    table {
+        font-size: 0.875rem;
+    }
+
+    th,
+    td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+/* Enhanced mobile card design */
+@media (max-width: 768px) {
+    .space-y-4 > div {
+        animation: slideIn 0.2s ease-out;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
