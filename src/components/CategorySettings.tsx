@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { PlusIcon, TrashIcon, PencilIcon, SunIcon, MoonIcon, ChevronDownIcon, ChevronUpIcon } from './icons';
 import { CURRENCIES } from '../utils/constants';
-import { populateSampleData } from '../utils/sampleData';
 
 export interface CategoryConfig {
   enabled: boolean;
@@ -411,31 +410,6 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
           </div>
         </div>
       )}
-      
-      {/* Developer Tools Section */}
-      <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
-        <div className="mb-3">
-          <h3 className="font-semibold text-slate-800 dark:text-white">Herramientas de Desarrollo</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Opciones para pruebas y desarrollo
-          </p>
-        </div>
-        <button
-          onClick={async () => {
-            if (confirm('¿Recargar datos de ejemplo? Esto borrará todos los datos actuales.')) {
-              localStorage.clear();
-              await populateSampleData();
-              window.location.reload();
-            }
-          }}
-          className="w-full px-4 py-3 bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 font-medium rounded-lg transition flex items-center justify-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-          </svg>
-          Recargar Datos de Ejemplo
-        </button>
-      </div>
       
       {/* Info message - changes based on unsaved state */}
       <div className={`flex items-center gap-2 p-3 rounded-lg border ${

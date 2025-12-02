@@ -139,16 +139,6 @@ export default function App() {
 
   // Centralized data loading function - memoized to prevent re-creation on every render
   const loadAllData = useCallback(async () => {
-    // Auto-populate sample data if no data exists
-    const existingProducts = storageService.getItem(STORAGE_KEYS.PRODUCTS);
-    const existingTransactions = storageService.getItem(STORAGE_KEYS.TRANSACTIONS);
-    
-    if (!existingProducts || !existingTransactions || 
-        JSON.parse(existingProducts || '[]').length === 0) {
-      console.log('No data found, populating sample data...');
-      await populateSampleData();
-    }
-    
     // Load products
     const prods = await inventoryService.getAllProducts();
     setProducts(prods);
