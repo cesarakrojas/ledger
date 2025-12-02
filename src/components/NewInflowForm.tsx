@@ -359,7 +359,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                             </div>
 
                             <div className="flex justify-between items-end gap-3">
-                              <div>
+                              <div className="flex items-baseline gap-2">
                                 <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(product.price)}</p>
                                 <p className={`text-xs ${isOutOfStock ? 'text-red-500 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
                                   {isOutOfStock ? 'Agotado' : `Stock: ${maxStock}`}
@@ -394,7 +394,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                     onClick={() => setIsCartConfirmed(false)}
                     className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
                   >
-                    Seguir agregando
+                    Editar
                   </button>
                 </div>
                 <div className="space-y-2 mb-3">

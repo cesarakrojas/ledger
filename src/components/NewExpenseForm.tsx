@@ -495,7 +495,6 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
               onChange={e => setPaymentMethod(e.target.value)} 
               className={INPUT_BASE_CLASSES}
             >
-              <option value="">Seleccionar medio de pago (opcional)</option>
               <option value="Efectivo">Efectivo</option>
               <option value="Tarjeta">Tarjeta</option>
               <option value="Transferencia">Transferencia</option>
