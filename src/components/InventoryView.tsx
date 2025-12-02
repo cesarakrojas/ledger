@@ -5,6 +5,7 @@ import { InventoryIcon } from './icons';
 import { formatCurrency } from '../utils/formatters';
 import * as inventoryService from '../services/inventoryService';
 import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
+import { TEXT_PAGE_TITLE } from '../utils/constants';
 import { useDebouncedValue } from '../utils/performanceUtils';
 
 interface InventoryViewProps {
@@ -127,7 +128,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
       <div className={CARD_STYLES}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Inventario</h2>
+            <h2 className={TEXT_PAGE_TITLE}>Inventario</h2>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               Gestiona tus productos y existencias
             </p>

@@ -142,7 +142,7 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
         </div>
         <button
           onClick={onToggleTheme}
-          className="p-2 rounded-full bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 transition"
+          className="p-2 rounded-full bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors"
         >
           {isDarkMode ? <SunIcon className="w-6 h-6 text-slate-800 dark:text-white"/> : <MoonIcon className="w-6 h-6 text-slate-800 dark:text-white"/>}
         </button>
@@ -297,7 +297,7 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
                 <button
                   onClick={handleAddInflowCategory}
                   disabled={!newInflowCategory.trim() || inflowCategories.includes(newInflowCategory.trim())}
-                  className="px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2 text-sm whitespace-nowrap"
+                  className="px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 text-sm whitespace-nowrap"
                 >
                   <PlusIcon className="w-4 h-4" />
                   Agregar
@@ -383,7 +383,7 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
                 <button
                   onClick={handleAddOutflowCategory}
                   disabled={!newOutflowCategory.trim() || outflowCategories.includes(newOutflowCategory.trim())}
-                  className="px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2 text-sm whitespace-nowrap"
+                  className="px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 text-sm whitespace-nowrap"
                 >
                   <PlusIcon className="w-4 h-4" />
                   Agregar

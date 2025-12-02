@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { Transaction, DebtEntry } from '../types';
 import { CARD_STYLES, CARD_FORM } from '../utils/styleConstants';
+import { INPUT_DATE_CLASSES, TEXT_PAGE_TITLE_RESPONSIVE, TEXT_SECTION_HEADER, TRANSITION_COLORS } from '../utils/constants';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { ChartBarIcon, ArrowUpIcon, ArrowDownIcon, CalendarIcon, XMarkIcon } from './icons';
 
@@ -120,20 +121,20 @@ const PeriodSelectorView: React.FC<PeriodSelectorViewProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowCustomPicker(false)}
-                className="p-1.5 -ml-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                className={`p-1.5 -ml-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
                 aria-label="Volver"
               >
                 <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">
+              <h2 className={TEXT_PAGE_TITLE_RESPONSIVE}>
                 Rango Personalizado
               </h2>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+              className={`p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
               aria-label="Cerrar"
             >
               <XMarkIcon className="w-5 h-5" />
@@ -152,7 +153,7 @@ const PeriodSelectorView: React.FC<PeriodSelectorViewProps> = ({
                   value={tempStartDate}
                   max={tempEndDate || today}
                   onChange={(e) => setTempStartDate(e.target.value)}
-                  className="w-full px-4 py-3.5 text-lg bg-slate-50 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-700 dark:text-slate-200"
+                  className={INPUT_DATE_CLASSES}
                 />
               </div>
               <div>
@@ -165,7 +166,7 @@ const PeriodSelectorView: React.FC<PeriodSelectorViewProps> = ({
                   min={tempStartDate}
                   max={today}
                   onChange={(e) => setTempEndDate(e.target.value)}
-                  className="w-full px-4 py-3.5 text-lg bg-slate-50 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-700 dark:text-slate-200"
+                  className={INPUT_DATE_CLASSES}
                 />
               </div>
 
@@ -206,13 +207,13 @@ const PeriodSelectorView: React.FC<PeriodSelectorViewProps> = ({
       <div className={`w-full max-w-lg mx-auto flex flex-col min-h-[400px] ${CARD_FORM}`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 pb-2 flex-shrink-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+          <h2 className={`${TEXT_PAGE_TITLE_RESPONSIVE} flex items-center gap-3`}>
             <CalendarIcon className="w-6 h-6 text-emerald-600" />
             Seleccionar Período
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+            className={`p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
             aria-label="Cerrar"
           >
             <XMarkIcon className="w-5 h-5" />
@@ -598,7 +599,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts, c
         <>
           {/* Summary KPI Cards */}
           <div className={CARD_STYLES}>
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Resumen del Período</h3>
+            <h3 className={`${TEXT_SECTION_HEADER} mb-4`}>Resumen del Período</h3>
             <div className="grid grid-cols-2 gap-3 mb-4">
               {/* Total Inflows */}
               <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-4">
@@ -657,7 +658,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts, c
           {/* Trend Chart - Visual bar representation */}
           {dailyBreakdown.length > 0 && (
             <div className={CARD_STYLES}>
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Tendencia de Movimientos</h3>
+              <h3 className={`${TEXT_SECTION_HEADER} mb-4`}>Tendencia de Movimientos</h3>
               <div className="space-y-2">
                 {dailyBreakdown.slice(0, 7).map(day => {
                   const maxValue = Math.max(...dailyBreakdown.slice(0, 7).map(d => Math.max(d.inflows, d.outflows)));
@@ -713,7 +714,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts, c
 
           {/* Daily Breakdown */}
           <div className={CARD_STYLES}>
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Movimientos por Día</h3>
+            <h3 className={`${TEXT_SECTION_HEADER} mb-4`}>Movimientos por Día</h3>
             {dailyBreakdown.length === 0 ? (
               <p className="text-center text-slate-500 dark:text-slate-400 py-8">
                 No hay transacciones en este período
@@ -750,7 +751,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts, c
 
           {/* Largest Transactions */}
           <div className={CARD_STYLES}>
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Transacciones Destacadas</h3>
+            <h3 className={`${TEXT_SECTION_HEADER} mb-4`}>Transacciones Destacadas</h3>
             <div className="space-y-4">
               {stats.largestInflow.id && (
                 <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-4">
@@ -785,7 +786,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts, c
         <>
           {/* Income Categories */}
           <div className={CARD_STYLES}>
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <h3 className={`${TEXT_SECTION_HEADER} mb-4 flex items-center gap-2`}>
               <ArrowUpIcon className="w-5 h-5 text-emerald-600" />
               Categorías de Ingresos
             </h3>
@@ -816,7 +817,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts, c
 
           {/* Expense Categories */}
           <div className={CARD_STYLES}>
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <h3 className={`${TEXT_SECTION_HEADER} mb-4 flex items-center gap-2`}>
               <ArrowDownIcon className="w-5 h-5 text-red-600" />
               Categorías de Gastos
             </h3>
@@ -906,7 +907,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts, c
           {/* Top Debtors */}
           {debtStats.topDebtors.length > 0 && (
             <div className={CARD_STYLES}>
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-3">Principales Deudores</h3>
+              <h3 className={`${TEXT_SECTION_HEADER} mb-3`}>Principales Deudores</h3>
               <div className="space-y-2">
                 {debtStats.topDebtors.map((debtor, index) => (
                   <div key={debtor.name} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
@@ -928,7 +929,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts, c
           {/* Top Creditors */}
           {debtStats.topCreditors.length > 0 && (
             <div className={CARD_STYLES}>
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-3">Principales Acreedores</h3>
+              <h3 className={`${TEXT_SECTION_HEADER} mb-3`}>Principales Acreedores</h3>
               <div className="space-y-2">
                 {debtStats.topCreditors.map((creditor, index) => (
                   <div key={creditor.name} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">

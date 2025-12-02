@@ -3,6 +3,7 @@ import type { DebtEntry } from '../types';
 import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from './icons';
 import * as debtService from '../services/debtService';
 import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
+import { TEXT_PAGE_TITLE } from '../utils/constants';
 
 interface LibretaViewProps {
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => void;
@@ -67,7 +68,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
       <div className={CARD_STYLES}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Libreta de Deudas</h2>
+            <h2 className={TEXT_PAGE_TITLE}>Libreta de Deudas</h2>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               Gestión de cuentas por cobrar y pagar
             </p>

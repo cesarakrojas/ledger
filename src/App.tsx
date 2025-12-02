@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Transaction, CategoryConfig, Product, DebtEntry } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';
 import { CARD_STYLES, CARD_EMPTY_STATE, CARD_FORM, LIST_ITEM_INTERACTIVE } from './utils/styleConstants';
-import { BTN_HEADER_INFLOW, BTN_HEADER_OUTFLOW } from './utils/constants';
+import { BTN_HEADER_INFLOW, BTN_HEADER_OUTFLOW, TEXT_PAGE_TITLE, TEXT_VALUE_XL, TRANSITION_COLORS } from './utils/constants';
 import { CashIcon, BookOpenIcon, InventoryIcon, ArrowUpIcon, ArrowDownIcon, Cog6ToothIcon, Bars3Icon, BellIcon, XMarkIcon, UserIcon, ChartBarIcon } from './components/icons';
 import { CategorySettings } from './components/CategorySettings';
 import { InventoryView } from './components/InventoryView';
@@ -285,7 +285,7 @@ export default function App() {
             <header className={CARD_STYLES}>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Transacciones</h2>
+                    <h2 className={TEXT_PAGE_TITLE}>Transacciones</h2>
                     <p className="text-slate-500 dark:text-slate-400 mt-1">
                       {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </p>
@@ -302,15 +302,15 @@ export default function App() {
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                     <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl">
                         <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Ingresos</p>
-                        <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(totalInflows, currencyCode)}</p>
+                        <p className={`${TEXT_VALUE_XL} text-emerald-700 dark:text-emerald-300`}>{formatCurrency(totalInflows, currencyCode)}</p>
                     </div>
                     <div className="bg-red-100 dark:bg-red-900/50 p-4 rounded-xl">
                         <p className="text-sm font-medium text-red-700 dark:text-red-300">Total Gastos</p>
-                        <p className="text-2xl font-bold text-red-700 dark:text-red-300">{formatCurrency(totalOutflows, currencyCode)}</p>
+                        <p className={`${TEXT_VALUE_XL} text-red-700 dark:text-red-300`}>{formatCurrency(totalOutflows, currencyCode)}</p>
                     </div>
                     <div className={`p-4 rounded-xl ${netBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-orange-100 dark:bg-orange-900/50'}`}>
                         <p className={`text-sm font-medium ${netBalance >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-orange-700 dark:text-orange-300'}`}>Balance Neto</p>
-                        <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-orange-700 dark:text-orange-300'}`}>{formatCurrency(netBalance, currencyCode)}</p>
+                        <p className={`${TEXT_VALUE_XL} ${netBalance >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-orange-700 dark:text-orange-300'}`}>{formatCurrency(netBalance, currencyCode)}</p>
                     </div>
                 </div>
             </header>
@@ -396,12 +396,12 @@ export default function App() {
       <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
         <div className={`w-full max-w-4xl mx-auto ${CARD_FORM}`}>
           <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
+            <h2 className={TEXT_PAGE_TITLE}>
               {mode === 'edit' ? 'Editar Producto' : 'Nuevo Producto'}
             </h2>
             <button
               onClick={onBack}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+              className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
               aria-label="Cerrar"
             >
               <XMarkIcon className="w-6 h-6" />
@@ -653,14 +653,14 @@ export default function App() {
         <nav className="flex justify-between items-center mb-4 sm:mb-6 relative z-10 flex-shrink-0">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 text-white hover:bg-white/20 rounded-lg transition"
+            className="p-2 text-white hover:bg-white/20 rounded-lg transition-colors"
             aria-label="Menu"
           >
             <Bars3Icon className="w-6 h-6" />
           </button>
           <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Mi Empresa S.A</h1>
           <button
-            className="p-2 text-white hover:bg-white/20 rounded-lg transition relative"
+            className="p-2 text-white hover:bg-white/20 rounded-lg transition-colors relative"
             aria-label="Notificaciones"
           >
             <BellIcon className="w-6 h-6" />
@@ -689,7 +689,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => setIsMenuOpen(false)}
-                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   aria-label="Cerrar menú"
                 >
                   <XMarkIcon className="w-6 h-6" />
@@ -704,7 +704,7 @@ export default function App() {
                       <button
                         onClick={() => { setIsMenuOpen(false); navigate('home'); }}
                         aria-current={view === 'home' || undefined}
-                        className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-800 dark:text-slate-100 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition"
+                        className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-800 dark:text-slate-100 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
                       >
                         <CashIcon className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                         <span>Registro</span>
@@ -715,7 +715,7 @@ export default function App() {
                     <li>
                       <button
                         onClick={() => { setIsMenuOpen(false); alert('Módulo de Clientes próximamente'); }}
-                        className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+                        className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                       >
                         <UserIcon className="w-6 h-6 text-slate-400" />
                         <span>Clientes</span>
@@ -725,7 +725,7 @@ export default function App() {
                       <button
                         onClick={() => { setIsMenuOpen(false); navigate('settings'); }}
                         aria-current={view === 'settings' || undefined}
-                        className={`w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition`}
+                        className={`w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors`}
                       >
                         <Cog6ToothIcon className="w-6 h-6 text-slate-400" />
                         <span>Ajustes</span>

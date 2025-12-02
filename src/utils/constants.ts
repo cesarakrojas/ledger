@@ -1,5 +1,39 @@
 export const INPUT_BASE_CLASSES = 'w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-slate-100';
 
+// Date input variant (larger for touch, used in ReportsView)
+export const INPUT_DATE_CLASSES = 'w-full px-4 py-3.5 text-lg bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-700 dark:text-slate-200';
+
+// ============================================
+// TYPOGRAPHY CONSTANTS
+// ============================================
+
+// Page/Section Titles
+export const TEXT_PAGE_TITLE = 'text-2xl font-bold text-slate-800 dark:text-white';
+export const TEXT_PAGE_TITLE_RESPONSIVE = 'text-xl sm:text-2xl font-bold text-slate-800 dark:text-white';
+export const TEXT_SECTION_HEADER = 'text-lg font-semibold text-slate-800 dark:text-white';
+export const TEXT_DETAIL_HEADER = 'text-lg font-bold text-slate-800 dark:text-white';
+
+// Labels & Metadata
+export const TEXT_LABEL_UPPERCASE = 'text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+export const TEXT_METADATA = 'text-xs text-slate-500 dark:text-slate-400';
+
+// Values
+export const TEXT_VALUE_LARGE = 'text-xl font-bold';
+export const TEXT_VALUE_XL = 'text-2xl font-bold';
+
+// ============================================
+// TRANSITION CONSTANTS
+// ============================================
+
+// Use transition-colors for simple color changes (buttons, text)
+export const TRANSITION_COLORS = 'transition-colors';
+
+// Use transition-all for complex multi-property changes
+export const TRANSITION_ALL = 'transition-all';
+
+// Standard transition (equivalent to transition-colors but explicit)
+export const TRANSITION_BASE = 'transition-colors duration-150';
+
 // Standardized Form Styles
 export const FORM_LABEL = 'block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2';
 

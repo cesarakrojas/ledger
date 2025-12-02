@@ -66,7 +66,7 @@ export const ErrorNotification: React.FC = () => {
           </div>
           <button
             onClick={() => dismissError(error.id)}
-            className="p-1 hover:bg-white/20 rounded transition"
+            className="p-1 hover:bg-white/20 rounded transition-colors"
             aria-label="Cerrar"
           >
             <XMarkIcon className="w-4 h-4" />
