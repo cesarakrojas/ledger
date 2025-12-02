@@ -12,19 +12,16 @@ import { NewExpenseForm } from './components/NewExpenseForm';
 import { TransactionDetailView } from './components/TransactionDetailView';
 import { ProductDetailView } from './components/ProductDetailView';
 import { LibretaView } from './components/LibretaView';
-import { DebtHistoryView } from './components/DebtHistoryView';
 import { FormViewWrapper } from './components/FormViewWrapper';
 import { DebtForm } from './components/DebtForm';
 import { DebtDetailView } from './components/DebtDetailView';
 import { ErrorNotification } from './components/ErrorNotification';
 import { SuccessModal } from './components/SuccessModal';
-import { TransactionHistoryView } from './components/TransactionHistoryView';
 import * as inventoryService from './services/inventoryService';
 import * as debtService from './services/debtService';
 import { calculateTotalInflows, calculateTotalOutflows } from './utils/calculations';
 import { formatCurrency, formatTime } from './utils/formatters';
 import * as dataService from './services/dataService';
-import { populateSampleData } from './utils/sampleData';
 import { useAppNavigation } from './hooks/useAppNavigation';
 
 // --- CHILD COMPONENTS ---
@@ -734,8 +731,6 @@ export default function App() {
            view === 'new-inflow' ? <NewinflowView /> :
            view === 'new-expense' ? <NewExpenseView /> :
            view === 'transaction-detail' ? <TransactionDetailPageView /> :
-           view === 'transaction-history' ? <TransactionHistoryView categoryConfig={categoryConfig} currencyCode={currencyCode} onOpenTransaction={(id) => { setSelectedTransactionId(id); navigate('transaction-detail'); }} /> :
-           view === 'debt-history' ? <DebtHistoryView categoryConfig={categoryConfig} onOpenDebt={(id) => { changeLibretaView('detail', id); navigate('libreta'); }} /> :
            view === 'libreta' ? <LibretaModule /> : 
            view === 'settings' ? <SettingsView /> : 
            view === 'inventory' ? <InventoryModule /> : 
