@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-type AppView = 'home' | 'inventory' | 'libreta' | 'settings' | 'new-inflow' | 'new-expense' | 'transaction-detail' | 'transaction-history' | 'debt-history';
+type AppView = 'home' | 'inventory' | 'libreta' | 'settings' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
 
 /**
  * Centralized scroll reset utility.

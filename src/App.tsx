@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Transaction, CategoryConfig, Product } from './types';
+import type { Transaction, CategoryConfig, Product, DebtEntry } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';
 import { storageService } from './utils/storageService';
 import { CARD_STYLES, CARD_EMPTY_STATE, CARD_FORM } from './utils/styleConstants';
-import { CashIcon, BookOpenIcon, InventoryIcon, ArrowUpIcon, ArrowDownIcon, Cog6ToothIcon, Bars3Icon, BellIcon, XMarkIcon, UserIcon } from './components/icons';
+import { CashIcon, BookOpenIcon, InventoryIcon, ArrowUpIcon, ArrowDownIcon, Cog6ToothIcon, Bars3Icon, BellIcon, XMarkIcon, UserIcon, ChartBarIcon } from './components/icons';
 import { CategorySettings } from './components/CategorySettings';
 import { InventoryView } from './components/InventoryView';
+import { ReportsView } from './components/ReportsView';
 import { NewInflowForm } from './components/NewInflowForm';
 import { ProductForm } from './components/ProductForm';
 import { NewExpenseForm } from './components/NewExpenseForm';
@@ -119,6 +120,7 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [debts, setDebts] = useState<DebtEntry[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuSlideIn, setMenuSlideIn] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
@@ -143,6 +145,10 @@ export default function App() {
     // Load transactions
     const txs = await dataService.getTransactionsWithFilters({});
     setTransactions(txs);
+    
+    // Load debts
+    const loadedDebts = debtService.getAllDebts({});
+    setDebts(loadedDebts);
     
     // Load category config (already parsed by storageService)
     const savedConfig = storageService.getCategoryConfig();
@@ -170,7 +176,17 @@ export default function App() {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    
+    // Subscribe to debt changes for reports sync
+    const unsubscribeDebts = debtService.subscribeToDebts(() => {
+      const loadedDebts = debtService.getAllDebts({});
+      setDebts(loadedDebts);
+    });
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      unsubscribeDebts();
+    };
   }, []);
 
   // Handle body scroll lock and trigger slide-in animation for the mobile menu
@@ -334,6 +350,11 @@ export default function App() {
       />
     );
   };
+
+  // Reports Module - wraps imported ReportsView with current data
+  const ReportsModule = () => (
+    <ReportsView transactions={transactions} debts={debts} />
+  );
 
   // Placeholder shown when a module is intentionally deactivated/unmounted
   const DisabledModule: React.FC<{ name: string }> = ({ name }) => (
@@ -675,39 +696,8 @@ export default function App() {
                         <span>Registro</span>
                       </button>
                     </li>
-                    <li>
-                      <button
-                        onClick={() => { setIsMenuOpen(false); navigate('transaction-history'); }}
-                        aria-current={view === 'transaction-history' || undefined}
-                        className={`w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition`}
-                      >
-                        <BookOpenIcon className="w-6 h-6 text-slate-400" />
-                        <span>Historial Transacciones</span>
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => { setIsMenuOpen(false); navigate('debt-history'); }}
-                        aria-current={view === 'debt-history' || undefined}
-                        className={`w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition`}
-                      >
-                        <BookOpenIcon className="w-6 h-6 text-slate-400" />
-                        <span>Historial Deudas</span>
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => { setIsMenuOpen(false); alert('Módulo de Productos próximamente'); }}
-                        className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
-                      >
-                        <span className="w-6 h-6 text-slate-400 inline-flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                          </svg>
-                        </span>
-                        <span>Productos</span>
-                      </button>
-                    </li>
+
+                  
                     <li>
                       <button
                         onClick={() => { setIsMenuOpen(false); alert('Módulo de Clientes próximamente'); }}
@@ -715,6 +705,16 @@ export default function App() {
                       >
                         <UserIcon className="w-6 h-6 text-slate-400" />
                         <span>Clientes</span>
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => { setIsMenuOpen(false); navigate('settings'); }}
+                        aria-current={view === 'settings' || undefined}
+                        className={`w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition`}
+                      >
+                        <Cog6ToothIcon className="w-6 h-6 text-slate-400" />
+                        <span>Ajustes</span>
                       </button>
                     </li>
                   </ul>
@@ -733,7 +733,8 @@ export default function App() {
            view === 'transaction-detail' ? <TransactionDetailPageView /> :
            view === 'libreta' ? <LibretaModule /> : 
            view === 'settings' ? <SettingsView /> : 
-           view === 'inventory' ? <InventoryModule /> : 
+           view === 'inventory' ? <InventoryModule /> :
+           view === 'reports' ? <ReportsModule /> :
            <DisabledModule name="Módulo desactivado" />}
         </main>
       </div>
@@ -783,13 +784,13 @@ export default function App() {
               <span className="text-xs font-medium">Inventario</span>
             </button>
             <button
-              onClick={() => navigate('settings')}
+              onClick={() => navigate('reports')}
               className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition ${
-                view === 'settings' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400'
+                view === 'reports' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400'
               }`}
             >
-              <Cog6ToothIcon className="w-6 h-6"/>
-              <span className="text-xs font-medium">Ajustes</span>
+              <ChartBarIcon className="w-6 h-6"/>
+              <span className="text-xs font-medium">Reportes</span>
             </button>
           </div>
         </div>
