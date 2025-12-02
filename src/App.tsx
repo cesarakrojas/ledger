@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Transaction, CategoryConfig, Product, DebtEntry } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';
-import { CARD_STYLES, CARD_EMPTY_STATE, CARD_FORM } from './utils/styleConstants';
+import { CARD_STYLES, CARD_EMPTY_STATE, CARD_FORM, LIST_ITEM_INTERACTIVE } from './utils/styleConstants';
 import { BTN_HEADER_INFLOW, BTN_HEADER_OUTFLOW } from './utils/constants';
 import { CashIcon, BookOpenIcon, InventoryIcon, ArrowUpIcon, ArrowDownIcon, Cog6ToothIcon, Bars3Icon, BellIcon, XMarkIcon, UserIcon, ChartBarIcon } from './components/icons';
 import { CategorySettings } from './components/CategorySettings';
@@ -40,7 +40,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, currency
   return (
     <li
       onClick={onClick}
-      className="group flex items-center justify-between py-4 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors duration-200 cursor-pointer"
+      className={LIST_ITEM_INTERACTIVE}
     >
       {/* LEFT SIDE: Description & Icon */}
       {/* Added min-w-0 and flex-1 to allow truncation */}

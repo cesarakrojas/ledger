@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { DebtEntry } from '../types';
 import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from './icons';
 import * as debtService from '../services/debtService';
-import { CARD_STYLES } from '../utils/styleConstants';
+import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
 
 interface LibretaViewProps {
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => void;
@@ -159,7 +159,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
               <li
                 key={debt.id}
                 onClick={() => handleViewDebt(debt.id)}
-                className="group flex items-center justify-between py-4 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors duration-200 cursor-pointer"
+                className={LIST_ITEM_INTERACTIVE}
               >
                 {/* MAIN FLEX CONTAINER: Vertically centered */}
                 <div className="flex items-center justify-between gap-4 w-full">

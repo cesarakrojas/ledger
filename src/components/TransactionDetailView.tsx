@@ -1,7 +1,8 @@
 import React from 'react';
 import type { Transaction } from '../types';
 import { formatCurrency, formatDate, formatTime } from '../utils/formatters';
-import { CloseIcon, ArrowUpIcon, ArrowDownIcon, PrinterIcon, PencilIcon } from './icons';
+import { CloseIcon, ArrowUpIcon, ArrowDownIcon, PencilIcon, PrinterIcon } from './icons';
+import { DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
 
 interface TransactionDetailViewProps {
   transaction: Transaction;
@@ -204,15 +205,15 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 rounded-t-[2rem] overflow-hidden shadow-2xl">
+    <div className={DETAIL_VIEW_CONTAINER}>
       
-      <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0">
+      <div className={DETAIL_VIEW_HEADER}>
         <h2 className="text-lg font-bold text-slate-800 dark:text-white ml-2">Detalles</h2>
 
         <button
           onClick={onClose}
           aria-label="Cerrar"
-          className="p-2 -mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700 rounded-full transition-colors"
+          className={ICON_BTN_CLOSE}
         >
           <CloseIcon className="w-5 h-5" />
         </button>
@@ -300,12 +301,12 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
         <div className="h-6"></div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-4 safe-area-inset-bottom flex-shrink-0">
+      <div className={DETAIL_VIEW_FOOTER}>
         <div className="grid grid-cols-2 gap-3">
           
           <button
             onClick={onEdit}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl font-semibold transition-colors"
+            className={BTN_FOOTER_SECONDARY}
           >
             <PencilIcon className="w-5 h-5" />
             <span>Editar</span>
@@ -313,7 +314,7 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
 
           <button
             onClick={handlePrintReceipt}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/20 transition-colors"
+            className={BTN_FOOTER_PRIMARY}
           >
             <PrinterIcon className="w-5 h-5" />
             <span>Recibo</span>

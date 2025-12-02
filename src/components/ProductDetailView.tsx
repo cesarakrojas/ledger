@@ -2,6 +2,7 @@ import React from 'react';
 import type { Product } from '../types';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { CloseIcon, PencilIcon, TrashIcon } from './icons';
+import { DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_DANGER, BTN_FOOTER_EDIT } from '../utils/styleConstants';
 
 interface ProductDetailViewProps {
   product: Product;
@@ -22,14 +23,14 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
   return (
     /* MAIN CONTAINER: Matches TransactionView style (Rounded top, shadow, hidden overflow) */
-    <div className="w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 rounded-t-[2rem] overflow-hidden shadow-2xl">
+    <div className={DETAIL_VIEW_CONTAINER}>
       
       {/* 1. COMPACT HEADER */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0 z-10">
+      <div className={DETAIL_VIEW_HEADER}>
         <h2 className="text-lg font-bold text-slate-800 dark:text-white ml-2">Producto</h2>
         <button 
           onClick={onClose} 
-          className="p-2 -mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700 rounded-full transition-colors"
+          className={ICON_BTN_CLOSE}
           aria-label="Cerrar"
         >
           <CloseIcon className="w-5 h-5" />
@@ -128,11 +129,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       </div>
 
       {/* 3. COMPACT FOOTER (Action Grid) */}
-      <div className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-4 safe-area-inset-bottom flex-shrink-0">
+      <div className={DETAIL_VIEW_FOOTER}>
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={onDelete}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 text-red-600 dark:text-red-400 rounded-xl font-semibold transition-colors"
+            className={BTN_FOOTER_DANGER}
           >
             <TrashIcon className="w-5 h-5" />
             <span>Eliminar</span>
@@ -140,7 +141,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           
           <button
             onClick={onEdit}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/30 transition-colors"
+            className={BTN_FOOTER_EDIT}
           >
             <PencilIcon className="w-5 h-5" />
             <span>Editar</span>

@@ -4,7 +4,7 @@ import { PlusIcon } from './icons';
 import { InventoryIcon } from './icons';
 import { formatCurrency } from '../utils/formatters';
 import * as inventoryService from '../services/inventoryService';
-import { CARD_STYLES } from '../utils/styleConstants';
+import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
 import { useDebouncedValue } from '../utils/performanceUtils';
 
 interface InventoryViewProps {
@@ -199,7 +199,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                 <li
                   key={product.id}
                   onClick={() => handleViewProduct(product)}
-                  className="group flex items-center justify-between py-4 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors duration-200 cursor-pointer"
+                  className={LIST_ITEM_INTERACTIVE}
                 >
                   {/* MAIN FLEX CONTAINER: Vertically centered */}
                   <div className="flex items-center justify-between gap-4 w-full">
