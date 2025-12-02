@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Product, ProductVariant } from '../types';
-import { PlusIcon, TrashIcon } from './icons';
+import { PlusIcon, TrashIcon, ExclamationCircleIcon } from './icons';
+import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, BTN_SECONDARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
 import * as inventoryService from '../services/inventoryService';
 
 interface ProductFormProps {
@@ -19,6 +20,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
   const [variants, setVariants] = useState<Omit<ProductVariant, 'id'>[]>([]);
   const [newVariantName, setNewVariantName] = useState('');
   const [newVariantQuantity, setNewVariantQuantity] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     if (product) {
@@ -56,19 +58,20 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
 
     if (!name.trim() || !price || parseFloat(price) < 0) {
-      alert('Por favor completa todos los campos requeridos.');
+      setFormError('Por favor completa todos los campos requeridos.');
       return;
     }
 
     if (!hasVariants && (!standaloneQuantity || parseInt(standaloneQuantity) < 0)) {
-      alert('Por favor ingresa una cantidad válida.');
+      setFormError('Por favor ingresa una cantidad válida.');
       return;
     }
 
     if (hasVariants && variants.length === 0) {
-      alert('Por favor agrega al menos una variante o desactiva las variantes.');
+      setFormError('Por favor agrega al menos una variante o desactiva las variantes.');
       return;
     }
 
@@ -102,16 +105,24 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       onSave();
     } catch (error) {
       console.error('Error saving product:', error);
-      alert('Error al guardar el producto.');
+      setFormError('Error al guardar el producto.');
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto pr-2 pb-4 space-y-4 scroll-container">
+      {/* Error Banner */}
+      {formError && (
+        <div className={ERROR_BANNER}>
+          <ExclamationCircleIcon className="w-5 h-5 flex-shrink-0" />
+          {formError}
+        </div>
+      )}
+
       {/* Product Name */}
       <div>
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+        <label className={FORM_LABEL}>
           Nombre del Producto <span className="text-red-500">*</span>
         </label>
         <input
@@ -120,13 +131,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
           onChange={(e) => setName(e.target.value)}
           placeholder="Ej: Camiseta básica"
           required
-          className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
+          className={INPUT_BASE_CLASSES}
         />
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+        <label className={FORM_LABEL}>
           Descripción
         </label>
         <textarea
@@ -134,14 +145,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Descripción del producto..."
           rows={3}
-          className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 resize-none"
+          className={`${INPUT_BASE_CLASSES} resize-none`}
         />
       </div>
 
       {/* Price and Category */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+          <label className={FORM_LABEL}>
             Precio <span className="text-red-500">*</span>
           </label>
           <input
@@ -152,11 +163,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
             min="0"
             step="0.01"
             required
-            className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
+            className={INPUT_BASE_CLASSES}
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+          <label className={FORM_LABEL}>
             Categoría
           </label>
           <input
@@ -164,7 +175,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="Ej: Ropa, Electrónica"
-            className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
+            className={INPUT_BASE_CLASSES}
           />
         </div>
       </div>
@@ -203,7 +214,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       {/* Standalone Quantity (no variants) */}
       {!hasVariants && (
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+          <label className={FORM_LABEL}>
             Cantidad Disponible <span className="text-red-500">*</span>
           </label>
           <input
@@ -213,7 +224,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
             placeholder="0"
             min="0"
             required
-            className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
+            className={INPUT_BASE_CLASSES}
           />
         </div>
       )}
@@ -221,7 +232,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       {/* Variants Section */}
       {hasVariants && (
         <div className="space-y-3">
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <label className={FORM_LABEL}>
             Variantes
           </label>
 
@@ -283,17 +294,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       </div>
 
       {/* Form Actions - Sticky Footer */}
-      <div className="flex-shrink-0 flex gap-3 pt-6 px-6 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pb-6 -mx-6 safe-area-inset-bottom">
+      <div className={FORM_FOOTER}>
         <button
           type="submit"
-          className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition"
+          className={BTN_PRIMARY}
         >
           {product ? 'Actualizar Producto' : 'Crear Producto'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500 text-slate-700 dark:text-slate-200 font-semibold rounded-lg transition"
+          className={BTN_SECONDARY}
         >
           Cancelar
         </button>

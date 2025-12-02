@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import type { Product, ProductQuantity, CategoryConfig } from '../types';
-import { INPUT_BASE_CLASSES } from '../utils/constants';
+import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
 import { formatCurrency } from '../utils/formatters';
+import { ExclamationCircleIcon } from './icons';
 import * as inventoryService from '../services/inventoryService';
 import { getTopProducts } from '../utils/commerce';
 import QuantityStepper from './QuantityStepper';
-import { InventoryIcon } from './icons';
 
 
 interface NewInflowFormProps {
@@ -292,10 +292,8 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
 
         {/* Validation Error Message */}
         {formError && (
-            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm font-medium flex items-center gap-2 animate-fade-in">
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className={ERROR_BANNER}>
+                <ExclamationCircleIcon className="w-5 h-5 flex-shrink-0" />
                 {formError}
             </div>
         )}
@@ -307,7 +305,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
               <>
                 {/* Product Search */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className={FORM_LABEL}>
                     Buscar Producto
                   </label>
                   <input
@@ -429,7 +427,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
         {mode === 'manual' && (
           <>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              <label className={FORM_LABEL}>
                 Descripción
               </label>
               <input
@@ -441,7 +439,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              <label className={FORM_LABEL}>
                 Monto
               </label>
               <input
@@ -456,7 +454,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
             </div>
             {categoryConfig.enabled && categoryConfig.inflowCategories.length > 0 && (
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                <label className={FORM_LABEL}>
                   Categoría
                 </label>
                 <select
@@ -478,11 +476,11 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
       </div>
 
       {/* Fixed Footer - Always Visible */}
-      <div className="flex-shrink-0 border-t border-slate-200 dark:border-slate-700 pt-3 px-4 space-y-2 bg-white dark:bg-slate-800 pb-4 -mx-4 safe-area-inset-bottom">
+      <div className={FORM_FOOTER}>
         {/* Payment Method - Only show for manual mode OR when cart is confirmed */}
         {(mode === 'manual' || isCartConfirmed) && (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label className={FORM_LABEL}>
               Método de Pago
             </label>
             <select
@@ -501,7 +499,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
 
         {/* Total Display - show when applicable */}
         {(mode === 'manual' || isCartConfirmed) && (
-          <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+          <div className="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
             <div className="flex justify-between items-center">
               <span className="text-base font-semibold text-slate-700 dark:text-slate-300">Total a Cobrar:</span>
               <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
@@ -520,7 +518,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
             type="button"
             onClick={handleConfirmCart}
             disabled={Object.keys(productQuantities).length === 0}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:dark:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-all shadow-md"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:dark:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-lg"
           >
             {Object.keys(productQuantities).length > 0 
               ? `Ver Resumen (${Object.keys(productQuantities).length})` 
@@ -530,7 +528,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
           /* Manual mode or confirmed cart - show submit button */
           <button
             type="submit"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition-transform transform hover:scale-[1.02] shadow-md"
+            className={BTN_PRIMARY}
           >
             Registrar Ingreso
           </button>

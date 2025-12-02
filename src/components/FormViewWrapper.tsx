@@ -30,10 +30,10 @@ export const FormViewWrapper: React.FC<FormViewWrapperProps> = ({
           <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+            className="p-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full transition-colors"
             aria-label="Cerrar"
           >
-            <XMarkIcon className="w-5 h-5" />
+            <XMarkIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
           </button>
         </div>
         <div className="flex-1 px-4 min-h-0 flex flex-col">

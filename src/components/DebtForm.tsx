@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { INPUT_BASE_CLASSES } from '../utils/constants';
+import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, BTN_SECONDARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
+import { ExclamationCircleIcon } from './icons';
 import * as debtService from '../services/debtService';
 
 interface DebtFormProps {
@@ -18,6 +19,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
   const [category, setCategory] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     if (mode === 'edit' && debtId) {
@@ -36,15 +38,16 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     
     if (!counterparty.trim() || !amount || !description.trim() || !dueDate) {
-      alert('Por favor completa todos los campos obligatorios');
+      setFormError('Por favor completa todos los campos obligatorios');
       return;
     }
 
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      alert('Por favor ingresa un monto válido');
+      setFormError('Por favor ingresa un monto válido');
       return;
     }
 
@@ -76,7 +79,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
       onSave();
     } catch (error) {
       console.error('Error saving debt:', error);
-      alert('Error al guardar la deuda');
+      setFormError('Error al guardar la deuda');
     } finally {
       setIsSubmitting(false);
     }
@@ -86,10 +89,18 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto space-y-4 pr-2 scroll-container">
+        {/* Error Banner */}
+        {formError && (
+          <div className={ERROR_BANNER}>
+            <ExclamationCircleIcon className="w-5 h-5 flex-shrink-0" />
+            {formError}
+          </div>
+        )}
+
         {/* Type Selection */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            Tipo de Deuda *
+          <label className={FORM_LABEL}>
+            Tipo de Deuda <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -119,8 +130,8 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
         {/* Counterparty */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            {type === 'receivable' ? 'Cliente' : 'Proveedor'} *
+          <label className={FORM_LABEL}>
+            {type === 'receivable' ? 'Cliente' : 'Proveedor'} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -134,8 +145,8 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
         {/* Amount */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            Monto *
+          <label className={FORM_LABEL}>
+            Monto <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -150,8 +161,8 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            Descripción *
+          <label className={FORM_LABEL}>
+            Descripción <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -165,8 +176,8 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
         {/* Due Date */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            Fecha de Vencimiento *
+          <label className={FORM_LABEL}>
+            Fecha de Vencimiento <span className="text-red-500">*</span>
           </label>
           <input
             type="date"
@@ -179,7 +190,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
         {/* Category */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+          <label className={FORM_LABEL}>
             Categoría
           </label>
           <input
@@ -193,7 +204,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+          <label className={FORM_LABEL}>
             Notas
           </label>
           <textarea
@@ -207,11 +218,11 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
       </div>
 
       {/* Sticky Footer */}
-      <div className="flex-shrink-0 pt-6 px-6 pb-6 -mx-6 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 space-y-3 safe-area-inset-bottom">
+      <div className={FORM_FOOTER}>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg"
+          className={BTN_PRIMARY}
         >
           {isSubmitting ? 'Guardando...' : mode === 'create' ? 'Crear Deuda' : 'Actualizar Deuda'}
         </button>
@@ -219,7 +230,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="w-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold py-3 px-6 rounded-xl transition-colors"
+          className={BTN_SECONDARY}
         >
           Cancelar
         </button>

@@ -1,5 +1,19 @@
 export const INPUT_BASE_CLASSES = 'w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-slate-100';
 
+// Standardized Form Styles
+export const FORM_LABEL = 'block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2';
+
+// Standardized Button Styles
+export const BTN_PRIMARY = 'w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold py-3 rounded-xl transition-colors shadow-lg';
+export const BTN_SECONDARY = 'w-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl transition-colors';
+export const BTN_DANGER = 'w-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-bold py-3 rounded-xl transition-colors';
+
+// Standardized Form Footer
+export const FORM_FOOTER = 'flex-shrink-0 pt-4 px-4 pb-4 -mx-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 space-y-3 safe-area-inset-bottom';
+
+// Error Banner
+export const ERROR_BANNER = 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm font-medium flex items-center gap-2 animate-fade-in';
+
 export interface CurrencyOption {
   name: string;
   iso: string;

@@ -115,10 +115,6 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
     if (onChangeView) onChangeView('detail', product.id);
   };
 
-  const getTotalValue = () => {
-    return products.reduce((sum, p) => sum + (p.price * p.totalQuantity), 0);
-  };
-
   const getLowStockCount = () => {
     return products.filter(p => p.totalQuantity <= 10).length;
   };
