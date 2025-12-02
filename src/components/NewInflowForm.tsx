@@ -4,6 +4,7 @@ import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, FORM_FOOTER, ERROR_BANNER 
 import { formatCurrency } from '../utils/formatters';
 import { ExclamationCircleIcon } from './icons';
 import * as inventoryService from '../services/inventoryService';
+import * as dataService from '../services/dataService';
 import { getTopProducts } from '../utils/commerce';
 import QuantityStepper from './QuantityStepper';
 
@@ -12,11 +13,12 @@ interface NewInflowFormProps {
   products: Product[];
   onAddTransaction: (transaction: { description: string; amount: number; type: 'inflow'; category?: string; paymentMethod?: string; items?: { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[] }) => void;
   categoryConfig: CategoryConfig;
+  currencyCode: string;
   onClose?: () => void;
   onSuccess?: (title: string, message: string) => void;
 }
 
-export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTransaction, categoryConfig, onClose, onSuccess }) => {
+export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTransaction, categoryConfig, currencyCode, onClose, onSuccess }) => {
   // Mode State: 'inventory' (default) or 'manual'
   const [mode, setMode] = useState<'inventory' | 'manual'>('manual');
   
@@ -52,7 +54,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.category?.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : getTopProducts(products);
+    : getTopProducts(products, dataService.getTransactionsWithFilters({}));
 
   const updateProductQuantity = (productId: string, newQuantity: number, variantId?: string) => {
     if (newQuantity === 0) {
@@ -138,7 +140,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
       setPaymentMethod('Efectivo');
 
       if (onSuccess) {
-        onSuccess('¡Venta Completada!', `Ingreso de ${formatCurrency(amount)} registrada`);
+        onSuccess('¡Venta Completada!', `Ingreso de ${formatCurrency(amount, currencyCode)} registrada`);
       }
       if (onClose) onClose();
       return;
@@ -233,8 +235,8 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
 
     if (onSuccess) {
       const message = itemCount === 1 
-        ? `Ingreso de ${formatCurrency(total)} registrado`
-        : `Venta de ${itemCount} productos por ${formatCurrency(total)}`;
+        ? `Ingreso de ${formatCurrency(total, currencyCode)} registrado`
+        : `Venta de ${itemCount} productos por ${formatCurrency(total, currencyCode)}`;
       onSuccess('¡Venta Completada!', message);
     }
     
@@ -358,7 +360,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
 
                             <div className="flex justify-between items-end gap-3">
                               <div className="flex items-baseline gap-2">
-                                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(product.price)}</p>
+                                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(product.price, currencyCode)}</p>
                                 <p className={`text-xs ${isOutOfStock ? 'text-red-500 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
                                   {isOutOfStock ? 'Agotado' : `Stock: ${maxStock}`}
                                 </p>
@@ -406,7 +408,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                           {product.name} {variant && `(${variant.name})`} x{data.quantity}
                         </span>
                         <span className="font-semibold text-slate-800 dark:text-white">
-                          {formatCurrency(product.price * data.quantity)}
+                          {formatCurrency(product.price * data.quantity, currencyCode)}
                         </span>
                       </div>
                     );
@@ -414,7 +416,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                   <div className="pt-2 border-t border-emerald-200 dark:border-emerald-700 flex justify-between font-bold">
                     <span className="text-slate-800 dark:text-white">Subtotal:</span>
                     <span className="text-emerald-600 dark:text-emerald-400">
-                      {formatCurrency(calculateTotal())}
+                      {formatCurrency(calculateTotal(), currencyCode)}
                     </span>
                   </div>
                 </div>
@@ -504,8 +506,8 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
               <span className="text-base font-semibold text-slate-700 dark:text-slate-300">Total a Cobrar:</span>
               <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                 {mode === 'manual' 
-                  ? formatCurrency(parseFloat(manualAmount || '0')) 
-                  : formatCurrency(calculateTotal())}
+                  ? formatCurrency(parseFloat(manualAmount || '0'), currencyCode) 
+                  : formatCurrency(calculateTotal(), currencyCode)}
               </span>
             </div>
           </div>

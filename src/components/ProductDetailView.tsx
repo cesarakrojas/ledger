@@ -5,6 +5,7 @@ import { CloseIcon, PencilIcon, TrashIcon } from './icons';
 
 interface ProductDetailViewProps {
   product: Product;
+  currencyCode: string;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -12,6 +13,7 @@ interface ProductDetailViewProps {
 
 export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   product,
+  currencyCode,
   onClose,
   onEdit,
   onDelete
@@ -49,7 +51,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             
             <div className="flex items-center justify-center gap-3 mb-2">
               <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                {formatCurrency(product.price)}
+                {formatCurrency(product.price, currencyCode)}
               </span>
             </div>
 

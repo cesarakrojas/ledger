@@ -7,6 +7,7 @@ import { ChartBarIcon, ArrowUpIcon, ArrowDownIcon, CalendarIcon, XMarkIcon } fro
 interface ReportsViewProps {
   transactions: Transaction[];
   debts: DebtEntry[];
+  currencyCode: string;
 }
 
 type DateRange = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'all' | 'custom';
@@ -315,7 +316,7 @@ const PeriodBadge: React.FC<{ dateRange: DateRange; customRange: CustomDateRange
   );
 };
 
-export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts }) => {
+export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts, currencyCode }) => {
   const [dateRange, setDateRange] = useState<DateRange>('month');
   const [activeTab, setActiveTab] = useState<ReportTab>('transactions');
   const [isLoading, setIsLoading] = useState(false);
@@ -606,7 +607,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                   <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Total Ingresos</p>
                 </div>
                 <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
-                  {formatCurrency(stats.totalInflows)}
+                  {formatCurrency(stats.totalInflows, currencyCode)}
                 </p>
                 <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">
                   {stats.inflowCount} transacción{stats.inflowCount !== 1 ? 'es' : ''}
@@ -620,7 +621,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                   <p className="text-xs font-medium text-red-600 dark:text-red-400">Total Gastos</p>
                 </div>
                 <p className="text-xl font-bold text-red-700 dark:text-red-300">
-                  {formatCurrency(stats.totalOutflows)}
+                  {formatCurrency(stats.totalOutflows, currencyCode)}
                 </p>
                 <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-1">
                   {stats.outflowCount} transacción{stats.outflowCount !== 1 ? 'es' : ''}
@@ -636,7 +637,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                   Balance Neto
                 </p>
                 <p className={`text-xl font-bold ${stats.netBalance >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-orange-700 dark:text-orange-300'}`}>
-                  {stats.netBalance >= 0 ? '+' : ''}{formatCurrency(stats.netBalance)}
+                  {stats.netBalance >= 0 ? '+' : ''}{formatCurrency(stats.netBalance, currencyCode)}
                 </p>
               </div>
               
@@ -647,7 +648,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                   {stats.profitMargin >= 0 ? '+' : ''}{stats.profitMargin.toFixed(1)}%
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Prom. ingreso: {formatCurrency(stats.avgInflow)}
+                  Prom. ingreso: {formatCurrency(stats.avgInflow, currencyCode)}
                 </p>
               </div>
             </div>
@@ -686,10 +687,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                       </div>
                       <div className="w-20 text-right shrink-0">
                         <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                          {day.inflows > 0 ? `+${formatCurrency(day.inflows)}` : '-'}
+                          {day.inflows > 0 ? `+${formatCurrency(day.inflows, currencyCode)}` : '-'}
                         </p>
                         <p className="text-xs font-medium text-red-600 dark:text-red-400">
-                          {day.outflows > 0 ? `-${formatCurrency(day.outflows)}` : '-'}
+                          {day.outflows > 0 ? `-${formatCurrency(day.outflows, currencyCode)}` : '-'}
                         </p>
                       </div>
                     </div>
@@ -732,12 +733,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                     <div className="text-right">
                       {day.inflows > 0 && (
                         <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                          +{formatCurrency(day.inflows)}
+                          +{formatCurrency(day.inflows, currencyCode)}
                         </p>
                       )}
                       {day.outflows > 0 && (
                         <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                          -{formatCurrency(day.outflows)}
+                          -{formatCurrency(day.outflows, currencyCode)}
                         </p>
                       )}
                     </div>
@@ -756,7 +757,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">Mayor Ingreso</p>
                   <p className="font-semibold text-slate-800 dark:text-white">{stats.largestInflow.description}</p>
                   <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-                    {formatCurrency(stats.largestInflow.amount)}
+                    {formatCurrency(stats.largestInflow.amount, currencyCode)}
                   </p>
                 </div>
               )}
@@ -765,7 +766,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                   <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1">Mayor Gasto</p>
                   <p className="font-semibold text-slate-800 dark:text-white">{stats.largestOutflow.description}</p>
                   <p className="text-lg font-bold text-red-600 dark:text-red-400 mt-1">
-                    {formatCurrency(stats.largestOutflow.amount)}
+                    {formatCurrency(stats.largestOutflow.amount, currencyCode)}
                   </p>
                 </div>
               )}
@@ -797,7 +798,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{cat.name}</span>
                       <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                        {formatCurrency(cat.amount)}
+                        {formatCurrency(cat.amount, currencyCode)}
                       </span>
                     </div>
                     <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -828,7 +829,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{cat.name}</span>
                       <span className="text-sm font-bold text-red-600 dark:text-red-400">
-                        {formatCurrency(cat.amount)}
+                        {formatCurrency(cat.amount, currencyCode)}
                       </span>
                     </div>
                     <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -863,7 +864,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
           <div className={`${CARD_STYLES} !p-4`}>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Posición Neta de Deudas</p>
             <p className={`text-2xl font-bold ${debtStats.netDebtPosition >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-              {formatCurrency(Math.abs(debtStats.netDebtPosition))}
+              {formatCurrency(Math.abs(debtStats.netDebtPosition), currencyCode)}
               <span className="text-sm font-medium ml-2">
                 {debtStats.netDebtPosition >= 0 ? '(a favor)' : '(en contra)'}
               </span>
@@ -884,7 +885,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                   <div>
                     <p className="text-sm text-red-600 dark:text-red-400">Por Cobrar Vencido</p>
                     <p className="text-xl font-bold text-red-700 dark:text-red-300">
-                      {formatCurrency(debtStats.overdueReceivablesAmount)}
+                      {formatCurrency(debtStats.overdueReceivablesAmount, currencyCode)}
                     </p>
                     <p className="text-xs text-red-500">{debtStats.overdueReceivablesCount} deuda{debtStats.overdueReceivablesCount !== 1 ? 's' : ''}</p>
                   </div>
@@ -893,7 +894,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                   <div>
                     <p className="text-sm text-red-600 dark:text-red-400">Por Pagar Vencido</p>
                     <p className="text-xl font-bold text-red-700 dark:text-red-300">
-                      {formatCurrency(debtStats.overduePayablesAmount)}
+                      {formatCurrency(debtStats.overduePayablesAmount, currencyCode)}
                     </p>
                     <p className="text-xs text-red-500">{debtStats.overduePayablesCount} deuda{debtStats.overduePayablesCount !== 1 ? 's' : ''}</p>
                   </div>
@@ -916,7 +917,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                       <span className="font-medium text-slate-700 dark:text-slate-200">{debtor.name}</span>
                     </div>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                      {formatCurrency(debtor.amount)}
+                      {formatCurrency(debtor.amount, currencyCode)}
                     </span>
                   </div>
                 ))}
@@ -938,7 +939,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
                       <span className="font-medium text-slate-700 dark:text-slate-200">{creditor.name}</span>
                     </div>
                     <span className="font-bold text-red-600 dark:text-red-400">
-                      {formatCurrency(creditor.amount)}
+                      {formatCurrency(creditor.amount, currencyCode)}
                     </span>
                   </div>
                 ))}

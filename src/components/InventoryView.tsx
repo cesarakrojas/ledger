@@ -10,6 +10,7 @@ import { useDebouncedValue } from '../utils/performanceUtils';
 interface InventoryViewProps {
   viewMode?: 'list' | 'create' | 'edit' | 'detail';
   editingProductId?: string | null;
+  currencyCode: string;
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', productId?: string) => void;
 }
 
@@ -72,6 +73,7 @@ const InventoryFilters = memo<InventoryFiltersProps>(({
 InventoryFilters.displayName = 'InventoryFilters';
 
 export const InventoryView: React.FC<InventoryViewProps> = ({ 
+  currencyCode,
   onChangeView 
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -247,7 +249,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                     {/* RIGHT SIDE: PRICE - shrink-0 ensures it stays visible */}
                     <div className="flex flex-col items-end shrink-0 ml-2">
                       <div className="text-xl sm:text-2xl font-bold whitespace-nowrap flex items-baseline gap-1 text-emerald-600 dark:text-emerald-400">
-                        <span>{formatCurrency(product.price)}</span>
+                        <span>{formatCurrency(product.price, currencyCode)}</span>
                       </div>
                       <span className="text-xs text-slate-400 font-medium">
                         Precio unitario

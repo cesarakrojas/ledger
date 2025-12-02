@@ -1,12 +1,15 @@
-import { getCurrencySymbol } from './constants';
-import { STORAGE_KEYS } from './storageKeys';
+import { getCurrencySymbol, DEFAULT_CURRENCY } from './constants';
 
-export const formatCurrency = (amount: number | undefined, currencyCode?: string): string => {
+/**
+ * Format amount as currency string
+ * @param amount - The numeric amount to format
+ * @param currencyCode - The currency code (e.g., 'USD', 'COP'). Defaults to DEFAULT_CURRENCY.
+ * @returns Formatted currency string
+ */
+export const formatCurrency = (amount: number | undefined, currencyCode: string = DEFAULT_CURRENCY): string => {
   if (amount === undefined) return '$0.00';
   
-  // Get currency from localStorage if not provided
-  const currency = currencyCode || localStorage.getItem(STORAGE_KEYS.CURRENCY_CODE) || 'USD';
-  const symbol = getCurrencySymbol(currency);
+  const symbol = getCurrencySymbol(currencyCode);
   
   // Format number with thousand separators and 2 decimals
   const formattedNumber = amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');

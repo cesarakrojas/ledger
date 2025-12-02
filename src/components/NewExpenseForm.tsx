@@ -4,6 +4,7 @@ import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, FORM_FOOTER, ERROR_BANNER 
 import { formatCurrency } from '../utils/formatters';
 import { ExclamationCircleIcon } from './icons';
 import * as inventoryService from '../services/inventoryService';
+import * as dataService from '../services/dataService';
 import { getTopProducts } from '../utils/commerce';
 import QuantityStepper from './QuantityStepper';
 
@@ -18,6 +19,7 @@ interface NewExpenseFormProps {
     items?: { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[];
   }) => void;
   categoryConfig: CategoryConfig;
+  currencyCode: string;
   onClose?: () => void;
   onSuccess?: (title: string, message: string, type: 'expense' | 'purchase') => void;
 }
@@ -25,6 +27,7 @@ interface NewExpenseFormProps {
 export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({ 
   onAddTransaction, 
   categoryConfig, 
+  currencyCode,
   onClose,
   onSuccess
 }) => {
@@ -207,8 +210,8 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
 
       if (onSuccess) {
         const message = itemCount === 1 
-          ? `Compra de ${formatCurrency(total)} registrada`
-          : `Compra de ${itemCount} productos por ${formatCurrency(total)}`;
+          ? `Compra de ${formatCurrency(total, currencyCode)} registrada`
+          : `Compra de ${itemCount} productos por ${formatCurrency(total, currencyCode)}`;
         onSuccess('¡Compra Completada!', message, 'purchase');
       }
       
@@ -231,7 +234,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
         resetForm();
         
         if (onSuccess) {
-          onSuccess('¡Gasto Registrado!', `Gasto de ${formatCurrency(expenseAmount)} registrado`, 'expense');
+          onSuccess('¡Gasto Registrado!', `Gasto de ${formatCurrency(expenseAmount, currencyCode)} registrado`, 'expense');
         }
         
         if (onClose) onClose();
@@ -256,7 +259,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
             p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.category?.toLowerCase().includes(searchTerm.toLowerCase())
           )
-        : getTopProducts(products))
+        : getTopProducts(products, dataService.getTransactionsWithFilters({})))
     : [];
 
   return (
@@ -380,7 +383,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
 
                         <div className="flex justify-between items-end gap-3">
                           <div>
-                            <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(product.price)}</p>
+                            <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(product.price, currencyCode)}</p>
                             <p className="text-xs text-slate-500 dark:text-slate-400">Stock actual: {product.totalQuantity}</p>
                           </div>
 
@@ -431,7 +434,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
                           {product.name} {variant && `(${variant.name})`} × {data.quantity}
                         </span>
                         <span className="font-bold text-slate-800 dark:text-white">
-                          {formatCurrency(product.price * data.quantity)}
+                          {formatCurrency(product.price * data.quantity, currencyCode)}
                         </span>
                       </div>
                     );
@@ -440,7 +443,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
                 
                 <div className="border-t border-red-300 dark:border-red-700 pt-2 flex justify-between items-center font-bold text-slate-800 dark:text-white">
                   <span>Subtotal:</span>
-                  <span className="text-lg">{formatCurrency(calculateProductsTotal())}</span>
+                  <span className="text-lg">{formatCurrency(calculateProductsTotal(), currencyCode)}</span>
                 </div>
               </div>
             )}
@@ -509,7 +512,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
             <div className="flex justify-between items-center">
               <span className="text-base font-semibold text-slate-700 dark:text-slate-300">Total Compra:</span>
               <span className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {formatCurrency(calculateProductsTotal())}
+                {formatCurrency(calculateProductsTotal(), currencyCode)}
               </span>
             </div>
           </div>

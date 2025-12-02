@@ -1,16 +1,18 @@
-import type { Product } from '../types';
-import { STORAGE_KEYS } from './storageKeys';
+import type { Product, Transaction } from '../types';
 
-// Returns top 3 products by frequency in past transactions or most recent
-export const getTopProducts = (allProducts: Product[]): Product[] => {
+/**
+ * Returns top 3 products by frequency in past transactions or most recent
+ * @param allProducts - Array of all available products
+ * @param transactions - Array of transactions to analyze (passed from caller)
+ * @returns Top 3 products sorted by usage frequency or recency
+ */
+export const getTopProducts = (allProducts: Product[], transactions: Transaction[] = []): Product[] => {
   try {
-    const transactionsData = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-    const transactions = transactionsData ? JSON.parse(transactionsData) : [];
-
     const productFrequency: Record<string, number> = {};
-    transactions.forEach((t: any) => {
+    
+    transactions.forEach((t) => {
       if (t.items && Array.isArray(t.items)) {
-        t.items.forEach((item: any) => {
+        t.items.forEach((item) => {
           productFrequency[item.productId] = (productFrequency[item.productId] || 0) + 1;
         });
       }
@@ -28,8 +30,4 @@ export const getTopProducts = (allProducts: Product[]): Product[] => {
   } catch (error) {
     return allProducts.slice(0, 3);
   }
-};
-
-export default {
-  getTopProducts,
 };

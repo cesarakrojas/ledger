@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Transaction, CategoryConfig, Product, DebtEntry } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';
-import { storageService } from './utils/storageService';
 import { CARD_STYLES, CARD_EMPTY_STATE, CARD_FORM } from './utils/styleConstants';
 import { CashIcon, BookOpenIcon, InventoryIcon, ArrowUpIcon, ArrowDownIcon, Cog6ToothIcon, Bars3Icon, BellIcon, XMarkIcon, UserIcon, ChartBarIcon } from './components/icons';
 import { CategorySettings } from './components/CategorySettings';
@@ -30,10 +29,11 @@ import { useAppNavigation } from './hooks/useAppNavigation';
 
 interface TransactionItemProps {
   transaction: Transaction;
+  currencyCode: string;
   onClick?: () => void;
 }
 
-const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onClick }) => {
+const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, currencyCode, onClick }) => {
   const is_inflow = transaction.type === 'inflow';
 
   return (
@@ -91,7 +91,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onClick 
         <span>{is_inflow ? '+' : '-'}</span>
         {/* Added a small margin for visual breathing room */}
         <span className="ml-1">
-            {formatCurrency(transaction.amount)}
+            {formatCurrency(transaction.amount, currencyCode)}
         </span>
       </div>
     </li>
@@ -151,14 +151,18 @@ export default function App() {
     const loadedDebts = debtService.getAllDebts({});
     setDebts(loadedDebts);
     
-    // Load category config (already parsed by storageService)
-    const savedConfig = storageService.getCategoryConfig();
-    if (savedConfig) {
-      setCategoryConfig(savedConfig);
+    // Load category config
+    try {
+      const savedConfigStr = localStorage.getItem(STORAGE_KEYS.CATEGORY_CONFIG);
+      if (savedConfigStr) {
+        setCategoryConfig(JSON.parse(savedConfigStr));
+      }
+    } catch (e) {
+      console.error('Error loading category config:', e);
     }
     
     // Load currency
-    const savedCurrency = storageService.getCurrencyCode();
+    const savedCurrency = localStorage.getItem(STORAGE_KEYS.CURRENCY_CODE);
     if (savedCurrency) {
       setCurrencyCode(savedCurrency);
     }
@@ -213,10 +217,10 @@ export default function App() {
     
     if (newDarkMode) {
       document.documentElement.classList.add('dark');
-      storageService.setItem(STORAGE_KEYS.THEME, 'dark');
+      localStorage.setItem(STORAGE_KEYS.THEME, 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      storageService.setItem(STORAGE_KEYS.THEME, 'light');
+      localStorage.setItem(STORAGE_KEYS.THEME, 'light');
     }
     
     setIsDarkMode(newDarkMode);
@@ -224,12 +228,12 @@ export default function App() {
 
   const handleSaveCategoryConfig = (config: CategoryConfig) => {
     setCategoryConfig(config);
-    storageService.setItem(STORAGE_KEYS.CATEGORY_CONFIG, JSON.stringify(config));
+    localStorage.setItem(STORAGE_KEYS.CATEGORY_CONFIG, JSON.stringify(config));
   };
 
   const handleCurrencyChange = (newCurrencyCode: string) => {
     setCurrencyCode(newCurrencyCode);
-    storageService.setItem(STORAGE_KEYS.CURRENCY_CODE, newCurrencyCode);
+    localStorage.setItem(STORAGE_KEYS.CURRENCY_CODE, newCurrencyCode);
   };
 
   const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
@@ -297,15 +301,15 @@ export default function App() {
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                     <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl">
                         <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Ingresos</p>
-                        <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(totalInflows)}</p>
+                        <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(totalInflows, currencyCode)}</p>
                     </div>
                     <div className="bg-red-100 dark:bg-red-900/50 p-4 rounded-xl">
                         <p className="text-sm font-medium text-red-700 dark:text-red-300">Total Gastos</p>
-                        <p className="text-2xl font-bold text-red-700 dark:text-red-300">{formatCurrency(totalOutflows)}</p>
+                        <p className="text-2xl font-bold text-red-700 dark:text-red-300">{formatCurrency(totalOutflows, currencyCode)}</p>
                     </div>
                     <div className={`p-4 rounded-xl ${netBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-orange-100 dark:bg-orange-900/50'}`}>
                         <p className={`text-sm font-medium ${netBalance >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-orange-700 dark:text-orange-300'}`}>Balance Neto</p>
-                        <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-orange-700 dark:text-orange-300'}`}>{formatCurrency(netBalance)}</p>
+                        <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-orange-700 dark:text-orange-300'}`}>{formatCurrency(netBalance, currencyCode)}</p>
                     </div>
                 </div>
             </header>
@@ -322,7 +326,8 @@ export default function App() {
                                 {transactions.map(t => (
                                   <TransactionItem 
                                     key={t.id} 
-                                    transaction={t} 
+                                    transaction={t}
+                                    currencyCode={currencyCode}
                                     onClick={() => {
                                       setSelectedTransactionId(t.id);
                                       navigate('transaction-detail');
@@ -355,7 +360,7 @@ export default function App() {
 
   // Reports Module - wraps imported ReportsView with current data
   const ReportsModule = () => (
-    <ReportsView transactions={transactions} debts={debts} />
+    <ReportsView transactions={transactions} debts={debts} currencyCode={currencyCode} />
   );
 
   // Placeholder shown when a module is intentionally deactivated/unmounted
@@ -422,7 +427,7 @@ export default function App() {
       return <ProductDetailPageView />;
     }
 
-    return <InventoryView viewMode={inventoryViewMode} editingProductId={editingProductId} onChangeView={handleInventoryViewChange} />;
+    return <InventoryView viewMode={inventoryViewMode} editingProductId={editingProductId} currencyCode={currencyCode} onChangeView={handleInventoryViewChange} />;
   };
 
   const NewinflowView = () => {
@@ -432,6 +437,7 @@ export default function App() {
           products={products}
           onAddTransaction={handleAddTransaction}
           categoryConfig={categoryConfig}
+          currencyCode={currencyCode}
           onClose={() => navigate('home')}
           onSuccess={(title, message) => {
             setSuccessModalTitle(title);
@@ -450,6 +456,7 @@ export default function App() {
         <NewExpenseForm 
           onAddTransaction={handleAddTransaction} 
           categoryConfig={categoryConfig}
+          currencyCode={currencyCode}
           onClose={() => navigate('home')}
           onSuccess={(title, message, type) => {
             setSuccessModalTitle(title);
@@ -536,6 +543,7 @@ export default function App() {
       <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
         <ProductDetailView
           product={product}
+          currencyCode={currencyCode}
           onClose={() => handleInventoryViewChange('list')}
           onEdit={handleEdit}
           onDelete={handleDelete}
