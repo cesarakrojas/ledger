@@ -1,63 +1,23 @@
-import type { DebtEntry } from '../types';
+import type { DebtEntry, Transaction } from '../types';
 import * as dataService from './dataService';
 import { STORAGE_KEYS } from '../utils/storageKeys';
 import { generateId } from '../utils/idGenerator';
 import { reportError, createError, ERROR_MESSAGES } from '../utils/errorHandler';
-import { storageCache } from '../utils/performanceUtils';
+import { createStorageAccessor } from '../utils/performanceUtils';
 
 const STORAGE_KEY = STORAGE_KEYS.DEBTS;
 
-// Get all debts from localStorage with error handling and caching
-const getDebts = (): DebtEntry[] => {
-  try {
-    // Try cache first
-    const cached = storageCache.get<DebtEntry[]>(STORAGE_KEY);
-    if (cached) return cached;
-    
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) return [];
-    
-    const parsed = JSON.parse(data);
-    const debts = Array.isArray(parsed) ? parsed : [];
-    
-    // Cache the result
-    storageCache.set(STORAGE_KEY, debts);
-    
-    return debts;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    reportError(createError('storage', 'Error al cargar deudas', errorMsg));
-    return [];
-  }
-};
-
-// Save debts to localStorage with error handling
-const saveDebts = (debts: DebtEntry[]): boolean => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(debts));
-    
-    // Invalidate cache
-    storageCache.invalidate(STORAGE_KEY);
-    
-    // Trigger storage event for multi-tab sync
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: STORAGE_KEY,
-      newValue: JSON.stringify(debts)
-    }));
-    
-    return true;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    
-    if (error instanceof Error && error.name === 'QuotaExceededError') {
-      reportError(createError('storage', ERROR_MESSAGES.STORAGE_FULL, errorMsg));
-    } else {
-      reportError(createError('storage', 'Error al guardar deudas', errorMsg));
-    }
-    
-    return false;
-  }
-};
+// Create storage accessor for debts
+const debtStorage = createStorageAccessor<DebtEntry>(
+  STORAGE_KEY,
+  {
+    loadErrorMsg: 'Error al cargar deudas',
+    saveErrorMsg: 'Error al guardar deudas',
+    storageFullMsg: ERROR_MESSAGES.STORAGE_FULL,
+    dispatchEvents: true
+  },
+  (error) => reportError(createError(error.type as 'storage', error.message, error.details))
+);
 
 // Get all debts with optional filters
 export const getAllDebts = (filters?: {
@@ -65,7 +25,7 @@ export const getAllDebts = (filters?: {
   status?: 'pending' | 'paid' | 'overdue';
   searchTerm?: string;
 }): DebtEntry[] => {
-  let debts = getDebts();
+  let debts = debtStorage.get();
 
   // Update overdue status
   const now = new Date();
@@ -100,13 +60,13 @@ export const getAllDebts = (filters?: {
 };
 
 // Get a single debt by ID
-export const getDebtById = (debtId: string): DebtEntry | undefined => {
-  const debts = getDebts();
-  return debts.find(d => d.id === debtId);
+export const getDebtById = (debtId: string): DebtEntry | null => {
+  const debts = debtStorage.get();
+  return debts.find(d => d.id === debtId) || null;
 };
 
 // Create a new debt
-export const createDebt = async (
+export const createDebt = (
   type: 'receivable' | 'payable',
   counterparty: string,
   amount: number,
@@ -114,8 +74,8 @@ export const createDebt = async (
   dueDate: string,
   category?: string,
   notes?: string
-): Promise<DebtEntry> => {
-  const debts = getDebts();
+): DebtEntry | null => {
+  const debts = debtStorage.get();
   
   const newDebt: DebtEntry = {
     id: generateId(),
@@ -131,21 +91,26 @@ export const createDebt = async (
   };
   
   debts.push(newDebt);
-  saveDebts(debts);
+  const saved = debtStorage.save(debts);
+  
+  if (!saved) {
+    return null;
+  }
   
   return newDebt;
 };
 
 // Update an existing debt
-export const updateDebt = async (
+export const updateDebt = (
   debtId: string,
   updates: Partial<Omit<DebtEntry, 'id' | 'createdAt' | 'linkedTransactionId' | 'paidAt'>>
-): Promise<DebtEntry> => {
-  const debts = getDebts();
+): DebtEntry | null => {
+  const debts = debtStorage.get();
   const debtIndex = debts.findIndex(d => d.id === debtId);
   
   if (debtIndex === -1) {
-    throw new Error('Debt not found');
+    reportError(createError('validation', ERROR_MESSAGES.NOT_FOUND, 'Deuda no encontrada'));
+    return null;
   }
   
   const updatedDebt: DebtEntry = {
@@ -163,32 +128,44 @@ export const updateDebt = async (
   }
   
   debts[debtIndex] = updatedDebt;
-  saveDebts(debts);
+  const saved = debtStorage.save(debts);
+  
+  if (!saved) {
+    return null;
+  }
   
   return updatedDebt;
 };
 
 // Delete a debt
-export const deleteDebt = async (debtId: string): Promise<void> => {
-  const debts = getDebts();
-  const filteredDebts = debts.filter(d => d.id !== debtId);
+export const deleteDebt = (debtId: string): boolean => {
+  const debts = debtStorage.get();
+  const debtExists = debts.some(d => d.id === debtId);
   
-  saveDebts(filteredDebts);
+  if (!debtExists) {
+    reportError(createError('validation', ERROR_MESSAGES.NOT_FOUND, 'Deuda no encontrada'));
+    return false;
+  }
+  
+  const filteredDebts = debts.filter(d => d.id !== debtId);
+  return debtStorage.save(filteredDebts);
 };
 
 // Mark debt as paid and create corresponding transaction
-export const markAsPaid = async (debtId: string): Promise<{ debt: DebtEntry; transaction: any }> => {
-  const debts = getDebts();
+export const markAsPaid = (debtId: string): { debt: DebtEntry; transaction: Transaction } | null => {
+  const debts = debtStorage.get();
   const debtIndex = debts.findIndex(d => d.id === debtId);
   
   if (debtIndex === -1) {
-    throw new Error('Debt not found');
+    reportError(createError('validation', ERROR_MESSAGES.NOT_FOUND, 'Deuda no encontrada'));
+    return null;
   }
   
   const debt = debts[debtIndex];
   
   if (debt.status === 'paid') {
-    throw new Error('Debt is already marked as paid');
+    reportError(createError('validation', 'La deuda ya está marcada como pagada'));
+    return null;
   }
   
   // Create corresponding transaction
@@ -197,7 +174,7 @@ export const markAsPaid = async (debtId: string): Promise<{ debt: DebtEntry; tra
     ? `Cobro: ${debt.counterparty} - ${debt.description}`
     : `Pago: ${debt.counterparty} - ${debt.description}`;
   
-  const transaction = await dataService.addTransaction(
+  const transaction = dataService.addTransaction(
     transactionType,
     transactionDescription,
     debt.amount,
@@ -205,6 +182,11 @@ export const markAsPaid = async (debtId: string): Promise<{ debt: DebtEntry; tra
     undefined, // paymentMethod
     undefined  // items
   );
+  
+  if (!transaction) {
+    reportError(createError('storage', 'Error al crear transacción para el pago'));
+    return null;
+  }
   
   // Update debt status
   const updatedDebt: DebtEntry = {
@@ -215,7 +197,11 @@ export const markAsPaid = async (debtId: string): Promise<{ debt: DebtEntry; tra
   };
   
   debts[debtIndex] = updatedDebt;
-  saveDebts(debts);
+  const saved = debtStorage.save(debts);
+  
+  if (!saved) {
+    return null;
+  }
   
   return { debt: updatedDebt, transaction };
 };

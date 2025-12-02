@@ -151,7 +151,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
     const latestProductsMap: Record<string, Product> = {};
 
     for (const [productId, data] of Object.entries(productQuantities)) {
-      const latest = await inventoryService.getProductById(productId);
+      const latest = inventoryService.getProductById(productId);
       if (!latest) {
         setFormError('Producto no encontrado. Actualiza la lista e intenta de nuevo.');
         return;
@@ -182,14 +182,14 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
       if (data.selectedVariantId) {
         const variant = latest.variants.find(v => v.id === data.selectedVariantId);
         if (variant) {
-          await inventoryService.updateVariantQuantity(
+          inventoryService.updateVariantQuantity(
             productId,
             data.selectedVariantId,
             Math.max(0, variant.quantity - data.quantity)
           );
         }
       } else {
-        await inventoryService.updateProduct(productId, {
+        inventoryService.updateProduct(productId, {
           standaloneQuantity: Math.max(0, latest.totalQuantity - data.quantity)
         });
       }

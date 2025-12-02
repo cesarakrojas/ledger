@@ -48,11 +48,11 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
   // Use shared top-products helper
 
   // Mode Switcher Logic
-  const handleModeSwitch = async (mode: 'expense' | 'purchase') => {
+  const handleModeSwitch = (mode: 'expense' | 'purchase') => {
     setFormError(null);
     if (mode === 'purchase') {
       setCategory('Compra de Productos');
-      const loadedProducts = await inventoryService.getAllProducts();
+      const loadedProducts = inventoryService.getAllProducts();
       setProducts(loadedProducts);
       setProductQuantities({});
       setSearchTerm('');
@@ -154,7 +154,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
           // Update variant quantity
           const variant = product.variants.find(v => v.id === data.selectedVariantId);
           if (variant) {
-            await inventoryService.updateVariantQuantity(
+            inventoryService.updateVariantQuantity(
               productId,
               data.selectedVariantId,
               variant.quantity + data.quantity
@@ -162,7 +162,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
           }
         } else {
           // Update standalone product quantity
-          await inventoryService.updateProduct(productId, {
+          inventoryService.updateProduct(productId, {
             standaloneQuantity: product.totalQuantity + data.quantity
           });
         }

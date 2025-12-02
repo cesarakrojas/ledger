@@ -2,64 +2,30 @@ import type { Transaction } from '../types';
 import { STORAGE_KEYS } from '../utils/storageKeys';
 import { generateId } from '../utils/idGenerator';
 import { reportError, createError, ERROR_MESSAGES } from '../utils/errorHandler';
-import { storageCache } from '../utils/performanceUtils';
+import { createStorageAccessor } from '../utils/performanceUtils';
 
-// Get all transactions from localStorage with error handling and caching
-const getTransactions = (): Transaction[] => {
-  try {
-    // Try cache first
-    const cached = storageCache.get<Transaction[]>(STORAGE_KEYS.TRANSACTIONS);
-    if (cached) return cached;
-    
-    const data = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-    if (!data) return [];
-    
-    const parsed = JSON.parse(data);
-    const transactions = Array.isArray(parsed) ? parsed : [];
-    
-    // Cache the result
-    storageCache.set(STORAGE_KEYS.TRANSACTIONS, transactions);
-    
-    return transactions;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    reportError(createError('storage', 'Error al cargar transacciones', errorMsg));
-    return [];
-  }
-};
-
-// Save transactions to localStorage with error handling
-const saveTransactions = (transactions: Transaction[]): boolean => {
-  try {
-    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
-    
-    // Invalidate cache
-    storageCache.invalidate(STORAGE_KEYS.TRANSACTIONS);
-    
-    return true;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    
-    if (error instanceof Error && error.name === 'QuotaExceededError') {
-      reportError(createError('storage', ERROR_MESSAGES.STORAGE_FULL, errorMsg));
-    } else {
-      reportError(createError('storage', 'Error al guardar transacciones', errorMsg));
-    }
-    
-    return false;
-  }
-};
+// Create storage accessor for transactions
+const transactionStorage = createStorageAccessor<Transaction>(
+  STORAGE_KEYS.TRANSACTIONS,
+  {
+    loadErrorMsg: 'Error al cargar transacciones',
+    saveErrorMsg: 'Error al guardar transacciones',
+    storageFullMsg: ERROR_MESSAGES.STORAGE_FULL,
+    dispatchEvents: true
+  },
+  (error) => reportError(createError(error.type as 'storage', error.message, error.details))
+);
 
 // Add a transaction
-export const addTransaction = async (
+export const addTransaction = (
   type: 'inflow' | 'outflow',
   description: string,
   amount: number,
   category?: string,
   paymentMethod?: string,
   items?: { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[]
-): Promise<Transaction> => {
-  const transactions = getTransactions();
+): Transaction | null => {
+  const transactions = transactionStorage.get();
   
   const newTransaction: Transaction = {
     id: generateId(),
@@ -73,25 +39,23 @@ export const addTransaction = async (
   };
   
   transactions.push(newTransaction);
-  saveTransactions(transactions);
+  const saved = transactionStorage.save(transactions);
   
-  // Trigger storage event for subscribers
-  window.dispatchEvent(new StorageEvent('storage', {
-    key: STORAGE_KEYS.TRANSACTIONS,
-    newValue: JSON.stringify(transactions)
-  }));
+  if (!saved) {
+    return null;
+  }
   
   return newTransaction;
 };
 
 // Get all transactions with filters
-export const getTransactionsWithFilters = async (filters: {
+export const getTransactionsWithFilters = (filters: {
   startDate?: string;
   endDate?: string;
   type?: 'inflow' | 'outflow';
   searchTerm?: string;
-}): Promise<Transaction[]> => {
-  let transactions = getTransactions();
+}): Transaction[] => {
+  let transactions = transactionStorage.get();
   
   // Filter by date range
   if (filters.startDate) {

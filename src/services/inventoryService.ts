@@ -2,61 +2,21 @@ import type { Product, ProductVariant, InventoryFilters } from '../types';
 import { STORAGE_KEYS } from '../utils/storageKeys';
 import { generateId } from '../utils/idGenerator';
 import { reportError, createError, ERROR_MESSAGES } from '../utils/errorHandler';
-import { storageCache } from '../utils/performanceUtils';
+import { createStorageAccessor } from '../utils/performanceUtils';
 
 const STORAGE_KEY = STORAGE_KEYS.PRODUCTS;
 
-// Get all products from localStorage with error handling and caching
-const getProducts = (): Product[] => {
-  try {
-    // Try cache first
-    const cached = storageCache.get<Product[]>(STORAGE_KEY);
-    if (cached) return cached;
-    
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) return [];
-    
-    const parsed = JSON.parse(data);
-    const products = Array.isArray(parsed) ? parsed : [];
-    
-    // Cache the result
-    storageCache.set(STORAGE_KEY, products);
-    
-    return products;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    reportError(createError('storage', 'Error al cargar productos', errorMsg));
-    return [];
-  }
-};
-
-// Save products to localStorage with error handling
-const saveProducts = (products: Product[]): boolean => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    
-    // Invalidate cache
-    storageCache.invalidate(STORAGE_KEY);
-    
-    // Trigger storage event for multi-tab sync
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: STORAGE_KEY,
-      newValue: JSON.stringify(products)
-    }));
-    
-    return true;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    
-    if (error instanceof Error && error.name === 'QuotaExceededError') {
-      reportError(createError('storage', ERROR_MESSAGES.STORAGE_FULL, errorMsg));
-    } else {
-      reportError(createError('storage', 'Error al guardar productos', errorMsg));
-    }
-    
-    return false;
-  }
-};
+// Create storage accessor for products
+const productStorage = createStorageAccessor<Product>(
+  STORAGE_KEY,
+  {
+    loadErrorMsg: 'Error al cargar productos',
+    saveErrorMsg: 'Error al guardar productos',
+    storageFullMsg: ERROR_MESSAGES.STORAGE_FULL,
+    dispatchEvents: true
+  },
+  (error) => reportError(createError(error.type as 'storage', error.message, error.details))
+);
 
 // Calculate total quantity from variants
 const calculateTotalQuantity = (hasVariants: boolean, variants: ProductVariant[], standaloneQty: number): number => {
@@ -67,8 +27,8 @@ const calculateTotalQuantity = (hasVariants: boolean, variants: ProductVariant[]
 };
 
 // Get all products with optional filters
-export const getAllProducts = async (filters?: InventoryFilters): Promise<Product[]> => {
-  let products = getProducts();
+export const getAllProducts = (filters?: InventoryFilters): Product[] => {
+  let products = productStorage.get();
   
   if (filters?.searchTerm) {
     const term = filters.searchTerm.toLowerCase();
@@ -91,7 +51,7 @@ export const getAllProducts = async (filters?: InventoryFilters): Promise<Produc
 };
 
 // Create a new product with error handling
-export const createProduct = async (
+export const createProduct = (
   name: string,
   price: number,
   description?: string,
@@ -99,7 +59,7 @@ export const createProduct = async (
   hasVariants: boolean = false,
   variants: Omit<ProductVariant, 'id'>[] = [],
   standaloneQuantity: number = 0
-): Promise<Product | null> => {
+): Product | null => {
   try {
     // Validation
     if (!name || name.trim().length === 0) {
@@ -112,7 +72,7 @@ export const createProduct = async (
       return null;
     }
     
-    const products = getProducts();
+    const products = productStorage.get();
     
     const productVariants: ProductVariant[] = variants.map(v => ({
       ...v,
@@ -135,7 +95,7 @@ export const createProduct = async (
     };
     
     products.push(newProduct);
-    const saved = saveProducts(products);
+    const saved = productStorage.save(products);
     
     if (!saved) {
       return null;
@@ -150,7 +110,7 @@ export const createProduct = async (
 };
 
 // Update an existing product with error handling
-export const updateProduct = async (
+export const updateProduct = (
   productId: string,
   updates: {
     name?: string;
@@ -161,9 +121,9 @@ export const updateProduct = async (
     variants?: ProductVariant[];
     standaloneQuantity?: number;
   }
-): Promise<Product | null> => {
+): Product | null => {
   try {
-    const products = getProducts();
+    const products = productStorage.get();
     const productIndex = products.findIndex(p => p.id === productId);
     
     if (productIndex === -1) {
@@ -191,7 +151,7 @@ export const updateProduct = async (
     };
     
     products[productIndex] = updatedProduct;
-    const saved = saveProducts(products);
+    const saved = productStorage.save(products);
     
     if (!saved) {
       return null;
@@ -206,9 +166,9 @@ export const updateProduct = async (
 };
 
 // Delete a product with error handling
-export const deleteProduct = async (productId: string): Promise<boolean> => {
+export const deleteProduct = (productId: string): boolean => {
   try {
-    const products = getProducts();
+    const products = productStorage.get();
     const productExists = products.some(p => p.id === productId);
     
     if (!productExists) {
@@ -217,7 +177,7 @@ export const deleteProduct = async (productId: string): Promise<boolean> => {
     }
     
     const filteredProducts = products.filter(p => p.id !== productId);
-    return saveProducts(filteredProducts);
+    return productStorage.save(filteredProducts);
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     reportError(createError('storage', 'Error al eliminar producto', errorMsg));
@@ -226,18 +186,18 @@ export const deleteProduct = async (productId: string): Promise<boolean> => {
 };
 
 // Update variant quantity with error handling
-export const updateVariantQuantity = async (
+export const updateVariantQuantity = (
   productId: string,
   variantId: string,
   newQuantity: number
-): Promise<Product | null> => {
+): Product | null => {
   try {
     if (newQuantity < 0) {
       reportError(createError('validation', 'La cantidad debe ser mayor o igual a cero'));
       return null;
     }
     
-    const products = getProducts();
+    const products = productStorage.get();
     const productIndex = products.findIndex(p => p.id === productId);
     
     if (productIndex === -1) {
@@ -258,7 +218,7 @@ export const updateVariantQuantity = async (
     product.updatedAt = new Date().toISOString();
     
     products[productIndex] = product;
-    const saved = saveProducts(products);
+    const saved = productStorage.save(products);
     
     if (!saved) {
       return null;
@@ -273,14 +233,14 @@ export const updateVariantQuantity = async (
 };
 
 // Get product by ID
-export const getProductById = async (productId: string): Promise<Product | null> => {
-  const products = getProducts();
+export const getProductById = (productId: string): Product | null => {
+  const products = productStorage.get();
   return products.find(p => p.id === productId) || null;
 };
 
 // Get all unique categories
 export const getCategories = (): string[] => {
-  const products = getProducts();
+  const products = productStorage.get();
   const categories = products
     .map(p => p.category)
     .filter((c): c is string => !!c);
@@ -289,11 +249,11 @@ export const getCategories = (): string[] => {
 
 // Subscribe to inventory changes
 export const subscribeToInventory = (callback: (products: Product[]) => void): () => void => {
-  callback(getProducts());
+  callback(productStorage.get());
   
   const handler = (e: StorageEvent) => {
     if (e.key === STORAGE_KEY) {
-      callback(getProducts());
+      callback(productStorage.get());
     }
   };
   

@@ -54,8 +54,9 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
     setIsSubmitting(true);
 
     try {
+      let result;
       if (mode === 'create') {
-        await debtService.createDebt(
+        result = debtService.createDebt(
           type,
           counterparty,
           amountNum,
@@ -65,7 +66,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
           notes || undefined
         );
       } else if (debtId) {
-        await debtService.updateDebt(debtId, {
+        result = debtService.updateDebt(debtId, {
           type,
           counterparty,
           amount: amountNum,
@@ -74,6 +75,11 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
           category: category || undefined,
           notes: notes || undefined
         });
+      }
+      
+      if (!result) {
+        setFormError('Error al guardar la deuda');
+        return;
       }
       
       onSave();

@@ -84,13 +84,13 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);
 
   // Load products
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(() => {
     const filters = {
       searchTerm: debouncedSearchTerm || undefined,
       category: selectedCategory || undefined,
       lowStock: showLowStock || undefined
     };
-    const loadedProducts = await inventoryService.getAllProducts(filters);
+    const loadedProducts = inventoryService.getAllProducts(filters);
     setProducts(loadedProducts);
   }, [debouncedSearchTerm, selectedCategory, showLowStock]);
 

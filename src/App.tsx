@@ -138,13 +138,13 @@ export default function App() {
   const [successModalType, setSuccessModalType] = useState<'inflow' | 'expense' | 'purchase'>('inflow');
 
   // Centralized data loading function - memoized to prevent re-creation on every render
-  const loadAllData = useCallback(async () => {
+  const loadAllData = useCallback(() => {
     // Load products
-    const prods = await inventoryService.getAllProducts();
+    const prods = inventoryService.getAllProducts();
     setProducts(prods);
     
     // Load transactions
-    const txs = await dataService.getTransactionsWithFilters({});
+    const txs = dataService.getTransactionsWithFilters({});
     setTransactions(txs);
     
     // Load debts
@@ -232,27 +232,28 @@ export default function App() {
     storageService.setItem(STORAGE_KEYS.CURRENCY_CODE, newCurrencyCode);
   };
 
-  const handleAddTransaction = async (transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
-    try {
-      await dataService.addTransaction(
-        transaction.type,
-        transaction.description,
-        transaction.amount,
-        transaction.category,
-        transaction.paymentMethod,
-        transaction.items
-      );
-      // Reload all transactions
-      const txs = await dataService.getTransactionsWithFilters({});
-      setTransactions(txs);
-    } catch (error) {
-      console.error('Error adding transaction:', error);
-      alert('Error al agregar la transacción.');
+  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
+    const result = dataService.addTransaction(
+      transaction.type,
+      transaction.description,
+      transaction.amount,
+      transaction.category,
+      transaction.paymentMethod,
+      transaction.items
+    );
+    
+    if (!result) {
+      console.error('Error adding transaction');
+      return;
     }
+    
+    // Reload all transactions
+    const txs = dataService.getTransactionsWithFilters({});
+    setTransactions(txs);
   };
 
-  const loadProducts = async () => {
-    const prods = await inventoryService.getAllProducts();
+  const loadProducts = () => {
+    const prods = inventoryService.getAllProducts();
     setProducts(prods);
   };
 
@@ -372,19 +373,16 @@ export default function App() {
     const [product, setProduct] = useState<Product | null>(null);
 
     useEffect(() => {
-      const loadProduct = async () => {
-        if (mode === 'edit' && productId) {
-          const allProducts = await inventoryService.getAllProducts();
-          const foundProduct = allProducts.find(p => p.id === productId);
-          setProduct(foundProduct || null);
-        } else {
-          setProduct(null);
-        }
-      };
-      loadProduct();
+      if (mode === 'edit' && productId) {
+        const allProducts = inventoryService.getAllProducts();
+        const foundProduct = allProducts.find(p => p.id === productId);
+        setProduct(foundProduct || null);
+      } else {
+        setProduct(null);
+      }
     }, [mode, productId]);
 
-    const handleSave = async () => {
+    const handleSave = () => {
       onBack();
     };
 
@@ -524,11 +522,13 @@ export default function App() {
       handleInventoryViewChange('edit', product.id);
     };
 
-    const handleDelete = async () => {
+    const handleDelete = () => {
       if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-        await inventoryService.deleteProduct(product.id);
-        loadProducts();
-        handleInventoryViewChange('list');
+        const success = inventoryService.deleteProduct(product.id);
+        if (success) {
+          loadProducts();
+          handleInventoryViewChange('list');
+        }
       }
     };
 
@@ -589,15 +589,19 @@ export default function App() {
 
     const handleDelete = async () => {
       if (confirm('¿Estás seguro de que deseas eliminar esta deuda?')) {
-        await debtService.deleteDebt(debt.id);
-        handleLibretaViewChange('list');
+        const success = debtService.deleteDebt(debt.id);
+        if (success) {
+          handleLibretaViewChange('list');
+        }
       }
     };
 
     const handleMarkAsPaid = async () => {
       if (confirm('¿Marcar esta deuda como pagada? Se creará una transacción correspondiente.')) {
-        await debtService.markAsPaid(debt.id);
-        handleLibretaViewChange('list');
+        const result = debtService.markAsPaid(debt.id);
+        if (result) {
+          handleLibretaViewChange('list');
+        }
       }
     };
 

@@ -76,9 +76,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
     }
 
     try {
+      let result;
       if (product) {
         // Update existing product
-        await inventoryService.updateProduct(product.id, {
+        result = inventoryService.updateProduct(product.id, {
           name,
           description: description || undefined,
           price: parseFloat(price),
@@ -92,7 +93,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
         });
       } else {
         // Create new product
-        await inventoryService.createProduct(
+        result = inventoryService.createProduct(
           name,
           parseFloat(price),
           description || undefined,
@@ -102,6 +103,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
           !hasVariants ? parseInt(standaloneQuantity) : 0
         );
       }
+      
+      if (!result) {
+        setFormError('Error al guardar el producto.');
+        return;
+      }
+      
       onSave();
     } catch (error) {
       console.error('Error saving product:', error);

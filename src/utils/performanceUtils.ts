@@ -112,6 +112,93 @@ class StorageCache {
 export const storageCache = new StorageCache();
 
 /**
+ * Generic storage accessor factory
+ * Creates type-safe get/save functions for localStorage with caching and error handling
+ * This eliminates code duplication across services
+ */
+export interface StorageAccessor<T> {
+  get: () => T[];
+  save: (items: T[], options?: { dispatchEvent?: boolean }) => boolean;
+}
+
+export interface CreateStorageAccessorOptions {
+  /** Error message for load failures */
+  loadErrorMsg: string;
+  /** Error message for save failures */
+  saveErrorMsg: string;
+  /** Full storage error message */
+  storageFullMsg: string;
+  /** Whether to dispatch storage events on save (for multi-tab sync) */
+  dispatchEvents?: boolean;
+}
+
+/**
+ * Creates a storage accessor with caching and consistent error handling
+ * @param storageKey The localStorage key
+ * @param options Configuration options
+ * @param errorReporter Function to report errors (for dependency injection)
+ */
+export const createStorageAccessor = <T>(
+  storageKey: string,
+  options: CreateStorageAccessorOptions,
+  errorReporter: (error: { type: string; message: string; details?: string }) => void
+): StorageAccessor<T> => {
+  const get = (): T[] => {
+    try {
+      // Try cache first
+      const cached = storageCache.get<T[]>(storageKey);
+      if (cached) return cached;
+      
+      const data = localStorage.getItem(storageKey);
+      if (!data) return [];
+      
+      const parsed = JSON.parse(data);
+      const items = Array.isArray(parsed) ? parsed : [];
+      
+      // Cache the result
+      storageCache.set(storageKey, items);
+      
+      return items;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      errorReporter({ type: 'storage', message: options.loadErrorMsg, details: errorMsg });
+      return [];
+    }
+  };
+
+  const save = (items: T[], saveOptions?: { dispatchEvent?: boolean }): boolean => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+      
+      // Invalidate cache
+      storageCache.invalidate(storageKey);
+      
+      // Dispatch storage event for multi-tab sync if enabled
+      if (options.dispatchEvents || saveOptions?.dispatchEvent) {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: storageKey,
+          newValue: JSON.stringify(items)
+        }));
+      }
+      
+      return true;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      
+      if (error instanceof Error && error.name === 'QuotaExceededError') {
+        errorReporter({ type: 'storage', message: options.storageFullMsg, details: errorMsg });
+      } else {
+        errorReporter({ type: 'storage', message: options.saveErrorMsg, details: errorMsg });
+      }
+      
+      return false;
+    }
+  };
+
+  return { get, save };
+};
+
+/**
  * Hook to invalidate cache when localStorage changes (multi-tab sync)
  */
 export const useStorageCacheInvalidation = (keys: string[]) => {
