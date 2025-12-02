@@ -22,3 +22,14 @@ export const CARD_EMPTY_STATE = `${CARD_BASE} p-12 text-center`;
 
 // Form container with flex layout
 export const CARD_FORM = `${CARD_BASE} flex flex-col overflow-hidden`;
+
+// Product item card for forms (NewInflowForm, NewExpenseForm)
+export const CARD_PRODUCT_ITEM = 'bg-white dark:bg-slate-800 shadow-md rounded-xl overflow-hidden flex relative';
+
+// Settings section container
+export const SETTINGS_SECTION = 'p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg';
+
+// Cart summary container (consistent border width)
+export const CART_SUMMARY_INFLOW = 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl p-4';
+export const CART_SUMMARY_OUTFLOW = 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-4';
+

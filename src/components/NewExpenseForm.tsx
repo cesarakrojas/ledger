@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import type { CategoryConfig, Product, ProductQuantity } from '../types';
 import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
+import { CARD_PRODUCT_ITEM, CART_SUMMARY_OUTFLOW } from '../utils/styleConstants';
 import { formatCurrency } from '../utils/formatters';
 import { ExclamationCircleIcon } from './icons';
 import * as inventoryService from '../services/inventoryService';
@@ -369,7 +370,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
                   return (
                     <div
                       key={product.id}
-                      className="bg-white dark:bg-slate-800 shadow-md rounded-xl overflow-hidden flex relative"
+                      className={CARD_PRODUCT_ITEM}
                     >
                     
 
@@ -406,7 +407,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
 
             {isCartConfirmed && (
               /* Cart Summary */
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-4">
+              <div className={CART_SUMMARY_OUTFLOW}>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

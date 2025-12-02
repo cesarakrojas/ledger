@@ -8,6 +8,10 @@ export const BTN_PRIMARY = 'w-full bg-emerald-600 hover:bg-emerald-700 disabled:
 export const BTN_SECONDARY = 'w-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl transition-colors';
 export const BTN_DANGER = 'w-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-bold py-3 rounded-xl transition-colors';
 
+// Header action buttons (inflow/expense buttons in main view)
+export const BTN_HEADER_INFLOW = 'flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg shadow-emerald-500/30 transition-transform transform hover:scale-105';
+export const BTN_HEADER_OUTFLOW = 'flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg shadow-red-500/30 transition-transform transform hover:scale-105';
+
 // Standardized Form Footer
 export const FORM_FOOTER = 'flex-shrink-0 pt-4 px-4 pb-4 -mx-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 space-y-3 safe-area-inset-bottom';
 

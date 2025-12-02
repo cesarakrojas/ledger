@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PlusIcon, TrashIcon, PencilIcon, SunIcon, MoonIcon, ChevronDownIcon, ChevronUpIcon } from './icons';
 import { CURRENCIES } from '../utils/constants';
+import { SETTINGS_SECTION } from '../utils/styleConstants';
 
 export interface CategoryConfig {
   enabled: boolean;
@@ -132,7 +133,7 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
       <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-6">Configuración</h1>
       
       {/* Theme Toggle */}
-      <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+      <div className={`flex items-center justify-between ${SETTINGS_SECTION}`}>
         <div>
           <h3 className="font-semibold text-slate-800 dark:text-white">Tema de Apariencia</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -148,7 +149,7 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
       </div>
 
       {/* Currency Selection */}
-      <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+      <div className={SETTINGS_SECTION}>
         <div className="mb-3">
           <h3 className="font-semibold text-slate-800 dark:text-white">Moneda</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -177,7 +178,7 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
       </div>
 
       {/* Enable/Disable Toggle */}
-      <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+      <div className={`flex items-center justify-between ${SETTINGS_SECTION}`}>
         <div>
           <h3 className="font-semibold text-slate-800 dark:text-white">Activar Categorías</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">

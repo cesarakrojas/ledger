@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Transaction, CategoryConfig, Product, DebtEntry } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';
 import { CARD_STYLES, CARD_EMPTY_STATE, CARD_FORM } from './utils/styleConstants';
+import { BTN_HEADER_INFLOW, BTN_HEADER_OUTFLOW } from './utils/constants';
 import { CashIcon, BookOpenIcon, InventoryIcon, ArrowUpIcon, ArrowDownIcon, Cog6ToothIcon, Bars3Icon, BellIcon, XMarkIcon, UserIcon, ChartBarIcon } from './components/icons';
 import { CategorySettings } from './components/CategorySettings';
 import { InventoryView } from './components/InventoryView';
@@ -290,10 +291,10 @@ export default function App() {
                     </p>
                   </div>
                   <div className="w-full sm:w-auto grid grid-cols-2 gap-2">
-                    <button onClick={() => navigate('new-inflow')} className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg shadow-emerald-500/30 transition-transform transform hover:scale-105">
+                    <button onClick={() => navigate('new-inflow')} className={BTN_HEADER_INFLOW}>
                       <ArrowUpIcon className="w-5 h-5"/> Ingreso
                     </button>
-                    <button onClick={() => navigate('new-expense')} className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg shadow-red-500/30 transition-transform transform hover:scale-105">
+                    <button onClick={() => navigate('new-expense')} className={BTN_HEADER_OUTFLOW}>
                       <ArrowDownIcon className="w-5 h-5"/> Gasto
                     </button>
                   </div>

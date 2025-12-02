@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import type { Product, ProductQuantity, CategoryConfig } from '../types';
 import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
+import { CARD_PRODUCT_ITEM, CART_SUMMARY_INFLOW } from '../utils/styleConstants';
 import { formatCurrency } from '../utils/formatters';
 import { ExclamationCircleIcon } from './icons';
 import * as inventoryService from '../services/inventoryService';
@@ -346,7 +347,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                       return (
                         <div
                           key={product.id}
-                          className={`bg-white dark:bg-slate-800 shadow-md rounded-xl overflow-hidden flex relative ${isOutOfStock ? 'opacity-60' : ''}`}
+                          className={`${CARD_PRODUCT_ITEM} ${isOutOfStock ? 'opacity-60' : ''}`}
                         >
 
 
@@ -386,7 +387,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
             )}
 
             {isCartConfirmed && (
-              <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl p-4">
+              <div className={CART_SUMMARY_INFLOW}>
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="font-bold text-slate-800 dark:text-white">Productos en Carrito</h3>
                   <button

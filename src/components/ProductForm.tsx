@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Product, ProductVariant } from '../types';
 import { PlusIcon, TrashIcon, ExclamationCircleIcon } from './icons';
 import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, BTN_SECONDARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
+import { SETTINGS_SECTION } from '../utils/styleConstants';
 import * as inventoryService from '../services/inventoryService';
 
 interface ProductFormProps {
@@ -191,7 +192,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       {/* Image functionality removed */}
 
       {/* Variants Toggle */}
-      <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+      <div className={`flex items-center justify-between ${SETTINGS_SECTION}`}>
         <div>
           <p className="font-semibold text-slate-700 dark:text-slate-300">¿Este producto tiene variantes?</p>
           <p className="text-xs text-slate-500 dark:text-slate-400">Ej: Tallas (S, M, L), Colores, etc.</p>
