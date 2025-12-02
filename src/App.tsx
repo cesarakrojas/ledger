@@ -1,3 +1,4 @@
+// Main app for the management of micro and very small businesses in latin america.
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Transaction, CategoryConfig, Product, DebtEntry } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';

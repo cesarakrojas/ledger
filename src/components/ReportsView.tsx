@@ -1,20 +1,334 @@
 import React, { useState, useMemo } from 'react';
 import type { Transaction, DebtEntry } from '../types';
-import { CARD_STYLES } from '../utils/styleConstants';
+import { CARD_STYLES, CARD_FORM } from '../utils/styleConstants';
 import { formatCurrency, formatDate } from '../utils/formatters';
-import { ChartBarIcon, ArrowUpIcon, ArrowDownIcon, CalendarIcon } from './icons';
+import { ChartBarIcon, ArrowUpIcon, ArrowDownIcon, CalendarIcon, XMarkIcon } from './icons';
 
 interface ReportsViewProps {
   transactions: Transaction[];
   debts: DebtEntry[];
 }
 
-type DateRange = 'today' | 'week' | 'month' | 'year' | 'all';
+type DateRange = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'all' | 'custom';
 type ReportTab = 'transactions' | 'categories' | 'debts';
+
+interface CustomDateRange {
+  startDate: string;
+  endDate: string;
+}
+
+// Custom Date Range Picker Component - Single button that triggers parent view change
+interface DateRangeSelectorProps {
+  dateRange: DateRange;
+  customRange: CustomDateRange;
+  onOpenSelector: () => void;
+}
+
+const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
+  dateRange,
+  customRange,
+  onOpenSelector,
+}) => {
+  const presetRanges: { key: DateRange; label: string }[] = [
+    { key: 'today', label: 'Hoy' },
+    { key: 'week', label: 'Última semana' },
+    { key: 'month', label: 'Último mes' },
+    { key: 'quarter', label: 'Último trimestre' },
+    { key: 'year', label: 'Último año' },
+    { key: 'all', label: 'Todo el tiempo' },
+  ];
+
+  const getDisplayLabel = (): string => {
+    if (dateRange === 'custom') {
+      const start = new Date(customRange.startDate);
+      const end = new Date(customRange.endDate);
+      return `${start.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${end.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`;
+    }
+    return presetRanges.find(r => r.key === dateRange)?.label || 'Período';
+  };
+
+  return (
+    <button
+      onClick={onOpenSelector}
+      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all border focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-sm bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700"
+    >
+      <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+      <span className="truncate max-w-[140px]">{getDisplayLabel()}</span>
+      <svg className="w-4 h-4 flex-shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+  );
+};
+
+// Period Selection View - Rendered as a full card view like FormViewWrapper
+interface PeriodSelectorViewProps {
+  dateRange: DateRange;
+  customRange: CustomDateRange;
+  onDateRangeChange: (range: DateRange) => void;
+  onCustomRangeChange: (range: CustomDateRange) => void;
+  onClose: () => void;
+}
+
+const PeriodSelectorView: React.FC<PeriodSelectorViewProps> = ({
+  dateRange,
+  customRange,
+  onDateRangeChange,
+  onCustomRangeChange,
+  onClose,
+}) => {
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const [tempStartDate, setTempStartDate] = useState(customRange.startDate);
+  const [tempEndDate, setTempEndDate] = useState(customRange.endDate);
+
+  const presetRanges: { key: DateRange; label: string; icon: string }[] = [
+    { key: 'today', label: 'Hoy', icon: '📅' },
+    { key: 'week', label: 'Última semana', icon: '📆' },
+    { key: 'month', label: 'Último mes', icon: '🗓️' },
+    { key: 'quarter', label: 'Último trimestre', icon: '📊' },
+    { key: 'year', label: 'Último año', icon: '📈' },
+    { key: 'all', label: 'Todo el tiempo', icon: '♾️' },
+  ];
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const handlePresetClick = (range: DateRange) => {
+    if (range === 'custom') {
+      setShowCustomPicker(true);
+    } else {
+      onDateRangeChange(range);
+      onClose();
+    }
+  };
+
+  const handleCustomApply = () => {
+    if (tempStartDate && tempEndDate) {
+      onCustomRangeChange({ startDate: tempStartDate, endDate: tempEndDate });
+      onDateRangeChange('custom');
+      onClose();
+    }
+  };
+
+  // Custom date picker view
+  if (showCustomPicker) {
+    return (
+      <div className="w-full h-full mx-auto animate-fade-in flex items-stretch p-2 sm:p-4">
+        <div className={`w-full max-w-lg mx-auto flex flex-col min-h-[400px] ${CARD_FORM}`}>
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 pb-2 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowCustomPicker(false)}
+                className="p-1.5 -ml-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                aria-label="Volver"
+              >
+                <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">
+                Rango Personalizado
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+              aria-label="Cerrar"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto px-4 min-h-0">
+            <div className="space-y-4 py-2">
+              <div>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
+                  Fecha de inicio
+                </label>
+                <input
+                  type="date"
+                  value={tempStartDate}
+                  max={tempEndDate || today}
+                  onChange={(e) => setTempStartDate(e.target.value)}
+                  className="w-full px-4 py-3.5 text-lg bg-slate-50 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-700 dark:text-slate-200"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
+                  Fecha de fin
+                </label>
+                <input
+                  type="date"
+                  value={tempEndDate}
+                  min={tempStartDate}
+                  max={today}
+                  onChange={(e) => setTempEndDate(e.target.value)}
+                  className="w-full px-4 py-3.5 text-lg bg-slate-50 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-700 dark:text-slate-200"
+                />
+              </div>
+
+              {/* Preview */}
+              {tempStartDate && tempEndDate && (
+                <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-4 text-center">
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Período seleccionado</p>
+                  <p className="text-base font-bold text-emerald-700 dark:text-emerald-300 mt-1">
+                    {new Date(tempStartDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                  <p className="text-emerald-600 dark:text-emerald-400 my-1">hasta</p>
+                  <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">
+                    {new Date(tempEndDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer with Apply Button */}
+          <div className="flex-shrink-0 p-4 pt-2">
+            <button
+              onClick={handleCustomApply}
+              disabled={!tempStartDate || !tempEndDate}
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white disabled:text-slate-500 font-bold rounded-xl transition-colors shadow-lg"
+            >
+              Aplicar rango
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Main period selection view
+  return (
+    <div className="w-full h-full mx-auto animate-fade-in flex items-stretch p-2 sm:p-4">
+      <div className={`w-full max-w-lg mx-auto flex flex-col min-h-[400px] ${CARD_FORM}`}>
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 pb-2 flex-shrink-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+            <CalendarIcon className="w-6 h-6 text-emerald-600" />
+            Seleccionar Período
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+            aria-label="Cerrar"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Options List */}
+        <div className="flex-1 overflow-y-auto px-4 min-h-0">
+          <div className="space-y-2 py-2">
+            {presetRanges.map((range) => (
+              <button
+                key={range.key}
+                onClick={() => handlePresetClick(range.key)}
+                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-left transition-all active:scale-[0.98] ${
+                  dateRange === range.key && dateRange !== 'custom'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium border-2 border-emerald-500'
+                    : 'bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-transparent'
+                }`}
+              >
+                <span className="text-2xl">{range.icon}</span>
+                <span className="flex-1 text-base">{range.label}</span>
+                {dateRange === range.key && dateRange !== 'custom' && (
+                  <svg className="w-6 h-6 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            ))}
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 py-2">
+              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
+              <span className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">o</span>
+              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
+            </div>
+
+            {/* Custom Option */}
+            <button
+              onClick={() => handlePresetClick('custom')}
+              className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-left transition-all active:scale-[0.98] ${
+                dateRange === 'custom'
+                  ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium border-2 border-emerald-500'
+                  : 'bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-transparent'
+              }`}
+            >
+              <span className="text-2xl">🎯</span>
+              <div className="flex-1">
+                <span className="text-base block">Personalizado...</span>
+                {dateRange === 'custom' && (
+                  <span className="text-sm text-emerald-600 dark:text-emerald-400">
+                    {new Date(customRange.startDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - {new Date(customRange.endDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                  </span>
+                )}
+              </div>
+              {dateRange === 'custom' ? (
+                <svg className="w-6 h-6 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom padding */}
+        <div className="flex-shrink-0 h-4" />
+      </div>
+    </div>
+  );
+};
+
+// Period comparison badge component
+const PeriodBadge: React.FC<{ dateRange: DateRange; customRange: CustomDateRange }> = ({ dateRange, customRange }) => {
+  const getPeriodDays = (): number => {
+    if (dateRange === 'custom') {
+      const start = new Date(customRange.startDate);
+      const end = new Date(customRange.endDate);
+      return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    }
+    switch (dateRange) {
+      case 'today': return 1;
+      case 'week': return 7;
+      case 'month': return 30;
+      case 'quarter': return 90;
+      case 'year': return 365;
+      default: return 0;
+    }
+  };
+
+  const days = getPeriodDays();
+  if (days === 0) return null;
+
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-full">
+      <CalendarIcon className="w-3 h-3" />
+      {days} {days === 1 ? 'día' : 'días'}
+    </span>
+  );
+};
 
 export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts }) => {
   const [dateRange, setDateRange] = useState<DateRange>('month');
   const [activeTab, setActiveTab] = useState<ReportTab>('transactions');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPeriodSelector, setShowPeriodSelector] = useState(false);
+  const [customRange, setCustomRange] = useState<CustomDateRange>(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 30);
+    return {
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
+    };
+  });
 
   // Filter transactions by date range
   const filteredTransactions = useMemo(() => {
@@ -22,6 +336,17 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     let startDate: Date;
+    let endDate: Date = now;
+    
+    if (dateRange === 'custom') {
+      startDate = new Date(customRange.startDate);
+      endDate = new Date(customRange.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      return transactions.filter(t => {
+        const transDate = new Date(t.timestamp);
+        return transDate >= startDate && transDate <= endDate;
+      });
+    }
     
     switch (dateRange) {
       case 'today':
@@ -35,6 +360,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
         startDate = new Date(startOfDay);
         startDate.setMonth(startDate.getMonth() - 1);
         break;
+      case 'quarter':
+        startDate = new Date(startOfDay);
+        startDate.setMonth(startDate.getMonth() - 3);
+        break;
       case 'year':
         startDate = new Date(startOfDay);
         startDate.setFullYear(startDate.getFullYear() - 1);
@@ -45,7 +374,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
     }
     
     return transactions.filter(t => new Date(t.timestamp) >= startDate);
-  }, [transactions, dateRange]);
+  }, [transactions, dateRange, customRange]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -179,19 +508,24 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
       .map(([dateKey, data]) => ({ dateKey, ...data }));
   }, [filteredTransactions]);
 
-  const dateRangeLabels: Record<DateRange, string> = {
-    today: 'Hoy',
-    week: 'Última semana',
-    month: 'Último mes',
-    year: 'Último año',
-    all: 'Todo el tiempo'
-  };
-
   const tabLabels: Record<ReportTab, string> = {
     transactions: 'Transacciones',
     categories: 'Categorías',
     debts: 'Deudas'
   };
+
+  // Show period selector view if active (after all hooks)
+  if (showPeriodSelector) {
+    return (
+      <PeriodSelectorView
+        dateRange={dateRange}
+        customRange={customRange}
+        onDateRangeChange={setDateRange}
+        onCustomRangeChange={setCustomRange}
+        onClose={() => setShowPeriodSelector(false)}
+      />
+    );
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in space-y-4">
@@ -203,24 +537,20 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
               <ChartBarIcon className="w-7 h-7 text-emerald-600" />
               Reportes
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">
-              Análisis financiero de tu negocio
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-slate-500 dark:text-slate-400">
+                Análisis financiero de tu negocio
+              </p>
+              <PeriodBadge dateRange={dateRange} customRange={customRange} />
+            </div>
           </div>
           
-          {/* Date Range Selector */}
-          <div className="flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-slate-400" />
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value as DateRange)}
-              className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 text-sm font-medium border-0 focus:ring-2 focus:ring-emerald-500"
-            >
-              {Object.entries(dateRangeLabels).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
-          </div>
+          {/* Date Range Selector Button */}
+          <DateRangeSelector
+            dateRange={dateRange}
+            customRange={customRange}
+            onOpenSelector={() => setShowPeriodSelector(true)}
+          />
         </div>
 
         {/* Tabs */}
@@ -228,7 +558,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
           {(Object.keys(tabLabels) as ReportTab[]).map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setIsLoading(true);
+                setActiveTab(tab);
+                // Simulate brief loading for smoother transition
+                setTimeout(() => setIsLoading(false), 150);
+              }}
+              aria-selected={activeTab === tab}
+              role="tab"
               className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-all ${
                 activeTab === tab
                   ? 'bg-white dark:bg-slate-600 text-emerald-600 dark:text-emerald-400 shadow-sm'
@@ -241,10 +578,138 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
         </div>
       </div>
 
-
+      {/* Loading State */}
+      {isLoading && (
+        <div className={CARD_STYLES}>
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-20 bg-slate-200 dark:bg-slate-700 rounded-xl"></div>
+              <div className="h-20 bg-slate-200 dark:bg-slate-700 rounded-xl"></div>
+            </div>
+            <div className="h-32 bg-slate-200 dark:bg-slate-700 rounded-xl"></div>
+          </div>
+        </div>
+      )}
+    
       {/* Transactions Tab */}
-      {activeTab === 'transactions' && (
+      {activeTab === 'transactions' && !isLoading && (
         <>
+          {/* Summary KPI Cards */}
+          <div className={CARD_STYLES}>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Resumen del Período</h3>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {/* Total Inflows */}
+              <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <ArrowUpIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Total Ingresos</p>
+                </div>
+                <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
+                  {formatCurrency(stats.totalInflows)}
+                </p>
+                <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">
+                  {stats.inflowCount} transacción{stats.inflowCount !== 1 ? 'es' : ''}
+                </p>
+              </div>
+              
+              {/* Total Outflows */}
+              <div className="bg-red-50 dark:bg-red-900/30 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <ArrowDownIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  <p className="text-xs font-medium text-red-600 dark:text-red-400">Total Gastos</p>
+                </div>
+                <p className="text-xl font-bold text-red-700 dark:text-red-300">
+                  {formatCurrency(stats.totalOutflows)}
+                </p>
+                <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-1">
+                  {stats.outflowCount} transacción{stats.outflowCount !== 1 ? 'es' : ''}
+                </p>
+              </div>
+            </div>
+            
+            {/* Balance & Margin Row */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Net Balance */}
+              <div className={`rounded-xl p-4 ${stats.netBalance >= 0 ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-orange-50 dark:bg-orange-900/30'}`}>
+                <p className={`text-xs font-medium mb-1 ${stats.netBalance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                  Balance Neto
+                </p>
+                <p className={`text-xl font-bold ${stats.netBalance >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-orange-700 dark:text-orange-300'}`}>
+                  {stats.netBalance >= 0 ? '+' : ''}{formatCurrency(stats.netBalance)}
+                </p>
+              </div>
+              
+              {/* Profit Margin */}
+              <div className="bg-slate-100 dark:bg-slate-700/50 rounded-xl p-4">
+                <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Margen</p>
+                <p className={`text-xl font-bold ${stats.profitMargin >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {stats.profitMargin >= 0 ? '+' : ''}{stats.profitMargin.toFixed(1)}%
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Prom. ingreso: {formatCurrency(stats.avgInflow)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Trend Chart - Visual bar representation */}
+          {dailyBreakdown.length > 0 && (
+            <div className={CARD_STYLES}>
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Tendencia de Movimientos</h3>
+              <div className="space-y-2">
+                {dailyBreakdown.slice(0, 7).map(day => {
+                  const maxValue = Math.max(...dailyBreakdown.slice(0, 7).map(d => Math.max(d.inflows, d.outflows)));
+                  const inflowWidth = maxValue > 0 ? (day.inflows / maxValue) * 100 : 0;
+                  const outflowWidth = maxValue > 0 ? (day.outflows / maxValue) * 100 : 0;
+                  
+                  return (
+                    <div key={day.dateKey} className="flex items-center gap-3">
+                      <div className="w-16 text-xs text-slate-500 dark:text-slate-400 shrink-0">
+                        {new Date(day.dateKey).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' })}
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        {/* Inflow bar */}
+                        <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                            style={{ width: `${inflowWidth}%` }}
+                          />
+                        </div>
+                        {/* Outflow bar */}
+                        <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-red-500 rounded-full transition-all duration-500"
+                            style={{ width: `${outflowWidth}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="w-20 text-right shrink-0">
+                        <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          {day.inflows > 0 ? `+${formatCurrency(day.inflows)}` : '-'}
+                        </p>
+                        <p className="text-xs font-medium text-red-600 dark:text-red-400">
+                          {day.outflows > 0 ? `-${formatCurrency(day.outflows)}` : '-'}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Legend */}
+              <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                  <span className="text-xs text-slate-600 dark:text-slate-400">Ingresos</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <span className="text-xs text-slate-600 dark:text-slate-400">Gastos</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Daily Breakdown */}
           <div className={CARD_STYLES}>
             <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Movimientos por Día</h3>
@@ -315,7 +780,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
       )}
 
       {/* Categories Tab */}
-      {activeTab === 'categories' && (
+      {activeTab === 'categories' && !isLoading && (
         <>
           {/* Income Categories */}
           <div className={CARD_STYLES}>
@@ -382,8 +847,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
       )}
 
       {/* Debts Tab */}
-      {activeTab === 'debts' && (
+      {activeTab === 'debts' && !isLoading && (
         <>
+          {/* Notice about debt filtering */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3 flex items-start gap-3">
+            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <span className="font-medium">Nota:</span> Esta sección muestra todas las deudas pendientes sin aplicar el filtro de fecha. Las deudas pagadas no se incluyen.
+            </p>
+          </div>
+
           {/* Net Position */}
           <div className={`${CARD_STYLES} !p-4`}>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Posición Neta de Deudas</p>
@@ -484,7 +959,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts })
       )}
 
       {/* Empty State for No Data */}
-      {filteredTransactions.length === 0 && activeTab !== 'debts' && (
+      {filteredTransactions.length === 0 && activeTab !== 'debts' && !isLoading && (
         <div className={`${CARD_STYLES} text-center py-12`}>
           <ChartBarIcon className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
           <p className="text-lg font-medium text-slate-600 dark:text-slate-300">No hay datos para mostrar</p>
