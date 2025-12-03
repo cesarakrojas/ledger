@@ -2,102 +2,29 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Transaction, CategoryConfig, Product, DebtEntry } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';
-import { CARD_STYLES, CARD_EMPTY_STATE, CARD_FORM, LIST_ITEM_INTERACTIVE } from './utils/styleConstants';
-import { BTN_HEADER_INFLOW, BTN_HEADER_OUTFLOW, TEXT_PAGE_TITLE, TEXT_VALUE_XL, TRANSITION_COLORS } from './utils/constants';
-import { CashIcon, BookOpenIcon, InventoryIcon, ArrowUpIcon, ArrowDownIcon, Cog6ToothIcon, Bars3Icon, BellIcon, XMarkIcon, UserIcon, ChartBarIcon } from './components/icons';
+import { CARD_EMPTY_STATE } from './utils/styleConstants';
+import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon } from './components/icons';
 import { CategorySettings } from './components/CategorySettings';
 import { InventoryView } from './components/InventoryView';
 import { ReportsView } from './components/ReportsView';
 import { NewInflowForm } from './components/NewInflowForm';
-import { ProductForm } from './components/ProductForm';
 import { NewExpenseForm } from './components/NewExpenseForm';
-import { TransactionDetailView } from './components/TransactionDetailView';
-import { ProductDetailView } from './components/ProductDetailView';
 import { LibretaView } from './components/LibretaView';
 import { FormViewWrapper } from './components/FormViewWrapper';
 import { DebtForm } from './components/DebtForm';
 import { DebtDetailView } from './components/DebtDetailView';
 import { ErrorNotification } from './components/ErrorNotification';
 import { SuccessModal } from './components/SuccessModal';
+import { HomeView } from './components/views/HomeView';
+import { TransactionDetailPage } from './components/views/TransactionDetailPage';
+import { ProductDetailPage } from './components/views/ProductDetailPage';
+import { ProductFormPage } from './components/views/ProductFormPage';
+import { MobileMenu } from './components/MobileMenu';
 import * as inventoryService from './services/inventoryService';
 import * as debtService from './services/debtService';
 import { calculateTotalInflows, calculateTotalOutflows } from './utils/calculations';
-import { formatCurrency, formatTime } from './utils/formatters';
 import * as dataService from './services/dataService';
 import { useAppNavigation } from './hooks/useAppNavigation';
-
-// --- CHILD COMPONENTS ---
-
-interface TransactionItemProps {
-  transaction: Transaction;
-  currencyCode: string;
-  onClick?: () => void;
-}
-
-const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, currencyCode, onClick }) => {
-  const is_inflow = transaction.type === 'inflow';
-
-  return (
-    <li
-      onClick={onClick}
-      className={LIST_ITEM_INTERACTIVE}
-    >
-      {/* LEFT SIDE: Description & Icon */}
-      {/* Added min-w-0 and flex-1 to allow truncation */}
-      <div className="flex items-center gap-4 flex-1 min-w-0 pr-4">
-        
-        {/* Icon - Added shrink-0 so it doesn't get squished */}
-        <div
-          className={`p-2 rounded-full shrink-0 ${
-            is_inflow
-              ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400'
-              : 'bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400'
-          }`}
-        >
-          {is_inflow ? (
-            <ArrowUpIcon className="w-5 h-5" />
-          ) : (
-            <ArrowDownIcon className="w-5 h-5" />
-          )}
-        </div>
-
-        {/* Text Details - Wrapped in min-w-0 to enable text truncation */}
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-            {transaction.description}
-          </p>
-          
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-            <span className="whitespace-nowrap">{formatTime(transaction.timestamp)}</span>
-            {transaction.category && (
-              <>
-                <span>•</span>
-                <span className="italic truncate text-slate-400 dark:text-slate-500">
-                  {transaction.category}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* RIGHT SIDE: Amount */}
-      {/* Added whitespace-nowrap and shrink-0 to prevent line breaks */}
-      <div className={`shrink-0 font-bold text-lg whitespace-nowrap text-right ${
-          is_inflow 
-            ? 'text-emerald-600 dark:text-emerald-400' 
-            : 'text-red-600 dark:text-red-400'
-        }`}
-      >
-        <span>{is_inflow ? '+' : '-'}</span>
-        {/* Added a small margin for visual breathing room */}
-        <span className="ml-1">
-            {formatCurrency(transaction.amount, currencyCode)}
-        </span>
-      </div>
-    </li>
-  );
-};
 
 // --- MAIN APP COMPONENT ---
 
@@ -124,7 +51,6 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [debts, setDebts] = useState<DebtEntry[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuSlideIn, setMenuSlideIn] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>({
     enabled: true,
@@ -195,49 +121,33 @@ export default function App() {
     };
   }, []);
 
-  // Handle body scroll lock and trigger slide-in animation for the mobile menu
-  useEffect(() => {
-    if (isMenuOpen) {
-      // lock background scroll
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      // Use setTimeout instead of requestAnimationFrame for more reliable animation
-      const timer = setTimeout(() => setMenuSlideIn(true), 10);
-      return () => {
-        document.body.style.overflow = originalOverflow;
-        setMenuSlideIn(false);
-        clearTimeout(timer);
-      };
-    } else {
-      setMenuSlideIn(false);
-    }
-  }, [isMenuOpen]);
+  const toggleTheme = useCallback(() => {
+    setIsDarkMode(prevDarkMode => {
+      const newDarkMode = !prevDarkMode;
+      
+      if (newDarkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem(STORAGE_KEYS.THEME, 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem(STORAGE_KEYS.THEME, 'light');
+      }
+      
+      return newDarkMode;
+    });
+  }, []);
 
-  const toggleTheme = () => {
-    const newDarkMode = !isDarkMode;
-    
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem(STORAGE_KEYS.THEME, 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem(STORAGE_KEYS.THEME, 'light');
-    }
-    
-    setIsDarkMode(newDarkMode);
-  };
-
-  const handleSaveCategoryConfig = (config: CategoryConfig) => {
+  const handleSaveCategoryConfig = useCallback((config: CategoryConfig) => {
     setCategoryConfig(config);
     localStorage.setItem(STORAGE_KEYS.CATEGORY_CONFIG, JSON.stringify(config));
-  };
+  }, []);
 
-  const handleCurrencyChange = (newCurrencyCode: string) => {
+  const handleCurrencyChange = useCallback((newCurrencyCode: string) => {
     setCurrencyCode(newCurrencyCode);
     localStorage.setItem(STORAGE_KEYS.CURRENCY_CODE, newCurrencyCode);
-  };
+  }, []);
 
-  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
+  const handleAddTransaction = useCallback((transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
     const result = dataService.addTransaction(
       transaction.type,
       transaction.description,
@@ -255,22 +165,22 @@ export default function App() {
     // Reload all transactions
     const txs = dataService.getTransactionsWithFilters({});
     setTransactions(txs);
-  };
+  }, []);
 
-  const loadProducts = () => {
+  const loadProducts = useCallback(() => {
     const prods = inventoryService.getAllProducts();
     setProducts(prods);
-  };
+  }, []);
 
-  const handleInventoryViewChange = (mode: 'list' | 'create' | 'edit' | 'detail', productId?: string) => {
+  const handleInventoryViewChange = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', productId?: string) => {
     // delegate to navigation hook which centralizes reset logic
     changeInventoryView(mode, productId);
-  };
+  }, [changeInventoryView]);
 
-  const handleLibretaViewChange = (mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => {
+  const handleLibretaViewChange = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => {
     // delegate to navigation hook which centralizes reset logic
     changeLibretaView(mode, debtId);
-  };
+  }, [changeLibretaView]);
 
   // Reset inventory view mode when leaving inventory - only run cleanup on view change
   // Navigation state resets are handled inside `useAppNavigation`.
@@ -288,73 +198,14 @@ export default function App() {
   const inflowCount = useMemo(() => todayTransactions.filter(t => t.type === 'inflow').length, [todayTransactions]);
   const outflowCount = useMemo(() => todayTransactions.filter(t => t.type === 'outflow').length, [todayTransactions]);
 
-  const MainView = () => {
-    return (
-        <div className="w-full max-w-4xl mx-auto animate-fade-in space-y-6">
-            <header className={CARD_STYLES}>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div>
-                    <h2 className={TEXT_PAGE_TITLE}>Transacciones</h2>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">
-                      Hoy, {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </p>
-                  </div>
-                  <div className="w-full sm:w-auto grid grid-cols-2 gap-2">
-                    <button onClick={() => navigate('new-inflow')} className={BTN_HEADER_INFLOW}>
-                      <ArrowUpIcon className="w-5 h-5"/> Ingreso
-                    </button>
-                    <button onClick={() => navigate('new-expense')} className={BTN_HEADER_OUTFLOW}>
-                      <ArrowDownIcon className="w-5 h-5"/> Gasto
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
-                    <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl">
-                        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Ingresos</p>
-                        <p className={`${TEXT_VALUE_XL} text-emerald-700 dark:text-emerald-300`}>{formatCurrency(totalInflows, currencyCode)}</p>
-                        <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">
-                          {inflowCount} transacción{inflowCount !== 1 ? 'es' : ''}
-                        </p>
-                    </div>
-                    <div className="bg-red-100 dark:bg-red-900/50 p-4 rounded-xl">
-                        <p className="text-sm font-medium text-red-700 dark:text-red-300">Total Gastos</p>
-                        <p className={`${TEXT_VALUE_XL} text-red-700 dark:text-red-300`}>{formatCurrency(totalOutflows, currencyCode)}</p>
-                        <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-1">
-                          {outflowCount} transacción{outflowCount !== 1 ? 'es' : ''}
-                        </p>
-                    </div>
+  // Callbacks for HomeView
+  const handleTransactionClick = useCallback((transactionId: string) => {
+    setSelectedTransactionId(transactionId);
+    navigate('transaction-detail');
+  }, [navigate, setSelectedTransactionId]);
 
-                </div>
-            </header>
-
-            <div className="grid grid-cols-1 gap-6">
-                <div>
-                    <div className={CARD_STYLES}>
-                         {todayTransactions.length === 0 ? (
-                            <div className="text-center py-10 text-slate-500 dark:text-slate-400">
-                                <p>No hay transacciones de hoy.</p>
-                            </div>
-                        ) : (
-                            <ul className="divide-y divide-slate-200 dark:divide-slate-700 -mx-2">
-                                {todayTransactions.map(t => (
-                                  <TransactionItem 
-                                    key={t.id} 
-                                    transaction={t}
-                                    currencyCode={currencyCode}
-                                    onClick={() => {
-                                      setSelectedTransactionId(t.id);
-                                      navigate('transaction-detail');
-                                    }}
-                                  />
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-  };
+  const handleNewInflow = useCallback(() => navigate('new-inflow'), [navigate]);
+  const handleNewExpense = useCallback(() => navigate('new-expense'), [navigate]);
 
 
 
@@ -387,57 +238,21 @@ export default function App() {
     </div>
   );
 
-  const ProductFormView: React.FC<{ mode: 'create' | 'edit'; productId: string | null; onBack: () => void }> = ({ mode, productId, onBack }) => {
-    const [product, setProduct] = useState<Product | null>(null);
-
-    useEffect(() => {
-      if (mode === 'edit' && productId) {
-        const allProducts = inventoryService.getAllProducts();
-        const foundProduct = allProducts.find(p => p.id === productId);
-        setProduct(foundProduct || null);
-      } else {
-        setProduct(null);
-      }
-    }, [mode, productId]);
-
-    const handleSave = () => {
-      onBack();
-    };
-
-    return (
-      <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
-        <div className={`w-full max-w-4xl mx-auto ${CARD_FORM}`}>
-          <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
-            <h2 className={TEXT_PAGE_TITLE}>
-              {mode === 'edit' ? 'Editar Producto' : 'Nuevo Producto'}
-            </h2>
-            <button
-              onClick={onBack}
-              className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
-              aria-label="Cerrar"
-            >
-              <XMarkIcon className="w-6 h-6" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-hidden px-6">
-            <ProductForm
-              product={product}
-              onSave={handleSave}
-              onCancel={onBack}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const InventoryModule = () => {
     if (inventoryViewMode === 'create' || inventoryViewMode === 'edit') {
-      return <ProductFormView mode={inventoryViewMode} productId={editingProductId} onBack={() => handleInventoryViewChange('list')} />;
+      return <ProductFormPage mode={inventoryViewMode} productId={editingProductId} onBack={handleInventoryListNav} />;
     }
 
     if (inventoryViewMode === 'detail') {
-      return <ProductDetailPageView />;
+      return (
+        <ProductDetailPage
+          product={selectedProduct}
+          currencyCode={currencyCode}
+          onClose={handleInventoryListNav}
+          onEdit={handleProductEdit}
+          onProductsChange={loadProducts}
+        />
+      );
     }
 
     return <InventoryView viewMode={inventoryViewMode} editingProductId={editingProductId} currencyCode={currencyCode} onChangeView={handleInventoryViewChange} />;
@@ -482,88 +297,22 @@ export default function App() {
     );
   };
 
-  const TransactionDetailPageView = () => {
-    const transaction = transactions.find(t => t.id === selectedTransactionId);
-    
-    if (!transaction) {
-      return (
-        <div className="w-full h-full max-w-4xl mx-auto flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-xl text-slate-600 dark:text-slate-400">Transacción no encontrada</p>
-            <button
-              onClick={() => navigate('home')}
-              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-colors"
-            >
-              Volver al Inicio
-            </button>
-          </div>
-        </div>
-      );
-    }
+  // Memoized selected transaction for detail page
+  const selectedTransaction = useMemo(
+    () => transactions.find(t => t.id === selectedTransactionId),
+    [transactions, selectedTransactionId]
+  );
 
-    const handleEdit = () => {
-      // TODO: Implement edit functionality
-      // For now, just show an alert
-      alert('La función de editar estará disponible próximamente');
-    };
+  const handleNavigateHome = useCallback(() => navigate('home'), [navigate]);
 
-    return (
-      <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
-        <TransactionDetailView
-          transaction={transaction}
-          onClose={() => navigate('home')}
-          onEdit={handleEdit}
-          currencyCode={currencyCode}
-        />
-      </div>
-    );
-  };
+  // Memoized selected product for detail page
+  const selectedProduct = useMemo(
+    () => products.find(p => p.id === selectedProductId),
+    [products, selectedProductId]
+  );
 
-  const ProductDetailPageView = () => {
-    const product = products.find(p => p.id === selectedProductId);
-    
-    if (!product) {
-      return (
-        <div className="w-full h-full max-w-4xl mx-auto flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-xl text-slate-600 dark:text-slate-400">Producto no encontrado</p>
-            <button
-              onClick={() => handleInventoryViewChange('list')}
-              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-colors"
-            >
-              Volver al Inventario
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    const handleEdit = () => {
-      handleInventoryViewChange('edit', product.id);
-    };
-
-    const handleDelete = () => {
-      if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-        const success = inventoryService.deleteProduct(product.id);
-        if (success) {
-          loadProducts();
-          handleInventoryViewChange('list');
-        }
-      }
-    };
-
-    return (
-      <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
-        <ProductDetailView
-          product={product}
-          currencyCode={currencyCode}
-          onClose={() => handleInventoryViewChange('list')}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-      </div>
-    );
-  };
+  const handleInventoryListNav = useCallback(() => handleInventoryViewChange('list'), [handleInventoryViewChange]);
+  const handleProductEdit = useCallback((productId: string) => handleInventoryViewChange('edit', productId), [handleInventoryViewChange]);
 
   const DebtFormView = () => {
     const handleSave = () => {
@@ -682,83 +431,36 @@ export default function App() {
         </nav>
 
         {/* Mobile-first slide-in drawer menu */}
-        {isMenuOpen && (
-          <div className="fixed inset-0 z-50 flex">
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 bg-black/40 backdrop-blur-[2px]"
-              onClick={() => setIsMenuOpen(false)}
-            />
-            {/* Drawer panel */}
-            <div
-              className={`relative ml-0 h-full w-[80vw] max-w-sm sm:max-w-md bg-white dark:bg-slate-800 shadow-2xl z-50 transform transition-transform duration-300 ease-out ${menuSlideIn ? 'translate-x-0' : '-translate-x-full'}`}
-              role="dialog"
-              aria-modal="true"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700">
-                <div className="flex items-center gap-3">
-                  <Bars3Icon className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-white">Menú</h3>
-                </div>
-                <button
-                  onClick={() => setIsMenuOpen(false)}
-                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  aria-label="Cerrar menú"
-                >
-                  <XMarkIcon className="w-6 h-6" />
-                </button>
-              </div>
-
-              {/* Items with large touch targets */}
-              <div className="py-2">
-                <nav aria-label="Menú principal" className="py-2">
-                  <ul className="space-y-1">
-                    <li>
-                      <button
-                        onClick={() => { setIsMenuOpen(false); navigate('home'); }}
-                        aria-current={view === 'home' || undefined}
-                        className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-800 dark:text-slate-100 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
-                      >
-                        <CashIcon className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                        <span>Inicio</span>
-                      </button>
-                    </li>
-
-                  
-                    <li>
-                      <button
-                        onClick={() => { setIsMenuOpen(false); alert('Módulo de Clientes próximamente'); }}
-                        className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-                      >
-                        <UserIcon className="w-6 h-6 text-slate-400" />
-                        <span>Clientes</span>
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => { setIsMenuOpen(false); navigate('settings'); }}
-                        aria-current={view === 'settings' || undefined}
-                        className={`w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors`}
-                      >
-                        <Cog6ToothIcon className="w-6 h-6 text-slate-400" />
-                        <span>Ajustes</span>
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </div>
-            {/* Spacer to catch clicks on the right area; click closes via backdrop */}
-            <div className="flex-1" />
-          </div>
-        )}
+        <MobileMenu
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          currentView={view}
+          onNavigate={navigate}
+        />
 
         <main className={`flex flex-col items-center flex-1 overflow-y-auto overflow-x-hidden scroll-container min-h-0 ${showBottomNav ? 'pb-20' : 'pb-2'}`}>
-          {view === 'home' ? <MainView /> : 
+          {view === 'home' ? (
+            <HomeView
+              transactions={todayTransactions}
+              currencyCode={currencyCode}
+              totalInflows={totalInflows}
+              totalOutflows={totalOutflows}
+              inflowCount={inflowCount}
+              outflowCount={outflowCount}
+              onTransactionClick={handleTransactionClick}
+              onNewInflow={handleNewInflow}
+              onNewExpense={handleNewExpense}
+            />
+          ) : 
            view === 'new-inflow' ? <NewinflowView /> :
            view === 'new-expense' ? <NewExpenseView /> :
-           view === 'transaction-detail' ? <TransactionDetailPageView /> :
+           view === 'transaction-detail' ? (
+             <TransactionDetailPage
+               transaction={selectedTransaction}
+               currencyCode={currencyCode}
+               onClose={handleNavigateHome}
+             />
+           ) :
            view === 'libreta' ? <LibretaModule /> : 
            view === 'settings' ? <SettingsView /> : 
            view === 'inventory' ? <InventoryModule /> :
