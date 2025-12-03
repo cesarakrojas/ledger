@@ -167,7 +167,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
       />
 
       {/* Products List */}
-      <div className={`${CARD_STYLES} text-center py-12`}>
+      <div className={CARD_STYLES}>
         {products.length === 0 ? (
           <div>
             <div className="text-slate-400 dark:text-slate-500 mb-4">

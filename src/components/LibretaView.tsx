@@ -132,7 +132,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
       </div>
 
       {/* Debts List */}
-      <div className={`${CARD_STYLES} text-center py-12`}>
+      <div className={CARD_STYLES}>
         {debts.length === 0 ? (
           /* Empty State */
           <div>

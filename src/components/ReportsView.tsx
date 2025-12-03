@@ -415,7 +415,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
 
       {/* Empty State - Only show after generating if no results */}
       {hasGenerated && filteredTransactions.length === 0 && (
-        <div className={`${CARD_STYLES} text-center py-12`}>
+        <div className={CARD_STYLES}>
           <ChartBarIcon className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">
             No se encontraron transacciones
