@@ -3,13 +3,15 @@ import type { DebtEntry } from '../types';
 import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from './icons';
 import * as debtService from '../services/debtService';
 import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
-import { TEXT_PAGE_TITLE } from '../utils/constants';
+import { TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY } from '../utils/constants';
+import { formatCurrency } from '../utils/formatters';
 
 interface LibretaViewProps {
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => void;
+  currencyCode: string;
 }
 
-export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
+export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currencyCode }) => {
   const [debts, setDebts] = useState<DebtEntry[]>([]);
   const [stats, setStats] = useState({
     totalReceivablesPending: 0,
@@ -75,7 +77,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
           </div>
           <button
             onClick={handleCreateDebt}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-transform transform hover:scale-105"
+            className={BTN_ACTION_PRIMARY}
           >
             <PlusIcon className="w-5 h-5" />
             Nueva Deuda
@@ -83,7 +85,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 text-center">
           
           {/* Card 1: Por Cobrar (Receivables) */}
           <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl flex flex-col justify-between">
@@ -92,12 +94,9 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
             </p>
             
             {/* Price Row */}
-            <div className="flex items-baseline gap-1 text-emerald-700 dark:text-emerald-300">
-              <span className="text-lg font-semibold opacity-80">$</span>
-              <span className="text-2xl font-bold tracking-tight">
-                {stats.totalReceivablesPending.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
+            <p className="text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300">
+              {formatCurrency(stats.totalReceivablesPending, currencyCode)}
+            </p>
 
             {stats.overdueReceivables > 0 && (
               <p className="text-xs font-medium text-red-600 dark:text-red-400 mt-2 flex items-center gap-1">
@@ -116,12 +115,9 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
             </p>
             
             {/* Price Row */}
-            <div className="flex items-baseline gap-1 text-red-700 dark:text-red-300">
-              <span className="text-lg font-semibold opacity-80">$</span>
-              <span className="text-2xl font-bold tracking-tight">
-                {stats.totalPayablesPending.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
+            <p className="text-2xl font-bold tracking-tight text-red-700 dark:text-red-300">
+              {formatCurrency(stats.totalPayablesPending, currencyCode)}
+            </p>
 
             {stats.overduePayables > 0 && (
               <p className="text-xs font-medium text-red-600 dark:text-red-400 mt-2 flex items-center gap-1">
@@ -136,7 +132,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
       </div>
 
       {/* Debts List */}
-      <div className={CARD_STYLES}>
+      <div className={`${CARD_STYLES} text-center py-12`}>
         {debts.length === 0 ? (
           /* Empty State */
           <div>
@@ -145,7 +141,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 text-lg">No hay deudas registradas</p>
+            <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No hay deudas registradas</h3>
             <button
               onClick={handleCreateDebt}
               className="mt-4 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
@@ -221,14 +217,13 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView }) => {
 
                   {/* RIGHT SIDE: PRICE - shrink-0 ensures it stays visible */}
                   <div className="flex flex-col items-end shrink-0 ml-2">
-                    <div className={`text-xl sm:text-2xl font-bold whitespace-nowrap flex items-baseline gap-1 ${
+                    <p className={`text-xl sm:text-2xl font-bold whitespace-nowrap ${
                         debt.type === 'receivable'
                         ? 'text-emerald-600 dark:text-emerald-400'
                         : 'text-red-600 dark:text-red-400'
                     }`}>
-                        <span className="text-lg opacity-80">$</span>
-                        <span>{debt.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                    </div>
+                        {formatCurrency(debt.amount, currencyCode)}
+                    </p>
                     <span className="text-xs text-slate-400 font-medium">
                         {debt.type === 'receivable' ? 'Por cobrar' : 'Por pagar'}
                     </span>

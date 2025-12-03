@@ -3,7 +3,7 @@ import type { Transaction, DebtEntry } from '../types';
 import { ArrowUpIcon, ArrowDownIcon, ChartBarIcon } from './icons';
 import { formatCurrency, formatTime } from '../utils/formatters';
 import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
-import { TEXT_PAGE_TITLE, TEXT_SECTION_HEADER, INPUT_DATE_CLASSES, TRANSITION_COLORS } from '../utils/constants';
+import { TEXT_PAGE_TITLE, TEXT_SECTION_HEADER, INPUT_DATE_CLASSES, TRANSITION_COLORS, BTN_ACTION_PRIMARY, BTN_ACTION_SECONDARY } from '../utils/constants';
 
 interface ReportsViewProps {
   transactions: Transaction[];
@@ -12,6 +12,46 @@ interface ReportsViewProps {
 }
 
 type TransactionFilter = 'all' | 'inflow' | 'outflow';
+type DateRangePreset = 'today' | 'yesterday' | 'thisMonth' | 'lastMonth' | 'thisYear' | null;
+
+// Helper function to format date as YYYY-MM-DD for input[type="date"]
+const formatDateForInput = (date: Date): string => {
+  return date.toISOString().split('T')[0];
+};
+
+// Helper function to get date range for presets
+const getDateRangeForPreset = (preset: DateRangePreset): { start: string; end: string } => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  switch (preset) {
+    case 'today': {
+      const dateStr = formatDateForInput(today);
+      return { start: dateStr, end: dateStr };
+    }
+    case 'yesterday': {
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const dateStr = formatDateForInput(yesterday);
+      return { start: dateStr, end: dateStr };
+    }
+    case 'thisMonth': {
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { start: formatDateForInput(firstDay), end: formatDateForInput(today) };
+    }
+    case 'lastMonth': {
+      const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      return { start: formatDateForInput(firstDayLastMonth), end: formatDateForInput(lastDayLastMonth) };
+    }
+    case 'thisYear': {
+      const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+      return { start: formatDateForInput(firstDayOfYear), end: formatDateForInput(today) };
+    }
+    default:
+      return { start: '', end: '' };
+  }
+};
 
 export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _debts, currencyCode }) => {
   // Filter state
@@ -20,6 +60,33 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
   const [searchTerm, setSearchTerm] = useState('');
   const [transactionFilter, setTransactionFilter] = useState<TransactionFilter>('all');
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<DateRangePreset>(null);
+
+  // Handle preset selection
+  const handlePresetSelect = useCallback((preset: DateRangePreset) => {
+    if (preset === selectedPreset) {
+      // Deselect if clicking the same preset
+      setSelectedPreset(null);
+      setStartDate('');
+      setEndDate('');
+    } else {
+      setSelectedPreset(preset);
+      const { start, end } = getDateRangeForPreset(preset);
+      setStartDate(start);
+      setEndDate(end);
+    }
+  }, [selectedPreset]);
+
+  // Handle manual date change - deselects preset
+  const handleStartDateChange = useCallback((value: string) => {
+    setStartDate(value);
+    setSelectedPreset(null);
+  }, []);
+
+  const handleEndDateChange = useCallback((value: string) => {
+    setEndDate(value);
+    setSelectedPreset(null);
+  }, []);
 
   // Filter transactions based on current filters
   const filteredTransactions = useMemo(() => {
@@ -82,6 +149,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
     setSearchTerm('');
     setTransactionFilter('all');
     setHasGenerated(false);
+    setSelectedPreset(null);
   }, []);
 
   // Generate report
@@ -92,16 +160,17 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
   const filterButtonClass = (isActive: boolean) =>
     `flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm flex items-center justify-center gap-1.5 ${TRANSITION_COLORS} ${
       isActive
-        ? 'bg-slate-700 dark:bg-slate-600 text-white'
-        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+? 'bg-emerald-600 text-white shadow-md'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
     }`;
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
       {/* Header with Filters */}
       <div className={CARD_STYLES}>
-        <h2 className={`${TEXT_PAGE_TITLE} mb-6`}>Reportes</h2>
-        
+        <h2 className={`${TEXT_PAGE_TITLE} mb-6`}>Reportes Historicos</h2>
+          
+
         {/* Date Range */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
@@ -111,7 +180,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
             <input
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => handleStartDateChange(e.target.value)}
               className={INPUT_DATE_CLASSES}
             />
           </div>
@@ -122,10 +191,36 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
             <input
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={(e) => handleEndDateChange(e.target.value)}
               className={INPUT_DATE_CLASSES}
             />
           </div>
+        </div>
+
+      <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
+            Periodos Rápidos
+          </label>
+        {/* Date Range Presets (Chips/Pills) */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[
+            { key: 'today' as const, label: 'Hoy' },
+            { key: 'yesterday' as const, label: 'Ayer' },
+            { key: 'thisMonth' as const, label: 'Este Mes' },
+            { key: 'lastMonth' as const, label: 'Mes Pasado' },
+            { key: 'thisYear' as const, label: 'Este Año' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => handlePresetSelect(key)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium ${TRANSITION_COLORS} ${
+                selectedPreset === key
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Search */}
@@ -175,14 +270,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={handleGenerate}
-            className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-colors"
+            className={BTN_ACTION_PRIMARY}
           >
             <ChartBarIcon className="w-5 h-5" />
             Generar
           </button>
           <button
             onClick={handleClear}
-            className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-colors"
+            className={BTN_ACTION_SECONDARY}
           >
             Limpiar
           </button>
@@ -269,7 +364,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
                     <div
                       className={`p-2 rounded-full shrink-0 ${
                         is_inflow
-                          ? 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400'
+                          ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400'
                           : 'bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400'
                       }`}
                     >
@@ -302,7 +397,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
                   {/* RIGHT SIDE: Amount */}
                   <div className={`shrink-0 font-bold text-lg whitespace-nowrap text-right ${
                       is_inflow 
-                        ? 'text-green-600 dark:text-green-400' 
+                        ? 'text-emerald-600 dark:text-emerald-400' 
                         : 'text-red-600 dark:text-red-400'
                     }`}
                   >

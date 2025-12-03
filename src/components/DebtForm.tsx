@@ -194,20 +194,6 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
           />
         </div>
 
-        {/* Category */}
-        <div>
-          <label className={FORM_LABEL}>
-            Categoría
-          </label>
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Ej: Ventas a Crédito, Facturas Pendientes"
-            className={INPUT_BASE_CLASSES}
-          />
-        </div>
-
         {/* Notes */}
         <div>
           <label className={FORM_LABEL}>

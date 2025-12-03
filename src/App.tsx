@@ -50,7 +50,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, currency
         <div
           className={`p-2 rounded-full shrink-0 ${
             is_inflow
-              ? 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400'
+              ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400'
               : 'bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400'
           }`}
         >
@@ -85,7 +85,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, currency
       {/* Added whitespace-nowrap and shrink-0 to prevent line breaks */}
       <div className={`shrink-0 font-bold text-lg whitespace-nowrap text-right ${
           is_inflow 
-            ? 'text-green-600 dark:text-green-400' 
+            ? 'text-emerald-600 dark:text-emerald-400' 
             : 'text-red-600 dark:text-red-400'
         }`}
       >
@@ -129,7 +129,7 @@ export default function App() {
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>({
     enabled: true,
     inflowCategories: ['Ventas', 'Otros Ingresos', 'Propinas', 'Otras Ventas'],
-    outflowCategories: ['Gastos Operativos', 'Salarios', 'Suministros', 'Servicios Públicos', 'Mantenimiento', 'Transporte', 'Otros Gastos']
+    outflowCategories: ['Gastos Operativos', 'Salarios', 'Servicios Públicos', 'Mantenimiento', 'Transporte', 'Otros Gastos']
   });
 
   // Success modal state
@@ -275,9 +275,18 @@ export default function App() {
   // Reset inventory view mode when leaving inventory - only run cleanup on view change
   // Navigation state resets are handled inside `useAppNavigation`.
 
-  const totalInflows = useMemo(() => calculateTotalInflows(transactions), [transactions]);
-  const totalOutflows = useMemo(() => calculateTotalOutflows(transactions), [transactions]);
-  const netBalance = useMemo(() => totalInflows - totalOutflows, [totalInflows, totalOutflows]);
+  // Filter transactions to show only today's transactions in the main view
+  const todayTransactions = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+    return transactions.filter(t => t.timestamp.startsWith(todayStr));
+  }, [transactions]);
+
+  const totalInflows = useMemo(() => calculateTotalInflows(todayTransactions), [todayTransactions]);
+  const totalOutflows = useMemo(() => calculateTotalOutflows(todayTransactions), [todayTransactions]);
+  const inflowCount = useMemo(() => todayTransactions.filter(t => t.type === 'inflow').length, [todayTransactions]);
+  const outflowCount = useMemo(() => todayTransactions.filter(t => t.type === 'outflow').length, [todayTransactions]);
 
   const MainView = () => {
     return (
@@ -287,7 +296,7 @@ export default function App() {
                   <div>
                     <h2 className={TEXT_PAGE_TITLE}>Transacciones</h2>
                     <p className="text-slate-500 dark:text-slate-400 mt-1">
-                      {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                      Hoy, {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </p>
                   </div>
                   <div className="w-full sm:w-auto grid grid-cols-2 gap-2">
@@ -299,32 +308,35 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
                     <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl">
                         <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Ingresos</p>
                         <p className={`${TEXT_VALUE_XL} text-emerald-700 dark:text-emerald-300`}>{formatCurrency(totalInflows, currencyCode)}</p>
+                        <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">
+                          {inflowCount} transacción{inflowCount !== 1 ? 'es' : ''}
+                        </p>
                     </div>
                     <div className="bg-red-100 dark:bg-red-900/50 p-4 rounded-xl">
                         <p className="text-sm font-medium text-red-700 dark:text-red-300">Total Gastos</p>
                         <p className={`${TEXT_VALUE_XL} text-red-700 dark:text-red-300`}>{formatCurrency(totalOutflows, currencyCode)}</p>
+                        <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-1">
+                          {outflowCount} transacción{outflowCount !== 1 ? 'es' : ''}
+                        </p>
                     </div>
-                    <div className={`p-4 rounded-xl ${netBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-orange-100 dark:bg-orange-900/50'}`}>
-                        <p className={`text-sm font-medium ${netBalance >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-orange-700 dark:text-orange-300'}`}>Balance Neto</p>
-                        <p className={`${TEXT_VALUE_XL} ${netBalance >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-orange-700 dark:text-orange-300'}`}>{formatCurrency(netBalance, currencyCode)}</p>
-                    </div>
+
                 </div>
             </header>
 
             <div className="grid grid-cols-1 gap-6">
                 <div>
                     <div className={CARD_STYLES}>
-                         {transactions.length === 0 ? (
+                         {todayTransactions.length === 0 ? (
                             <div className="text-center py-10 text-slate-500 dark:text-slate-400">
-                                <p>No se han registrado transacciones todavía.</p>
+                                <p>No hay transacciones de hoy.</p>
                             </div>
                         ) : (
                             <ul className="divide-y divide-slate-200 dark:divide-slate-700 -mx-2">
-                                {transactions.map(t => (
+                                {todayTransactions.map(t => (
                                   <TransactionItem 
                                     key={t.id} 
                                     transaction={t}
@@ -480,7 +492,7 @@ export default function App() {
             <p className="text-xl text-slate-600 dark:text-slate-400">Transacción no encontrada</p>
             <button
               onClick={() => navigate('home')}
-              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-xl transition-colors"
+              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-colors"
             >
               Volver al Inicio
             </button>
@@ -517,7 +529,7 @@ export default function App() {
             <p className="text-xl text-slate-600 dark:text-slate-400">Producto no encontrado</p>
             <button
               onClick={() => handleInventoryViewChange('list')}
-              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-xl transition-colors"
+              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-colors"
             >
               Volver al Inventario
             </button>
@@ -583,7 +595,7 @@ export default function App() {
             <p className="text-xl text-slate-600 dark:text-slate-400">Deuda no encontrada</p>
             <button
               onClick={() => handleLibretaViewChange('list')}
-              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-xl transition-colors"
+              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-colors"
             >
               Volver a Libreta
             </button>
@@ -622,6 +634,7 @@ export default function App() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onMarkAsPaid={handleMarkAsPaid}
+          currencyCode={currencyCode}
         />
       </div>
     );
@@ -639,6 +652,7 @@ export default function App() {
     return (
       <LibretaView
         onChangeView={handleLibretaViewChange}
+        currencyCode={currencyCode}
       />
     );
   };
@@ -707,7 +721,7 @@ export default function App() {
                         className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-800 dark:text-slate-100 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
                       >
                         <CashIcon className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                        <span>Registro</span>
+                        <span>Inicio</span>
                       </button>
                     </li>
 

@@ -5,7 +5,7 @@ import { InventoryIcon } from './icons';
 import { formatCurrency } from '../utils/formatters';
 import * as inventoryService from '../services/inventoryService';
 import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
-import { TEXT_PAGE_TITLE } from '../utils/constants';
+import { TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY } from '../utils/constants';
 import { useDebouncedValue } from '../utils/performanceUtils';
 
 interface InventoryViewProps {
@@ -135,7 +135,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           </div>
           <button
             onClick={handleCreateProduct}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-transform transform hover:scale-105"
+            className={BTN_ACTION_PRIMARY}
           >
             <PlusIcon className="w-5 h-5" />
             Nuevo Producto
@@ -143,7 +143,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
           <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl">
             <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Productos</p>
             <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{products.length}</p>
@@ -167,13 +167,13 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
       />
 
       {/* Products List */}
-      <div className={CARD_STYLES}>
+      <div className={`${CARD_STYLES} text-center py-12`}>
         {products.length === 0 ? (
           <div>
             <div className="text-slate-400 dark:text-slate-500 mb-4">
               <InventoryIcon className="w-16 h-16 mx-auto" />
             </div>
-            <p className="text-slate-500 dark:text-slate-400 text-lg">No hay productos en el inventario</p>
+            <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No hay productos en el inventario</h3>
             <button
               onClick={handleCreateProduct}
               className="mt-4 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"

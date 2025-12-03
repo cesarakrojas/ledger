@@ -291,7 +291,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
             <button
               type="button"
               onClick={handleAddVariant}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <PlusIcon className="w-4 h-4" />
               Agregar

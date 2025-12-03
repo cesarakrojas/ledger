@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PlusIcon, TrashIcon, PencilIcon, SunIcon, MoonIcon, ChevronDownIcon, ChevronUpIcon } from './icons';
-import { CURRENCIES } from '../utils/constants';
+import { CURRENCIES, TEXT_PAGE_TITLE } from '../utils/constants';
 import { SETTINGS_SECTION } from '../utils/styleConstants';
 
 export interface CategoryConfig {
@@ -130,7 +130,7 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-6">Configuración</h1>
+      <h1 className={`${TEXT_PAGE_TITLE} mb-6`}>Configuración</h1>
       
       {/* Theme Toggle */}
       <div className={`flex items-center justify-between ${SETTINGS_SECTION}`}>
@@ -221,9 +221,9 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Inflow Categories Section */}
             <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-              <h4 className="font-semibold text-green-600 dark:text-green-400 mb-4 flex items-center gap-2">
+              <h4 className="font-semibold text-emerald-600 dark:text-emerald-400 mb-4 flex items-center gap-2">
                 Categorías de Ingresos
-                <span className="text-xs bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
+                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-full">
                   {inflowCategories.length}
                 </span>
               </h4>
@@ -297,7 +297,7 @@ export const CategorySettings: React.FC<CategorySettingsProps> = ({
                 <button
                   onClick={handleAddInflowCategory}
                   disabled={!newInflowCategory.trim() || inflowCategories.includes(newInflowCategory.trim())}
-                  className="px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 text-sm whitespace-nowrap"
+                  className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 text-sm whitespace-nowrap"
                 >
                   <PlusIcon className="w-4 h-4" />
                   Agregar
