@@ -18,8 +18,12 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
   currencyCode
 }) => {
   const isInflow = transaction.type === 'inflow';
+  const isSale = transaction.category === 'Ventas';
 
   const handlePrintReceipt = () => {
+    // Determine receipt type label
+    const receiptTypeLabel = isSale ? 'VENTA' : (transaction.type === 'inflow' ? 'INGRESO' : 'GASTO');
+    
     const receiptContent = `
       <!DOCTYPE html>
       <html>
@@ -103,13 +107,13 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
         </head>
         <body>
           <div class="header">
-            <h2>RECIBO DE ${transaction.type === 'inflow' ? 'Ingreso' : 'GASTO'}</h2>
+            <h2>RECIBO DE ${receiptTypeLabel}</h2>
             <p>ID: ${transaction.id}</p>
           </div>
 
           <div class="row">
             <span class="label">Tipo:</span>
-            <span class="type-badge">${transaction.type === 'inflow' ? 'Ingreso' : 'Gasto'}</span>
+            <span class="type-badge">${isSale ? 'Venta' : (transaction.type === 'inflow' ? 'Ingreso' : 'Gasto')}</span>
           </div>
 
           <div class="row">
@@ -246,7 +250,10 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
         </div>
 
         <div className="mt-4 bg-white dark:bg-slate-800 border-y border-slate-200 dark:border-slate-700 px-4">
-          <DetailRow label="Descripción" value={transaction.description} />
+          <DetailRow 
+            label="Descripción" 
+            value={isSale ? transaction.description.replace(/^Ingreso:/, 'Venta:') : transaction.description} 
+          />
 
           {transaction.category && (
             <DetailRow label="Categoría" value={transaction.category} />

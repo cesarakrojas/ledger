@@ -12,6 +12,12 @@ export interface TransactionItemProps {
 
 export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, currencyCode, onClick }) => {
   const is_inflow = transaction.type === 'inflow';
+  const isSale = transaction.category === 'Ventas';
+  
+  // For sales, replace "Ingreso:" prefix with "Venta:"
+  const displayDescription = isSale 
+    ? transaction.description.replace(/^Ingreso:/, 'Venta:') 
+    : transaction.description;
 
   return (
     <li
@@ -39,7 +45,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, c
         {/* Text Details */}
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-            {transaction.description}
+            {displayDescription}
           </p>
           
           <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">

@@ -141,7 +141,10 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
       setPaymentMethod('Efectivo');
 
       if (onSuccess) {
-        onSuccess('¡Venta Completada!', `Ingreso de ${formatCurrency(amount, currencyCode)} registrada`);
+        const isVenta = category === 'Ventas';
+        const title = isVenta ? '¡Venta Completada!' : '¡Ingreso Registrado!';
+        const messagePrefix = isVenta ? 'Venta' : 'Ingreso';
+        onSuccess(title, `${messagePrefix} de ${formatCurrency(amount, currencyCode)} registrado`);
       }
       if (onClose) onClose();
       return;
@@ -238,7 +241,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
 
     if (onSuccess) {
       const message = itemCount === 1 
-        ? `Ingreso de ${formatCurrency(total, currencyCode)} registrado`
+        ? `Venta de ${formatCurrency(total, currencyCode)} registrada`
         : `Venta de ${itemCount} productos por ${formatCurrency(total, currencyCode)}`;
       onSuccess('¡Venta Completada!', message);
     }
