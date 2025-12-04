@@ -1,11 +1,12 @@
 // Main app for the management of micro and very small businesses in latin america.
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Transaction, CategoryConfig, Product, DebtEntry } from './types';
+import type { Transaction, CategoryConfig, Product, DebtEntry, Contact } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';
 import { CARD_EMPTY_STATE } from './utils/styleConstants';
 import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon } from './components/icons';
 import { CategorySettings } from './components/CategorySettings';
 import { InventoryView } from './components/InventoryView';
+import { ClientsView } from './components/ClientsView';
 import { ReportsView } from './components/ReportsView';
 import { NewInflowForm } from './components/NewInflowForm';
 import { NewExpenseForm } from './components/NewExpenseForm';
@@ -19,9 +20,12 @@ import { HomeView } from './components/views/HomeView';
 import { TransactionDetailPage } from './components/views/TransactionDetailPage';
 import { ProductDetailPage } from './components/views/ProductDetailPage';
 import { ProductFormPage } from './components/views/ProductFormPage';
+import { ContactFormPage } from './components/views/ContactFormPage';
+import { ContactDetailPage } from './components/views/ContactDetailPage';
 import { MobileMenu } from './components/MobileMenu';
 import * as inventoryService from './services/inventoryService';
 import * as debtService from './services/debtService';
+import * as contactService from './services/contactService';
 import { calculateTotalInflows, calculateTotalOutflows } from './utils/calculations';
 import * as dataService from './services/dataService';
 import { useAppNavigation } from './hooks/useAppNavigation';
@@ -43,6 +47,11 @@ export default function App() {
     editingDebtId,
     selectedDebtId,
 
+    clientsViewMode,
+    changeClientsView,
+    editingContactId,
+    selectedContactId,
+
     selectedTransactionId,
     setSelectedTransactionId,
   } = useAppNavigation();
@@ -50,6 +59,7 @@ export default function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [debts, setDebts] = useState<DebtEntry[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>({
@@ -77,6 +87,10 @@ export default function App() {
     // Load debts
     const loadedDebts = debtService.getAllDebts({});
     setDebts(loadedDebts);
+    
+    // Load contacts
+    const loadedContacts = contactService.getAllContacts({});
+    setContacts(loadedContacts);
     
     // Load category config
     try {
@@ -175,6 +189,11 @@ export default function App() {
     // delegate to navigation hook which centralizes reset logic
     changeLibretaView(mode, debtId);
   }, [changeLibretaView]);
+
+  const handleClientsViewChange = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', contactId?: string) => {
+    // delegate to navigation hook which centralizes reset logic
+    changeClientsView(mode, contactId);
+  }, [changeClientsView]);
 
   // Reset inventory view mode when leaving inventory - only run cleanup on view change
   // Navigation state resets are handled inside `useAppNavigation`.
@@ -411,8 +430,35 @@ export default function App() {
     );
   };
 
+  // Memoized selected contact for detail page
+  const selectedContact = useMemo(
+    () => contacts.find(c => c.id === selectedContactId),
+    [contacts, selectedContactId]
+  );
+
+  const handleClientsListNav = useCallback(() => handleClientsViewChange('list'), [handleClientsViewChange]);
+  const handleContactEdit = useCallback((contactId: string) => handleClientsViewChange('edit', contactId), [handleClientsViewChange]);
+
+  const ClientsModule = () => {
+    if (clientsViewMode === 'create' || clientsViewMode === 'edit') {
+      return <ContactFormPage mode={clientsViewMode} contactId={editingContactId} onBack={handleClientsListNav} />;
+    }
+
+    if (clientsViewMode === 'detail') {
+      return (
+        <ContactDetailPage
+          contact={selectedContact}
+          onClose={handleClientsListNav}
+          onEdit={handleContactEdit}
+        />
+      );
+    }
+
+    return <ClientsView onChangeView={handleClientsViewChange} />;
+  };
+
   // Determine if bottom nav is visible for conditional padding
-  const showBottomNav = view !== 'new-inflow' && view !== 'new-expense' && view !== 'transaction-detail' && inventoryViewMode === 'list' && libretaViewMode === 'list';
+  const showBottomNav = view !== 'new-inflow' && view !== 'new-expense' && view !== 'transaction-detail' && inventoryViewMode === 'list' && libretaViewMode === 'list' && clientsViewMode === 'list';
 
   return (
     <div className="h-screen text-slate-900 dark:text-slate-200 transition-colors duration-300 font-sans flex flex-col overflow-hidden">
@@ -467,6 +513,7 @@ export default function App() {
              />
            ) :
            view === 'libreta' ? <LibretaModule /> : 
+           view === 'clients' ? <ClientsModule /> :
            view === 'settings' ? <SettingsView /> : 
            view === 'inventory' ? <InventoryModule /> :
            view === 'reports' ? <ReportsModule /> :

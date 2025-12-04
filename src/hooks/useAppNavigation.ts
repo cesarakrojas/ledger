@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-type AppView = 'home' | 'inventory' | 'libreta' | 'settings' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
+type AppView = 'home' | 'inventory' | 'libreta' | 'clients' | 'settings' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
 
 /**
  * Centralized scroll reset utility.
@@ -29,6 +29,11 @@ export function useAppNavigation() {
   const [libretaViewMode, setLibretaViewMode] = useState<'list' | 'create' | 'edit' | 'detail'>('list');
   const [editingDebtId, setEditingDebtId] = useState<string | null>(null);
   const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
+
+  // Clients navigation
+  const [clientsViewMode, setClientsViewMode] = useState<'list' | 'create' | 'edit' | 'detail'>('list');
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
 
   // Transaction selection
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
@@ -71,6 +76,22 @@ export function useAppNavigation() {
     resetScrollPosition();
   }, []);
 
+  const changeClientsView = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', contactId?: string) => {
+    setClientsViewMode(mode);
+    if (mode === 'edit' && contactId) {
+      setEditingContactId(contactId);
+      setSelectedContactId(null);
+    } else if (mode === 'detail' && contactId) {
+      setSelectedContactId(contactId);
+      setEditingContactId(null);
+    } else {
+      setEditingContactId(null);
+      setSelectedContactId(null);
+    }
+    // Reset scroll when changing clients sub-views
+    resetScrollPosition();
+  }, []);
+
   // When top-level `view` changes, reset child module states when leaving their modules.
   useEffect(() => {
     if (view !== 'inventory') {
@@ -83,6 +104,12 @@ export function useAppNavigation() {
       setLibretaViewMode('list');
       setEditingDebtId(null);
       setSelectedDebtId(null);
+    }
+
+    if (view !== 'clients') {
+      setClientsViewMode('list');
+      setEditingContactId(null);
+      setSelectedContactId(null);
     }
   }, [view]);
 
@@ -102,6 +129,12 @@ export function useAppNavigation() {
     changeLibretaView,
     editingDebtId,
     selectedDebtId,
+
+    // clients
+    clientsViewMode,
+    changeClientsView,
+    editingContactId,
+    selectedContactId,
 
     // transactions
     selectedTransactionId,

@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, BTN_SECONDARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
 import { ExclamationCircleIcon } from './icons';
 import * as debtService from '../services/debtService';
+import * as contactService from '../services/contactService';
+import { Contact } from '../types';
 
 interface DebtFormProps {
   mode: 'create' | 'edit';
@@ -20,6 +22,51 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  
+  // Contact dropdown state
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Load contacts on mount
+  useEffect(() => {
+    setContacts(contactService.getAllContacts());
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filter contacts based on type and search query
+  const filteredContacts = useMemo(() => {
+    const contactType = type === 'receivable' ? 'client' : 'supplier';
+    return contacts.filter(contact => {
+      const matchesType = contact.type === contactType;
+      const matchesSearch = contact.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesType && matchesSearch;
+    });
+  }, [contacts, type, searchQuery]);
+
+  const handleCounterpartyChange = (value: string) => {
+    setCounterparty(value);
+    setSearchQuery(value);
+    setShowDropdown(true);
+  };
+
+  const selectContact = (contact: Contact) => {
+    setCounterparty(contact.name);
+    setSearchQuery('');
+    setShowDropdown(false);
+  };
 
   useEffect(() => {
     if (mode === 'edit' && debtId) {
@@ -135,18 +182,39 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
         </div>
 
         {/* Counterparty */}
-        <div>
+        <div ref={dropdownRef} className="relative">
           <label className={FORM_LABEL}>
             {type === 'receivable' ? 'Cliente' : 'Proveedor'} <span className="text-red-500">*</span>
           </label>
           <input
+            ref={inputRef}
             type="text"
             value={counterparty}
-            onChange={(e) => setCounterparty(e.target.value)}
+            onChange={(e) => handleCounterpartyChange(e.target.value)}
+            onFocus={() => setShowDropdown(true)}
             placeholder={type === 'receivable' ? 'Nombre del cliente' : 'Nombre del proveedor'}
             className={INPUT_BASE_CLASSES}
+            autoComplete="off"
             required
           />
+          {/* Contact Dropdown */}
+          {showDropdown && filteredContacts.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              {filteredContacts.map((contact) => (
+                <button
+                  key={contact.id}
+                  type="button"
+                  onClick={() => selectContact(contact)}
+                  className="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors border-b border-slate-100 dark:border-slate-600 last:border-b-0"
+                >
+                  <div className="font-medium text-slate-800 dark:text-white">{contact.name}</div>
+                  {contact.phone && (
+                    <div className="text-sm text-slate-500 dark:text-slate-400">{contact.phone}</div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Amount */}

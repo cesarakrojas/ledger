@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bars3Icon, XMarkIcon, CashIcon, UserIcon, Cog6ToothIcon } from './icons';
 
-type ViewType = 'home' | 'settings' | 'inventory' | 'libreta' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
+type ViewType = 'home' | 'settings' | 'inventory' | 'libreta' | 'clients' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
 
 export interface MobileMenuProps {
   isOpen: boolean;
@@ -39,11 +39,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   const handleNavigate = (view: ViewType) => {
     onClose();
     onNavigate(view);
-  };
-
-  const handleClientsClick = () => {
-    onClose();
-    alert('Módulo de Clientes próximamente');
   };
 
   if (!isOpen) return null;
@@ -93,7 +88,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 
               <li>
                 <button
-                  onClick={handleClientsClick}
+                  onClick={() => handleNavigate('clients')}
+                  aria-current={currentView === 'clients' || undefined}
                   className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                 >
                   <UserIcon className="w-6 h-6 text-slate-400" />

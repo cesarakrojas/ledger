@@ -16,6 +16,9 @@ export const STORAGE_KEYS = {
   // Debt management data
   DEBTS: 'app_debts',
   
+  // Contacts (clients and suppliers)
+  CONTACTS: 'app_contacts',
+  
   // Bills data (currently unused but reserved)
   BILLS: 'app_bills',
   

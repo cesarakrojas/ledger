@@ -74,3 +74,13 @@ export interface DebtEntry {
   category?: string;
   notes?: string;
 }
+
+export interface Contact {
+  id: string;
+  type: 'client' | 'supplier';
+  name: string;
+  phone?: string;
+  address?: string;
+  createdAt: string;
+  updatedAt: string;
+}
