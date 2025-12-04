@@ -29,16 +29,16 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, c
         
         {/* Icon */}
         <div
-          className={`p-2 rounded-full shrink-0 ${
+          className={`p-3 rounded-xl shrink-0 ${
             is_inflow
               ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400'
               : 'bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400'
           }`}
         >
           {is_inflow ? (
-            <ArrowUpIcon className="w-5 h-5" />
+            <ArrowUpIcon className="w-6 h-6" />
           ) : (
-            <ArrowDownIcon className="w-5 h-5" />
+            <ArrowDownIcon className="w-6 h-6" />
           )}
         </div>
 
