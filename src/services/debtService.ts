@@ -97,12 +97,14 @@ export const createDebt = (
     type,
     counterparty: counterparty.trim(),
     amount,
+    originalAmount: amount,
     description: description.trim(),
     dueDate,
     status: new Date(dueDate) < new Date() ? 'overdue' : 'pending',
     createdAt: new Date().toISOString(),
     category: category?.trim() || undefined,
-    notes: notes?.trim() || undefined
+    notes: notes?.trim() || undefined,
+    payments: []
   };
   
   debts.push(newDebt);
@@ -186,8 +188,8 @@ export const markAsPaid = (debtId: string): { debt: DebtEntry; transaction: Tran
   // Create corresponding transaction
   const transactionType = debt.type === 'receivable' ? 'inflow' : 'outflow';
   const transactionDescription = debt.type === 'receivable'
-    ? `Cobro: ${debt.counterparty} - ${debt.description}`
-    : `Pago: ${debt.counterparty} - ${debt.description}`;
+    ? `Abono cobrado: ${debt.counterparty} - ${debt.description}`
+    : `Abono pagado: ${debt.counterparty} - ${debt.description}`;
   
   const transaction = dataService.addTransaction(
     transactionType,
@@ -203,12 +205,105 @@ export const markAsPaid = (debtId: string): { debt: DebtEntry; transaction: Tran
     return null;
   }
   
+  // Create final payment record
+  const finalPayment = {
+    id: generateId(),
+    amount: debt.amount,
+    date: new Date().toISOString(),
+    transactionId: transaction.id
+  };
+  
   // Update debt status
   const updatedDebt: DebtEntry = {
     ...debt,
+    amount: 0,
+    originalAmount: debt.originalAmount || debt.amount, // Migrate old debts
     status: 'paid',
     paidAt: new Date().toISOString(),
-    linkedTransactionId: transaction.id
+    linkedTransactionId: transaction.id,
+    payments: [...(debt.payments || []), finalPayment]
+  };
+  
+  debts[debtIndex] = updatedDebt;
+  const saved = debtStorage.save(debts);
+  
+  if (!saved) {
+    return null;
+  }
+  
+  return { debt: updatedDebt, transaction };
+};
+
+// Make a partial payment on a debt
+export const makePartialPayment = (
+  debtId: string, 
+  paymentAmount: number
+): { debt: DebtEntry; transaction: Transaction } | null => {
+  const debts = debtStorage.get();
+  const debtIndex = debts.findIndex(d => d.id === debtId);
+  
+  if (debtIndex === -1) {
+    reportError(createError('validation', ERROR_MESSAGES.NOT_FOUND, 'Deuda no encontrada'));
+    return null;
+  }
+  
+  const debt = debts[debtIndex];
+  
+  if (debt.status === 'paid') {
+    reportError(createError('validation', 'La deuda ya está marcada como pagada'));
+    return null;
+  }
+  
+  if (paymentAmount <= 0) {
+    reportError(createError('validation', 'El monto del abono debe ser mayor a 0'));
+    return null;
+  }
+  
+  if (paymentAmount > debt.amount) {
+    reportError(createError('validation', 'El monto del abono no puede ser mayor al saldo'));
+    return null;
+  }
+  
+  // Create corresponding transaction for the partial payment
+  const transactionType = debt.type === 'receivable' ? 'inflow' : 'outflow';
+  const transactionDescription = debt.type === 'receivable'
+    ? `Abono cobrado: ${debt.counterparty} - ${debt.description}`
+    : `Abono pagado: ${debt.counterparty} - ${debt.description}`;
+  
+  const transaction = dataService.addTransaction(
+    transactionType,
+    transactionDescription,
+    paymentAmount,
+    debt.category,
+    undefined, // paymentMethod
+    undefined  // items
+  );
+  
+  if (!transaction) {
+    reportError(createError('storage', 'Error al crear transacción para el abono'));
+    return null;
+  }
+  
+  const newAmount = debt.amount - paymentAmount;
+  const isFullyPaid = newAmount <= 0;
+  
+  // Create payment record
+  const newPayment = {
+    id: generateId(),
+    amount: paymentAmount,
+    date: new Date().toISOString(),
+    transactionId: transaction.id
+  };
+  
+  // Update debt with payment history
+  const updatedDebt: DebtEntry = {
+    ...debt,
+    amount: isFullyPaid ? 0 : newAmount,
+    originalAmount: debt.originalAmount || debt.amount + paymentAmount, // Migrate old debts
+    status: isFullyPaid ? 'paid' : debt.status,
+    paidAt: isFullyPaid ? new Date().toISOString() : debt.paidAt,
+    linkedTransactionId: isFullyPaid ? transaction.id : debt.linkedTransactionId,
+    payments: [...(debt.payments || []), newPayment]
   };
   
   debts[debtIndex] = updatedDebt;

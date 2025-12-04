@@ -391,11 +391,23 @@ export default function App() {
       handleLibretaViewChange('edit', debt.id);
     };
 
-    const handleMarkAsPaid = async () => {
-      if (confirm('¿Marcar esta deuda como pagada? Se creará una transacción correspondiente.')) {
-        const result = debtService.markAsPaid(debt.id);
-        if (result) {
+    const handleMarkAsPaid = () => {
+      const result = debtService.markAsPaid(debt.id);
+      if (result) {
+        handleLibretaViewChange('list');
+      }
+    };
+
+    const handlePartialPayment = (amount: number) => {
+      const result = debtService.makePartialPayment(debt.id, amount);
+      if (result) {
+        // Refresh the view - if fully paid, go to list, otherwise stay on detail
+        if (result.debt.status === 'paid') {
           handleLibretaViewChange('list');
+        } else {
+          // Force re-render by briefly switching views
+          handleLibretaViewChange('list');
+          setTimeout(() => handleLibretaViewChange('detail', debt.id), 0);
         }
       }
     };
@@ -407,6 +419,7 @@ export default function App() {
           onClose={() => handleLibretaViewChange('list')}
           onEdit={handleEdit}
           onMarkAsPaid={handleMarkAsPaid}
+          onPartialPayment={handlePartialPayment}
           currencyCode={currencyCode}
         />
       </div>

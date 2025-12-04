@@ -60,19 +60,28 @@ export interface InventoryFilters {
   lowStock?: boolean;
 }
 
+export interface DebtPayment {
+  id: string;
+  amount: number;
+  date: string;
+  transactionId: string;
+}
+
 export interface DebtEntry {
   id: string;
   type: 'receivable' | 'payable'; // cobro pendiente | pago pendiente
   counterparty: string; // client name or supplier name
-  amount: number;
+  amount: number; // current remaining balance
+  originalAmount: number; // the original debt amount
   description: string;
   dueDate: string;
   status: 'pending' | 'paid' | 'overdue';
   createdAt: string;
   paidAt?: string;
-  linkedTransactionId?: string; // links to Transaction.id when paid
+  linkedTransactionId?: string; // links to Transaction.id when fully paid
   category?: string;
   notes?: string;
+  payments?: DebtPayment[]; // history of partial payments
 }
 
 export interface Contact {
