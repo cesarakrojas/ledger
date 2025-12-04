@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import type { Product, ProductVariant } from '../types';
 import { PlusIcon, TrashIcon, ExclamationCircleIcon } from './icons';
-import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, BTN_SECONDARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
-import { SETTINGS_SECTION } from '../utils/styleConstants';
+import { INPUT_BASE_CLASSES, FORM_LABEL, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
+import { SETTINGS_SECTION, BTN_FOOTER_PRIMARY, BTN_FOOTER_DANGER, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
 import * as inventoryService from '../services/inventoryService';
 
 interface ProductFormProps {
   product: Product | null;
   onSave: () => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
-export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) => {
+export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel, onDelete }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -304,19 +305,32 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
 
       {/* Form Actions - Sticky Footer */}
       <div className={FORM_FOOTER}>
-        <button
-          type="submit"
-          className={BTN_PRIMARY}
-        >
-          {product ? 'Actualizar Producto' : 'Crear Producto'}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className={BTN_SECONDARY}
-        >
-          Cancelar
-        </button>
+        <div className="grid grid-cols-2 gap-3 w-full">
+          <button
+            type="submit"
+            className={BTN_FOOTER_PRIMARY}
+          >
+            {product ? 'Actualizar' : 'Crear Producto'}
+          </button>
+          {product && onDelete ? (
+            <button
+              type="button"
+              onClick={onDelete}
+              className={BTN_FOOTER_DANGER}
+            >
+              <TrashIcon className="w-5 h-5" />
+              <span>Eliminar</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onCancel}
+              className={BTN_FOOTER_SECONDARY}
+            >
+              Cancelar
+            </button>
+          )}
+        </div>
       </div>
     </form>
   );

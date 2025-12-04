@@ -29,6 +29,17 @@ export const ProductFormPage: React.FC<ProductFormPageProps> = ({ mode, productI
     onBack();
   };
 
+  const handleDelete = () => {
+    if (!product) return;
+    
+    if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+      const success = inventoryService.deleteProduct(product.id);
+      if (success) {
+        onBack();
+      }
+    }
+  };
+
   return (
     <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
       <div className={`w-full max-w-4xl mx-auto ${CARD_FORM}`}>
@@ -49,6 +60,7 @@ export const ProductFormPage: React.FC<ProductFormPageProps> = ({ mode, productI
             product={product}
             onSave={handleSave}
             onCancel={onBack}
+            onDelete={mode === 'edit' ? handleDelete : undefined}
           />
         </div>
       </div>

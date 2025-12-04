@@ -10,6 +10,7 @@ export interface ProductDetailPageProps {
   onClose: () => void;
   onEdit: (productId: string) => void;
   onProductsChange: () => void;
+  onSuccess?: (title: string, message: string) => void;
 }
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
@@ -18,6 +19,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onClose,
   onEdit,
   onProductsChange,
+  onSuccess,
 }) => {
   const handleEdit = useCallback(() => {
     if (product) {
@@ -25,17 +27,26 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     }
   }, [product, onEdit]);
 
-  const handleDelete = useCallback(() => {
-    if (!product) return;
-    
-    if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      const success = inventoryService.deleteProduct(product.id);
-      if (success) {
-        onProductsChange();
-        onClose();
-      }
+  const handleUpdateStock = useCallback((productId: string, newStock: number, variantId?: string) => {
+    const currentProduct = inventoryService.getProductById(productId);
+    if (!currentProduct) return;
+
+    if (variantId && currentProduct.hasVariants) {
+      // Update variant stock
+      const updatedVariants = currentProduct.variants.map(v =>
+        v.id === variantId ? { ...v, quantity: newStock } : v
+      );
+      inventoryService.updateProduct(productId, { variants: updatedVariants });
+    } else {
+      // Update main stock for non-variant product
+      inventoryService.updateProduct(productId, { standaloneQuantity: newStock });
     }
-  }, [product, onProductsChange, onClose]);
+
+    onProductsChange();
+    if (onSuccess) {
+      onSuccess('¡Stock Actualizado!', `El inventario de ${currentProduct.name} ha sido actualizado`);
+    }
+  }, [onProductsChange, onSuccess]);
 
   if (!product) {
     return (
@@ -54,7 +65,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         currencyCode={currencyCode}
         onClose={onClose}
         onEdit={handleEdit}
-        onDelete={handleDelete}
+        onUpdateStock={handleUpdateStock}
       />
     </div>
   );

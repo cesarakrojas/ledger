@@ -250,6 +250,12 @@ export default function App() {
           onClose={handleInventoryListNav}
           onEdit={handleProductEdit}
           onProductsChange={loadProducts}
+          onSuccess={(title, message) => {
+            setSuccessModalTitle(title);
+            setSuccessModalMessage(message);
+            setSuccessModalType('inflow');
+            setShowSuccessModal(true);
+          }}
         />
       );
     }
