@@ -165,9 +165,9 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
             );
           }
         } else {
-          // Update standalone product quantity
+          // Update standalone product quantity (add to existing stock)
           inventoryService.updateProduct(productId, {
-            standaloneQuantity: product.totalQuantity + data.quantity
+            standaloneQuantity: product.standaloneQuantity + data.quantity
           });
         }
       }

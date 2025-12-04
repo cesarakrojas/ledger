@@ -19,22 +19,37 @@ const debtStorage = createStorageAccessor<DebtEntry>(
   (error) => reportError(createError(error.type as 'storage', error.message, error.details))
 );
 
+// Update overdue statuses and persist changes
+// Called internally to ensure data consistency
+const updateOverdueStatuses = (): DebtEntry[] => {
+  const debts = debtStorage.get();
+  const now = new Date();
+  let hasChanges = false;
+  
+  const updatedDebts = debts.map(debt => {
+    if (debt.status === 'pending' && new Date(debt.dueDate) < now) {
+      hasChanges = true;
+      return { ...debt, status: 'overdue' as const };
+    }
+    return debt;
+  });
+  
+  // Only persist if there were actual changes
+  if (hasChanges) {
+    debtStorage.save(updatedDebts);
+  }
+  
+  return updatedDebts;
+};
+
 // Get all debts with optional filters
 export const getAllDebts = (filters?: {
   type?: 'receivable' | 'payable';
   status?: 'pending' | 'paid' | 'overdue';
   searchTerm?: string;
 }): DebtEntry[] => {
-  let debts = debtStorage.get();
-
-  // Update overdue status
-  const now = new Date();
-  debts = debts.map(debt => {
-    if (debt.status === 'pending' && new Date(debt.dueDate) < now) {
-      return { ...debt, status: 'overdue' as const };
-    }
-    return debt;
-  });
+  // First, update any overdue statuses and persist
+  let debts = updateOverdueStatuses();
 
   // Filter by type
   if (filters?.type) {

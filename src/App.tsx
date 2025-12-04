@@ -103,21 +103,15 @@ export default function App() {
     loadAllData();
 
     // Listen for storage changes (for multi-tab sync)
+    // This single handler covers all data types including debts
     const handleStorageChange = () => {
       loadAllData();
     };
 
     window.addEventListener('storage', handleStorageChange);
     
-    // Subscribe to debt changes for reports sync
-    const unsubscribeDebts = debtService.subscribeToDebts(() => {
-      const loadedDebts = debtService.getAllDebts({});
-      setDebts(loadedDebts);
-    });
-    
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      unsubscribeDebts();
     };
   }, []);
 
@@ -187,10 +181,15 @@ export default function App() {
 
   // Filter transactions to show only today's transactions in the main view
   const todayTransactions = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().split('T')[0];
-    return transactions.filter(t => t.timestamp.startsWith(todayStr));
+    const now = new Date();
+    // Get today's date boundaries in local timezone
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    
+    return transactions.filter(t => {
+      const txDate = new Date(t.timestamp);
+      return txDate >= todayStart && txDate <= todayEnd;
+    });
   }, [transactions]);
 
   const totalInflows = useMemo(() => calculateTotalInflows(todayTransactions), [todayTransactions]);

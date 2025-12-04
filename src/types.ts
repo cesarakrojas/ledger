@@ -35,6 +35,9 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
+  /** Stock quantity for non-variant products. When hasVariants=true, this should be 0. */
+  standaloneQuantity: number;
+  /** Total quantity: equals standaloneQuantity when !hasVariants, or sum of variants when hasVariants */
   totalQuantity: number;
   hasVariants: boolean;
   variants: ProductVariant[];

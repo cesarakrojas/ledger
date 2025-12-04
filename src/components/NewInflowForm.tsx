@@ -169,7 +169,8 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
           return;
         }
       } else {
-        const available = latest.totalQuantity;
+        // Non-variant product: use standaloneQuantity
+        const available = latest.standaloneQuantity;
         if (data.quantity > available) {
           setFormError(`Stock insuficiente para ${latest.name}. Disponibles: ${available}`);
           return;
@@ -192,8 +193,9 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
           );
         }
       } else {
+        // Non-variant product: update standaloneQuantity
         inventoryService.updateProduct(productId, {
-          standaloneQuantity: Math.max(0, latest.totalQuantity - data.quantity)
+          standaloneQuantity: Math.max(0, latest.standaloneQuantity - data.quantity)
         });
       }
     }

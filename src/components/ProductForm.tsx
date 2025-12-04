@@ -30,7 +30,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       setPrice(product.price.toString());
       setCategory(product.category || '');
       setHasVariants(product.hasVariants);
-      setStandaloneQuantity(product.hasVariants ? '' : product.totalQuantity.toString());
+      // Use standaloneQuantity from the model for non-variant products
+      setStandaloneQuantity(product.hasVariants ? '' : product.standaloneQuantity.toString());
       setVariants(product.variants.map(v => ({ name: v.name, quantity: v.quantity, sku: v.sku })));
     }
   }, [product]);
