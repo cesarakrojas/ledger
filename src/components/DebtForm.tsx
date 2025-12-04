@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, BTN_SECONDARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
-import { ExclamationCircleIcon } from './icons';
+import { INPUT_BASE_CLASSES, FORM_LABEL, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
+import { BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY, BTN_FOOTER_DANGER } from '../utils/styleConstants';
+import { ExclamationCircleIcon, TrashIcon } from './icons';
 import * as debtService from '../services/debtService';
 import * as contactService from '../services/contactService';
 import { Contact } from '../types';
@@ -10,9 +11,10 @@ interface DebtFormProps {
   debtId?: string;
   onSave: () => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
-export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCancel }) => {
+export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCancel, onDelete }) => {
   const [type, setType] = useState<'receivable' | 'payable'>('receivable');
   const [counterparty, setCounterparty] = useState('');
   const [amount, setAmount] = useState('');
@@ -279,21 +281,35 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
       {/* Sticky Footer */}
       <div className={FORM_FOOTER}>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={BTN_PRIMARY}
-        >
-          {isSubmitting ? 'Guardando...' : mode === 'create' ? 'Crear Deuda' : 'Actualizar Deuda'}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className={BTN_SECONDARY}
-        >
-          Cancelar
-        </button>
+        <div className="grid grid-cols-2 gap-3 w-full">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={BTN_FOOTER_PRIMARY}
+          >
+            {isSubmitting ? 'Guardando...' : mode === 'create' ? 'Crear Deuda' : 'Actualizar'}
+          </button>
+          {mode === 'edit' && onDelete ? (
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={isSubmitting}
+              className={BTN_FOOTER_DANGER}
+            >
+              <TrashIcon className="w-5 h-5" />
+              <span>Eliminar</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className={BTN_FOOTER_SECONDARY}
+            >
+              Cancelar
+            </button>
+          )}
+        </div>
       </div>
     </form>
   );

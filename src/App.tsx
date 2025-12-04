@@ -343,6 +343,15 @@ export default function App() {
       handleLibretaViewChange('list');
     };
 
+    const handleDelete = () => {
+      if (editingDebtId && confirm('¿Estás seguro de que deseas eliminar esta deuda?')) {
+        const success = debtService.deleteDebt(editingDebtId);
+        if (success) {
+          handleLibretaViewChange('list');
+        }
+      }
+    };
+
     return (
       <FormViewWrapper 
         title={editingDebtId ? 'Editar Deuda' : 'Nueva Deuda'} 
@@ -353,6 +362,7 @@ export default function App() {
           debtId={editingDebtId || undefined}
           onSave={handleSave}
           onCancel={() => handleLibretaViewChange('list')}
+          onDelete={editingDebtId ? handleDelete : undefined}
         />
       </FormViewWrapper>
     );
@@ -381,15 +391,6 @@ export default function App() {
       handleLibretaViewChange('edit', debt.id);
     };
 
-    const handleDelete = async () => {
-      if (confirm('¿Estás seguro de que deseas eliminar esta deuda?')) {
-        const success = debtService.deleteDebt(debt.id);
-        if (success) {
-          handleLibretaViewChange('list');
-        }
-      }
-    };
-
     const handleMarkAsPaid = async () => {
       if (confirm('¿Marcar esta deuda como pagada? Se creará una transacción correspondiente.')) {
         const result = debtService.markAsPaid(debt.id);
@@ -405,7 +406,6 @@ export default function App() {
           debt={debt}
           onClose={() => handleLibretaViewChange('list')}
           onEdit={handleEdit}
-          onDelete={handleDelete}
           onMarkAsPaid={handleMarkAsPaid}
           currencyCode={currencyCode}
         />

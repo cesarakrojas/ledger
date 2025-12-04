@@ -1,14 +1,13 @@
 import React from 'react';
 import type { DebtEntry } from '../types';
 import { formatCurrency, formatDate } from '../utils/formatters';
-import { CloseIcon, CheckCircleIcon, PencilIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon } from './icons';
-import { DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY, BTN_FOOTER_DANGER, ICON_BTN } from '../utils/styleConstants';
+import { CloseIcon, CheckCircleIcon, PencilIcon, ArrowUpIcon, ArrowDownIcon } from './icons';
+import { DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
 
 interface DebtDetailViewProps {
   debt: DebtEntry;
   onClose: () => void;
   onEdit: () => void;
-  onDelete: () => void;
   onMarkAsPaid: () => void;
   currencyCode?: string;
 }
@@ -17,7 +16,6 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = ({
   debt,
   onClose,
   onEdit,
-  onDelete,
   onMarkAsPaid,
   currencyCode
 }) => {
@@ -147,57 +145,28 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = ({
 
       {/* 3. COMPACT FOOTER (Action Grid) */}
       <div className={DETAIL_VIEW_FOOTER}>
-        <div className={`grid gap-3 ${!isPaid ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        <div className="grid grid-cols-2 gap-3">
+          {/* Mark as Paid Button */}
+          <button
+            onClick={onMarkAsPaid}
+            disabled={isPaid}
+            className={!isPaid 
+              ? BTN_FOOTER_PRIMARY
+              : 'flex items-center justify-center gap-2 px-4 py-3 bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 rounded-xl font-semibold cursor-not-allowed transition-colors'
+            }
+          >
+            <CheckCircleIcon className="w-5 h-5" />
+            <span>{isPaid ? 'Pagado' : 'Abonar'}</span>
+          </button>
           
-          {/* Action Buttons */}
-          {!isPaid ? (
-            <>
-              {/* Left Column: Edit/Delete Split */}
-              <div className="flex gap-2">
-                 <button
-                  onClick={onEdit}
-                  className={`flex-1 flex items-center justify-center p-3 ${ICON_BTN} rounded-xl`}
-                  aria-label="Editar"
-                >
-                  <PencilIcon className="w-5 h-5" />
-                </button>
-                 <button
-                  onClick={onDelete}
-                  className="flex-1 flex items-center justify-center p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                  aria-label="Eliminar"
-                >
-                  <TrashIcon className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Right Column: Mark Paid */}
-              <button
-                onClick={onMarkAsPaid}
-                className={BTN_FOOTER_PRIMARY}
-              >
-                <CheckCircleIcon className="w-5 h-5" />
-                <span>Marcar Pagado</span>
-              </button>
-            </>
-          ) : (
-            // If Paid, Show Delete and Edit side-by-side
-             <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={onDelete}
-                  className={BTN_FOOTER_DANGER}
-                >
-                  <TrashIcon className="w-5 h-5" />
-                  <span>Eliminar</span>
-                </button>
-                <button
-                  onClick={onEdit} 
-                  className={BTN_FOOTER_SECONDARY}
-                >
-                  <PencilIcon className="w-5 h-5" />
-                  <span>Editar</span>
-                </button>
-             </div>
-          )}
+          {/* Edit Button */}
+          <button
+            onClick={onEdit}
+            className={BTN_FOOTER_SECONDARY}
+          >
+            <PencilIcon className="w-5 h-5" />
+            <span>Editar</span>
+          </button>
         </div>
       </div>
 
