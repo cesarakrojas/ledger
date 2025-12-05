@@ -162,7 +162,7 @@ export const PaymentMethodsEditorView: React.FC<PaymentMethodsEditorViewProps> =
             onClick={handleSave}
             className={BTN_FOOTER_PRIMARY}
           >
-            Guardar Cambios
+            Guardar
           </button>
           <button
             type="button"

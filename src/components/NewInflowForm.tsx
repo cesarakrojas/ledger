@@ -25,7 +25,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
   const [mode, setMode] = useState<'inventory' | 'manual'>('manual');
   
   const [productQuantities, setProductQuantities] = useState<ProductQuantity>({});
-  const [paymentMethod, setPaymentMethod] = useState(paymentMethods[0] || 'Efectivo');
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isCartConfirmed, setIsCartConfirmed] = useState(false);
@@ -139,7 +139,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
       setManualDescription('');
       setManualAmount('');
       setCategory('');
-      setPaymentMethod('Efectivo');
+      setPaymentMethod('');
 
       if (onSuccess) {
         const isVenta = category === 'Ventas';
@@ -237,7 +237,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
     });
 
     setProductQuantities({});
-    setPaymentMethod('Efectivo');
+    setPaymentMethod('');
     setSearchTerm('');
 
     if (onSuccess) {
@@ -497,6 +497,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
               onChange={(e) => setPaymentMethod(e.target.value)}
               className={INPUT_BASE_CLASSES}
             >
+              <option value="">Seleccionar método</option>
               {paymentMethods.map((method) => (
                 <option key={method} value={method}>{method}</option>
               ))}
