@@ -35,6 +35,9 @@ export function useAppNavigation() {
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
 
+  // Settings navigation
+  const [settingsViewMode, setSettingsViewMode] = useState<'main' | 'category-editor'>('main');
+
   // Transaction selection
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
@@ -92,6 +95,12 @@ export function useAppNavigation() {
     resetScrollPosition();
   }, []);
 
+  const changeSettingsView = useCallback((mode: 'main' | 'category-editor') => {
+    setSettingsViewMode(mode);
+    // Reset scroll when changing settings sub-views
+    resetScrollPosition();
+  }, []);
+
   // When top-level `view` changes, reset child module states when leaving their modules.
   useEffect(() => {
     if (view !== 'inventory') {
@@ -110,6 +119,10 @@ export function useAppNavigation() {
       setClientsViewMode('list');
       setEditingContactId(null);
       setSelectedContactId(null);
+    }
+
+    if (view !== 'settings') {
+      setSettingsViewMode('main');
     }
   }, [view]);
 
@@ -135,6 +148,10 @@ export function useAppNavigation() {
     changeClientsView,
     editingContactId,
     selectedContactId,
+
+    // settings
+    settingsViewMode,
+    changeSettingsView,
 
     // transactions
     selectedTransactionId,

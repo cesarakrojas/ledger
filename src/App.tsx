@@ -5,6 +5,7 @@ import { STORAGE_KEYS } from './utils/storageKeys';
 import { CARD_EMPTY_STATE } from './utils/styleConstants';
 import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon } from './components/icons';
 import { SettingsView } from './components/SettingsView';
+import { CategoryEditorView } from './components/CategoryEditorView';
 import { InventoryView } from './components/InventoryView';
 import { ClientsView } from './components/ClientsView';
 import { ReportsView } from './components/ReportsView';
@@ -54,6 +55,9 @@ export default function App() {
 
     selectedTransactionId,
     setSelectedTransactionId,
+
+    settingsViewMode,
+    changeSettingsView,
   } = useAppNavigation();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -64,7 +68,7 @@ export default function App() {
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>({
     enabled: true,
-    inflowCategories: ['Ventas', 'Otros Ingresos', 'Propinas', 'Otras Ventas'],
+    inflowCategories: ['Ventas', 'Otros Ingresos', 'Propinas'],
     outflowCategories: ['Gastos Operativos', 'Salarios', 'Servicios Públicos', 'Mantenimiento', 'Transporte', 'Otros Gastos']
   });
 
@@ -228,6 +232,27 @@ export default function App() {
 
 
   const SettingsModule = () => {
+    if (settingsViewMode === 'category-editor') {
+      return (
+        <FormViewWrapper title="Editar Categorías" onClose={() => changeSettingsView('main')}>
+          <CategoryEditorView
+            inflowCategories={categoryConfig.inflowCategories}
+            outflowCategories={categoryConfig.outflowCategories}
+            onSave={(inflowCategories, outflowCategories) => {
+              const newConfig: CategoryConfig = {
+                ...categoryConfig,
+                inflowCategories,
+                outflowCategories
+              };
+              handleSaveCategoryConfig(newConfig);
+              changeSettingsView('main');
+            }}
+            onCancel={() => changeSettingsView('main')}
+          />
+        </FormViewWrapper>
+      );
+    }
+
     return (
       <SettingsView
         onSave={handleSaveCategoryConfig}
@@ -236,6 +261,7 @@ export default function App() {
         onToggleTheme={toggleTheme}
         currencyCode={currencyCode}
         onCurrencyChange={handleCurrencyChange}
+        onEditCategories={() => changeSettingsView('category-editor')}
       />
     );
   };
@@ -471,7 +497,7 @@ export default function App() {
   };
 
   // Determine if bottom nav is visible for conditional padding
-  const showBottomNav = view !== 'new-inflow' && view !== 'new-expense' && view !== 'transaction-detail' && inventoryViewMode === 'list' && libretaViewMode === 'list' && clientsViewMode === 'list';
+  const showBottomNav = view !== 'new-inflow' && view !== 'new-expense' && view !== 'transaction-detail' && inventoryViewMode === 'list' && libretaViewMode === 'list' && clientsViewMode === 'list' && settingsViewMode === 'main';
 
   return (
     <div className="h-screen text-slate-900 dark:text-slate-200 transition-colors duration-300 font-sans flex flex-col overflow-hidden">
