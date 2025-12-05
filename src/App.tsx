@@ -4,7 +4,7 @@ import type { Transaction, CategoryConfig, Product, DebtEntry, Contact } from '.
 import { STORAGE_KEYS } from './utils/storageKeys';
 import { CARD_EMPTY_STATE } from './utils/styleConstants';
 import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon } from './components/icons';
-import { CategorySettings } from './components/CategorySettings';
+import { SettingsView } from './components/SettingsView';
 import { InventoryView } from './components/InventoryView';
 import { ClientsView } from './components/ClientsView';
 import { ReportsView } from './components/ReportsView';
@@ -227,9 +227,9 @@ export default function App() {
 
 
 
-  const SettingsView = () => {
+  const SettingsModule = () => {
     return (
-      <CategorySettings
+      <SettingsView
         onSave={handleSaveCategoryConfig}
         initialConfig={categoryConfig}
         isDarkMode={isDarkMode}
@@ -527,7 +527,7 @@ export default function App() {
            ) :
            view === 'libreta' ? <LibretaModule /> : 
            view === 'clients' ? <ClientsModule /> :
-           view === 'settings' ? <SettingsView /> : 
+           view === 'settings' ? <SettingsModule /> : 
            view === 'inventory' ? <InventoryModule /> :
            view === 'reports' ? <ReportsModule /> :
            <DisabledModule name="Módulo desactivado" />}
