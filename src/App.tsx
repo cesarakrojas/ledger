@@ -1,6 +1,6 @@
 // Main Mobile web app for the management of micro and very small businesses in latin america.
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Transaction, CategoryConfig, Product, DebtEntry, Contact } from './types';
+import type { Transaction, CategoryConfig, Product, DebtEntry, Contact, Service } from './types';
 import { STORAGE_KEYS } from './utils/storageKeys';
 import { CARD_EMPTY_STATE } from './utils/styleConstants';
 import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon } from './components/icons';
@@ -8,6 +8,9 @@ import { SettingsView } from './components/SettingsView';
 import { CategoryEditorView } from './components/CategoryEditorView';
 import { PaymentMethodsEditorView } from './components/PaymentMethodsEditorView';
 import { InventoryView } from './components/InventoryView';
+import { ServicesView } from './components/ServicesView';
+import { ServiceForm } from './components/ServiceForm';
+import { ServiceDetailView } from './components/ServiceDetailView';
 import { ClientsView } from './components/ClientsView';
 import { ReportsView } from './components/ReportsView';
 import { NewInflowForm } from './components/NewInflowForm';
@@ -26,6 +29,7 @@ import { ContactFormPage } from './components/views/ContactFormPage';
 import { ContactDetailPage } from './components/views/ContactDetailPage';
 import { MobileMenu } from './components/MobileMenu';
 import * as inventoryService from './services/inventoryService';
+import * as serviceService from './services/serviceService';
 import * as debtService from './services/debtService';
 import * as contactService from './services/contactService';
 import { calculateTotalInflows, calculateTotalOutflows } from './utils/calculations';
@@ -43,6 +47,11 @@ export default function App() {
     changeInventoryView,
     editingProductId,
     selectedProductId,
+
+    servicesViewMode,
+    changeServicesView,
+    editingServiceId,
+    selectedServiceId,
 
     libretaViewMode,
     changeLibretaView,
@@ -63,6 +72,7 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [debts, setDebts] = useState<DebtEntry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -85,6 +95,10 @@ export default function App() {
     // Load products
     const prods = inventoryService.getAllProducts();
     setProducts(prods);
+    
+    // Load services
+    const servs = serviceService.getAllServices();
+    setServices(servs);
     
     // Load transactions
     const txs = dataService.getTransactionsWithFilters({});
@@ -205,6 +219,11 @@ export default function App() {
     // delegate to navigation hook which centralizes reset logic
     changeInventoryView(mode, productId);
   }, [changeInventoryView]);
+
+  const handleServicesViewChange = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', serviceId?: string) => {
+    // delegate to navigation hook which centralizes reset logic
+    changeServicesView(mode, serviceId);
+  }, [changeServicesView]);
 
   const handleLibretaViewChange = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => {
     // delegate to navigation hook which centralizes reset logic
@@ -340,6 +359,75 @@ export default function App() {
     }
 
     return <InventoryView viewMode={inventoryViewMode} editingProductId={editingProductId} currencyCode={currencyCode} onChangeView={handleInventoryViewChange} />;
+  };
+
+  // Memoized selected service for detail page
+  const selectedService = useMemo(
+    () => services.find(s => s.id === selectedServiceId),
+    [services, selectedServiceId]
+  );
+
+  const handleServicesListNav = useCallback(() => handleServicesViewChange('list'), [handleServicesViewChange]);
+  const handleServiceEdit = useCallback((serviceId: string) => handleServicesViewChange('edit', serviceId), [handleServicesViewChange]);
+
+  const loadServices = useCallback(() => {
+    const servs = serviceService.getAllServices();
+    setServices(servs);
+  }, []);
+
+  const ServicesModule = () => {
+    if (servicesViewMode === 'create' || servicesViewMode === 'edit') {
+      const serviceToEdit = editingServiceId ? serviceService.getServiceById(editingServiceId) : null;
+      
+      const handleSave = () => {
+        loadServices();
+        handleServicesViewChange('list');
+      };
+
+      const handleDelete = () => {
+        if (editingServiceId && confirm('¿Estás seguro de que deseas eliminar este servicio?')) {
+          const success = serviceService.deleteService(editingServiceId);
+          if (success) {
+            loadServices();
+            handleServicesViewChange('list');
+          }
+        }
+      };
+
+      return (
+        <FormViewWrapper 
+          title={editingServiceId ? 'Editar Servicio' : 'Nuevo Servicio'} 
+          onClose={handleServicesListNav}
+        >
+          <ServiceForm
+            service={serviceToEdit}
+            onSave={handleSave}
+            onCancel={handleServicesListNav}
+            onDelete={editingServiceId ? handleDelete : undefined}
+          />
+        </FormViewWrapper>
+      );
+    }
+
+    if (servicesViewMode === 'detail' && selectedService) {
+      return (
+        <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
+          <ServiceDetailView
+            service={selectedService}
+            currencyCode={currencyCode}
+            onClose={handleServicesListNav}
+            onEdit={() => handleServiceEdit(selectedService.id)}
+            onToggleStatus={() => {
+              loadServices();
+              // Refresh detail view
+              handleServicesViewChange('detail', selectedService.id);
+            }}
+          />
+        </div>
+      );
+    }
+
+    return <ServicesView currencyCode={currencyCode} onChangeView={handleServicesViewChange} />;
   };
 
   const NewinflowView = () => {
@@ -533,7 +621,7 @@ export default function App() {
   };
 
   // Determine if bottom nav is visible for conditional padding
-  const showBottomNav = view !== 'new-inflow' && view !== 'new-expense' && view !== 'transaction-detail' && inventoryViewMode === 'list' && libretaViewMode === 'list' && clientsViewMode === 'list' && settingsViewMode === 'main';
+  const showBottomNav = view !== 'new-inflow' && view !== 'new-expense' && view !== 'transaction-detail' && inventoryViewMode === 'list' && servicesViewMode === 'list' && libretaViewMode === 'list' && clientsViewMode === 'list' && settingsViewMode === 'main';
 
   return (
     <div className="h-screen text-slate-900 dark:text-slate-200 transition-colors duration-300 font-sans flex flex-col overflow-hidden">
@@ -591,6 +679,7 @@ export default function App() {
            view === 'clients' ? <ClientsModule /> :
            view === 'settings' ? <SettingsModule /> : 
            view === 'inventory' ? <InventoryModule /> :
+           view === 'services' ? <ServicesModule /> :
            view === 'reports' ? <ReportsModule /> :
            <DisabledModule name="Módulo desactivado" />}
         </main>

@@ -97,3 +97,20 @@ export interface Contact {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  isActive: boolean;
+  category?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ServiceFilters {
+  searchTerm?: string;
+  category?: string;
+  activeOnly?: boolean;
+}

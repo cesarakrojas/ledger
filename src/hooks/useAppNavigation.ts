@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-type AppView = 'home' | 'inventory' | 'libreta' | 'clients' | 'settings' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
+type AppView = 'home' | 'inventory' | 'services' | 'libreta' | 'clients' | 'settings' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
 
 /**
  * Centralized scroll reset utility.
@@ -24,6 +24,11 @@ export function useAppNavigation() {
   const [inventoryViewMode, setInventoryViewMode] = useState<'list' | 'create' | 'edit' | 'detail'>('list');
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  // Services navigation
+  const [servicesViewMode, setServicesViewMode] = useState<'list' | 'create' | 'edit' | 'detail'>('list');
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
   // Libreta/debt navigation
   const [libretaViewMode, setLibretaViewMode] = useState<'list' | 'create' | 'edit' | 'detail'>('list');
@@ -60,6 +65,22 @@ export function useAppNavigation() {
       setSelectedProductId(null);
     }
     // Reset scroll when changing inventory sub-views
+    resetScrollPosition();
+  }, []);
+
+  const changeServicesView = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', serviceId?: string) => {
+    setServicesViewMode(mode);
+    if (mode === 'edit' && serviceId) {
+      setEditingServiceId(serviceId);
+      setSelectedServiceId(null);
+    } else if (mode === 'detail' && serviceId) {
+      setSelectedServiceId(serviceId);
+      setEditingServiceId(null);
+    } else {
+      setEditingServiceId(null);
+      setSelectedServiceId(null);
+    }
+    // Reset scroll when changing services sub-views
     resetScrollPosition();
   }, []);
 
@@ -109,6 +130,12 @@ export function useAppNavigation() {
       setSelectedProductId(null);
     }
 
+    if (view !== 'services') {
+      setServicesViewMode('list');
+      setEditingServiceId(null);
+      setSelectedServiceId(null);
+    }
+
     if (view !== 'libreta') {
       setLibretaViewMode('list');
       setEditingDebtId(null);
@@ -136,6 +163,12 @@ export function useAppNavigation() {
     changeInventoryView,
     editingProductId,
     selectedProductId,
+
+    // services
+    servicesViewMode,
+    changeServicesView,
+    editingServiceId,
+    selectedServiceId,
 
     // libreta
     libretaViewMode,

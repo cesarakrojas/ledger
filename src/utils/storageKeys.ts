@@ -13,6 +13,9 @@ export const STORAGE_KEYS = {
   // Inventory/Product data
   PRODUCTS: 'app_products',
   
+  // Services data
+  SERVICES: 'app_services',
+  
   // Debt management data
   DEBTS: 'app_debts',
   

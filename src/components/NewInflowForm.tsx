@@ -1,13 +1,19 @@
-import React, { useState, useRef } from 'react';
-import type { Product, ProductQuantity, CategoryConfig } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import type { Product, CategoryConfig, Service } from '../types';
 import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
 import { CARD_PRODUCT_ITEM, CART_SUMMARY_INFLOW } from '../utils/styleConstants';
 import { formatCurrency } from '../utils/formatters';
 import { ExclamationCircleIcon } from './icons';
 import * as inventoryService from '../services/inventoryService';
+import * as serviceService from '../services/serviceService';
 import * as dataService from '../services/dataService';
 import { getTopProducts } from '../utils/commerce';
 import QuantityStepper from './QuantityStepper';
+
+// Combined item type for products and services
+type CatalogItem = 
+  | { type: 'product'; data: Product }
+  | { type: 'service'; data: Service };
 
 
 interface NewInflowFormProps {
@@ -20,11 +26,25 @@ interface NewInflowFormProps {
   onSuccess?: (title: string, message: string) => void;
 }
 
+// Extended quantity map that includes services
+interface ItemQuantity {
+  [itemId: string]: {
+    quantity: number;
+    selectedVariantId?: string;
+    isService?: boolean;
+    price: number;
+    name: string;
+  };
+}
+
 export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTransaction, categoryConfig, currencyCode, paymentMethods = ['Efectivo', 'Tarjeta', 'Transferencia'], onClose, onSuccess }) => {
   // Mode State: 'inventory' (default) or 'manual'
   const [mode, setMode] = useState<'inventory' | 'manual'>('manual');
   
-  const [productQuantities, setProductQuantities] = useState<ProductQuantity>({});
+  // Services state
+  const [services, setServices] = useState<Service[]>([]);
+  
+  const [productQuantities, setProductQuantities] = useState<ItemQuantity>({});
   const [paymentMethod, setPaymentMethod] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -33,6 +53,18 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
   const [manualAmount, setManualAmount] = useState('');
   const [category, setCategory] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Load services on mount
+  useEffect(() => {
+    const loadServices = () => {
+      const activeServices = serviceService.getAllServices().filter(s => s.isActive);
+      setServices(activeServices);
+    };
+    loadServices();
+    
+    const unsubscribe = serviceService.subscribeToServices(loadServices);
+    return unsubscribe;
+  }, []);
 
   // Reset states when switching modes
   const handleModeSwitch = (newMode: 'inventory' | 'manual') => {
@@ -49,30 +81,64 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
     }
   };
 
-  // Use shared top-products helper
+  // Create combined catalog items (products + services)
+  const getCatalogItems = (): CatalogItem[] => {
+    const productItems: CatalogItem[] = products.map(p => ({ type: 'product' as const, data: p }));
+    const serviceItems: CatalogItem[] = services.map(s => ({ type: 'service' as const, data: s }));
+    return [...productItems, ...serviceItems];
+  };
 
-  const filteredProducts = searchTerm.trim()
-    ? products.filter(p => 
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.category?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter catalog items based on search
+  const filteredItems: CatalogItem[] = searchTerm.trim()
+    ? getCatalogItems().filter(item => 
+        item.data.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.data.category?.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : getTopProducts(products, dataService.getTransactionsWithFilters({}));
+    : [
+        // Show top products first, then services
+        ...getTopProducts(products, dataService.getTransactionsWithFilters({})).map(p => ({ type: 'product' as const, data: p })),
+        ...services.slice(0, 5).map(s => ({ type: 'service' as const, data: s }))
+      ];
 
-  const updateProductQuantity = (productId: string, newQuantity: number, variantId?: string) => {
+  // Unified function for updating item quantities (products or services)
+  const updateItemQuantity = (itemId: string, newQuantity: number, itemType: 'product' | 'service', variantId?: string) => {
     if (newQuantity === 0) {
       const newQuantities = { ...productQuantities };
-      delete newQuantities[productId];
+      delete newQuantities[itemId];
       setProductQuantities(newQuantities);
-    } else {
+      return;
+    }
+
+    if (itemType === 'product') {
+      const product = products.find(p => p.id === itemId);
+      if (!product) return;
       setProductQuantities({
         ...productQuantities,
-        [productId]: {
+        [itemId]: {
           quantity: newQuantity,
-          selectedVariantId: variantId
+          selectedVariantId: variantId,
+          isService: false,
+          price: product.price,
+          name: product.name
+        }
+      });
+    } else {
+      const service = services.find(s => s.id === itemId);
+      if (!service) return;
+      setProductQuantities({
+        ...productQuantities,
+        [itemId]: {
+          quantity: newQuantity,
+          isService: true,
+          price: service.price,
+          name: service.name
         }
       });
     }
   };
+
+  // Unified state getter
+  const itemQuantities = productQuantities;
 
   const updateProductVariant = (productId: string, variantId: string) => {
     const product = products.find(p => p.id === productId);
@@ -84,7 +150,10 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
         ...productQuantities,
         [productId]: {
           quantity: 1,
-          selectedVariantId: variantId
+          selectedVariantId: variantId,
+          isService: false,
+          price: product.price,
+          name: product.name
         }
       });
     }
@@ -99,10 +168,8 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
   };
 
   const calculateTotal = () => {
-    return Object.entries(productQuantities).reduce((sum, [productId, data]) => {
-      const product = products.find(p => p.id === productId);
-      if (!product) return sum;
-      return sum + (product.price * data.quantity);
+    return Object.entries(productQuantities).reduce((sum, [_itemId, data]) => {
+      return sum + (data.price * data.quantity);
     }, 0);
   };
 
@@ -115,7 +182,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
 
     // Validation
     if (mode === 'inventory' && itemCount === 0) {
-      setFormError('Agrega al menos un producto para la Ingreso.');
+      setFormError('Agrega al menos un producto o servicio para el Ingreso.');
       return;
     }
     if (mode === 'manual' && !hasManualEntry) {
@@ -157,13 +224,17 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
 
     const latestProductsMap: Record<string, Product> = {};
 
-    for (const [productId, data] of Object.entries(productQuantities)) {
-      const latest = inventoryService.getProductById(productId);
+    // Validate only products (not services) for stock availability
+    for (const [itemId, data] of Object.entries(productQuantities)) {
+      // Skip services - they don't have stock limits
+      if (data.isService) continue;
+      
+      const latest = inventoryService.getProductById(itemId);
       if (!latest) {
         setFormError('Producto no encontrado. Actualiza la lista e intenta de nuevo.');
         return;
       }
-      latestProductsMap[productId] = latest;
+      latestProductsMap[itemId] = latest;
 
       if (data.selectedVariantId) {
         const variant = latest.variants.find(v => v.id === data.selectedVariantId);
@@ -182,49 +253,78 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
       }
     }
 
-    // Update inventory for each item using latest persisted quantities
-    for (const [productId, data] of Object.entries(productQuantities)) {
-      const latest = latestProductsMap[productId];
+    // Update inventory for each product (not services)
+    for (const [itemId, data] of Object.entries(productQuantities)) {
+      // Skip services - they don't affect inventory
+      if (data.isService) continue;
+      
+      const latest = latestProductsMap[itemId];
       if (!latest) continue;
 
       if (data.selectedVariantId) {
         const variant = latest.variants.find(v => v.id === data.selectedVariantId);
         if (variant) {
           inventoryService.updateVariantQuantity(
-            productId,
+            itemId,
             data.selectedVariantId,
             Math.max(0, variant.quantity - data.quantity)
           );
         }
       } else {
         // Non-variant product: update standaloneQuantity
-        inventoryService.updateProduct(productId, {
+        inventoryService.updateProduct(itemId, {
           standaloneQuantity: Math.max(0, latest.standaloneQuantity - data.quantity)
         });
       }
     }
 
-    const description = itemCount === 1 
-      ? `Ingreso: ${products.find(p => p.id === Object.keys(productQuantities)[0])?.name}${Object.values(productQuantities)[0].quantity > 1 ? ` x${Object.values(productQuantities)[0].quantity}` : ''}`
-      : `Ingreso: ${itemCount} productos`;
+    // Count products and services for description
+    const productCount = Object.values(productQuantities).filter(d => !d.isService).length;
+    const serviceCount = Object.values(productQuantities).filter(d => d.isService).length;
+    
+    let description: string;
+    if (itemCount === 1) {
+      const [firstId, firstData] = Object.entries(productQuantities)[0];
+      const itemName = firstData.name || (firstData.isService 
+        ? services.find(s => s.id === firstId)?.name 
+        : products.find(p => p.id === firstId)?.name) || 'Item';
+      description = `Ingreso: ${itemName}${firstData.quantity > 1 ? ` x${firstData.quantity}` : ''}`;
+    } else if (productCount > 0 && serviceCount > 0) {
+      description = `Ingreso: ${productCount} producto${productCount > 1 ? 's' : ''} y ${serviceCount} servicio${serviceCount > 1 ? 's' : ''}`;
+    } else if (serviceCount > 0) {
+      description = `Ingreso: ${serviceCount} servicio${serviceCount > 1 ? 's' : ''}`;
+    } else {
+      description = `Ingreso: ${productCount} producto${productCount > 1 ? 's' : ''}`;
+    }
 
-    const items = Object.entries(productQuantities).map(([productId, data]) => {
-      const product = products.find(p => p.id === productId);
-      if (!product) return null;
-      
-      let variantName: string | undefined;
-      if (data.selectedVariantId) {
-        const variant = product.variants.find(v => v.id === data.selectedVariantId);
-        variantName = variant?.name;
+    const items = Object.entries(productQuantities).map(([itemId, data]) => {
+      if (data.isService) {
+        const service = services.find(s => s.id === itemId);
+        if (!service) return null;
+        return {
+          productId: service.id,
+          productName: `[Servicio] ${service.name}`,
+          quantity: data.quantity,
+          price: service.price
+        };
+      } else {
+        const product = products.find(p => p.id === itemId);
+        if (!product) return null;
+        
+        let variantName: string | undefined;
+        if (data.selectedVariantId) {
+          const variant = product.variants.find(v => v.id === data.selectedVariantId);
+          variantName = variant?.name;
+        }
+        
+        return {
+          productId: product.id,
+          productName: product.name,
+          quantity: data.quantity,
+          variantName,
+          price: product.price
+        };
       }
-      
-      return {
-        productId: product.id,
-        productName: product.name,
-        quantity: data.quantity,
-        variantName,
-        price: product.price
-      };
     }).filter(item => item !== null) as { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[];
 
     onAddTransaction({
@@ -241,9 +341,18 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
     setSearchTerm('');
 
     if (onSuccess) {
-      const message = itemCount === 1 
-        ? `Venta de ${formatCurrency(total, currencyCode)} registrada`
-        : `Venta de ${itemCount} productos por ${formatCurrency(total, currencyCode)}`;
+      let message: string;
+      if (productCount > 0 && serviceCount > 0) {
+        message = `Venta de ${productCount} producto${productCount > 1 ? 's' : ''} y ${serviceCount} servicio${serviceCount > 1 ? 's' : ''} por ${formatCurrency(total, currencyCode)}`;
+      } else if (serviceCount > 0) {
+        message = itemCount === 1 
+          ? `Servicio de ${formatCurrency(total, currencyCode)} registrado`
+          : `${serviceCount} servicios por ${formatCurrency(total, currencyCode)} registrados`;
+      } else {
+        message = itemCount === 1 
+          ? `Venta de ${formatCurrency(total, currencyCode)} registrada`
+          : `Venta de ${itemCount} productos por ${formatCurrency(total, currencyCode)}`;
+      }
       onSuccess('¡Venta Completada!', message);
     }
     
@@ -257,7 +366,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
     if (Object.keys(productQuantities).length > 0) {
       setIsCartConfirmed(true);
     } else {
-      setFormError('Agrega al menos un producto antes de confirmar');
+      setFormError('Agrega al menos un producto o servicio antes de confirmar');
     }
   };
 
@@ -312,10 +421,10 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
           <>
             {!isCartConfirmed && (
               <>
-                {/* Product Search */}
+                {/* Product/Service Search */}
                 <div>
                   <label className={FORM_LABEL}>
-                    Buscar Producto
+                    Buscar Productos y Servicios
                   </label>
                   <input
                     ref={searchInputRef}
@@ -331,61 +440,124 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Top productos más frecuentes
+                      Top productos y servicios frecuentes
                     </p>
                   )}
                 </div>
 
-                {/* Product Grid */}
+                {/* Product/Service Grid */}
                 <div className="grid grid-cols-1 gap-3">
-                  {filteredProducts.length === 0 ? (
+                  {filteredItems.length === 0 ? (
                     <div className="text-center py-10 text-slate-500 dark:text-slate-400">
-                      <p>No se encontraron productos</p>
+                      <p>No se encontraron productos ni servicios</p>
                     </div>
                   ) : (
-                    filteredProducts.map(product => {
-                      const productData = productQuantities[product.id];
-                      const currentQuantity = productData?.quantity || 0;
-                      const selectedVariantId = productData?.selectedVariantId || (product.hasVariants && product.variants.length > 0 ? product.variants[0].id : undefined);
-                      const maxStock = getMaxStock(product, selectedVariantId);
-                      const isOutOfStock = maxStock === 0;
+                    filteredItems.map(item => {
+                      const isProduct = item.type === 'product';
+                      const itemId = item.data.id;
+                      const itemData = itemQuantities[itemId];
+                      const currentQuantity = itemData?.quantity || 0;
+                      
+                      if (isProduct) {
+                        // Product rendering with stock and variants
+                        const product = item.data as Product;
+                        const selectedVariantId = itemData?.selectedVariantId || (product.hasVariants && product.variants.length > 0 ? product.variants[0].id : undefined);
+                        const maxStock = getMaxStock(product, selectedVariantId);
+                        const isOutOfStock = maxStock === 0;
 
-                      return (
-                        <div
-                          key={product.id}
-                          className={`${CARD_PRODUCT_ITEM} ${isOutOfStock ? 'opacity-60' : ''}`}
-                        >
-
-
-                          {/* Variant selector and stepper handled by QuantityStepper */}
-
-                          {/* Info & Controls */}
-                          <div className="flex-1 p-3 flex flex-col justify-between">
-                            <div className={product.hasVariants ? "pr-20" : ""}>
-                              <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-1 line-clamp-2">{product.name}</h3>
-                            </div>
-
-                            <div className="flex justify-between items-end gap-3">
-                              <div className="flex items-baseline gap-2">
-                                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(product.price, currencyCode)}</p>
-                                <p className={`text-xs ${isOutOfStock ? 'text-red-500 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
-                                  {isOutOfStock ? 'Agotado' : `Stock: ${maxStock}`}
-                                </p>
+                        return (
+                          <div
+                            key={product.id}
+                            className={`${CARD_PRODUCT_ITEM} ${isOutOfStock ? 'opacity-60' : ''}`}
+                          >
+                            {/* Info & Controls */}
+                            <div className="flex-1 p-3 flex flex-col justify-between">
+                              <div className={product.hasVariants ? "pr-20" : ""}>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="text-sm font-bold text-slate-800 dark:text-white line-clamp-2">{product.name}</h3>
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-medium">
+                                    Producto
+                                  </span>
+                                </div>
                               </div>
 
-                              {!isOutOfStock && (
-                                <QuantityStepper
-                                  product={product}
-                                  currentQuantity={currentQuantity}
-                                  selectedVariantId={selectedVariantId}
-                                  onQuantityChange={(q, variantId) => updateProductQuantity(product.id, q, variantId)}
-                                  onVariantChange={(variantId) => updateProductVariant(product.id, variantId)}
-                                />
-                              )}
+                              <div className="flex justify-between items-end gap-3">
+                                <div className="flex items-baseline gap-2">
+                                  <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(product.price, currencyCode)}</p>
+                                  <p className={`text-xs ${isOutOfStock ? 'text-red-500 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    {isOutOfStock ? 'Agotado' : `Stock: ${maxStock}`}
+                                  </p>
+                                </div>
+
+                                {!isOutOfStock && (
+                                  <QuantityStepper
+                                    product={product}
+                                    currentQuantity={currentQuantity}
+                                    selectedVariantId={selectedVariantId}
+                                    onQuantityChange={(q, variantId) => updateItemQuantity(product.id, q, 'product', variantId)}
+                                    onVariantChange={(variantId) => updateProductVariant(product.id, variantId)}
+                                  />
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
+                        );
+                      } else {
+                        // Service rendering - no stock limits
+                        const service = item.data as Service;
+                        if (!service.isActive) return null; // Skip inactive services
+                        
+                        return (
+                          <div
+                            key={service.id}
+                            className={CARD_PRODUCT_ITEM}
+                          >
+                            {/* Info & Controls */}
+                            <div className="flex-1 p-3 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="text-sm font-bold text-slate-800 dark:text-white line-clamp-2">{service.name}</h3>
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 font-medium">
+                                    Servicio
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex justify-between items-end gap-3">
+                                <div className="flex items-baseline gap-2">
+                                  <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(service.price, currencyCode)}</p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400">Ilimitado</p>
+                                </div>
+
+                                {/* Simple quantity stepper for services (no stock limit) */}
+                                <div className="flex items-center gap-1">
+                                  {currentQuantity > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => updateItemQuantity(service.id, currentQuantity - 1, 'service')}
+                                      className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-lg flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                                    >
+                                      −
+                                    </button>
+                                  )}
+                                  {currentQuantity > 0 && (
+                                    <span className="w-8 text-center text-sm font-bold text-slate-800 dark:text-white">
+                                      {currentQuantity}
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => updateItemQuantity(service.id, currentQuantity + 1, 'service')}
+                                    className="w-10 h-10 flex items-center justify-center bg-emerald-500 dark:bg-emerald-600 hover:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-xl disabled:opacity-50 transition-colors text-lg font-bold"
+      >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
                     })
                   )}
                 </div>
@@ -395,7 +567,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
             {isCartConfirmed && (
               <div className={CART_SUMMARY_INFLOW}>
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-bold text-slate-800 dark:text-white">Productos en Carrito</h3>
+                  <h3 className="font-bold text-slate-800 dark:text-white">Items en Carrito</h3>
                   <button
                     type="button"
                     onClick={() => setIsCartConfirmed(false)}
@@ -405,20 +577,39 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                   </button>
                 </div>
                 <div className="space-y-2 mb-3">
-                  {Object.entries(productQuantities).map(([productId, data]) => {
-                    const product = products.find(p => p.id === productId);
-                    if (!product) return null;
-                    const variant = data.selectedVariantId ? product.variants.find(v => v.id === data.selectedVariantId) : null;
-                    return (
-                      <div key={productId} className="flex justify-between text-sm">
-                        <span className="text-slate-700 dark:text-slate-300">
-                          {product.name} {variant && `(${variant.name})`} x{data.quantity}
-                        </span>
-                        <span className="font-semibold text-slate-800 dark:text-white">
-                          {formatCurrency(product.price * data.quantity, currencyCode)}
-                        </span>
-                      </div>
-                    );
+                  {Object.entries(productQuantities).map(([itemId, data]) => {
+                    if (data.isService) {
+                      // Service item
+                      const service = services.find(s => s.id === itemId);
+                      if (!service) return null;
+                      return (
+                        <div key={itemId} className="flex justify-between text-sm">
+                          <span className="text-slate-700 dark:text-slate-300">
+                            <span className="text-[10px] px-1 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 mr-1">S</span>
+                            {service.name} x{data.quantity}
+                          </span>
+                          <span className="font-semibold text-slate-800 dark:text-white">
+                            {formatCurrency(service.price * data.quantity, currencyCode)}
+                          </span>
+                        </div>
+                      );
+                    } else {
+                      // Product item
+                      const product = products.find(p => p.id === itemId);
+                      if (!product) return null;
+                      const variant = data.selectedVariantId ? product.variants.find(v => v.id === data.selectedVariantId) : null;
+                      return (
+                        <div key={itemId} className="flex justify-between text-sm">
+                          <span className="text-slate-700 dark:text-slate-300">
+                            <span className="text-[10px] px-1 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 mr-1">P</span>
+                            {product.name} {variant && `(${variant.name})`} x{data.quantity}
+                          </span>
+                          <span className="font-semibold text-slate-800 dark:text-white">
+                            {formatCurrency(product.price * data.quantity, currencyCode)}
+                          </span>
+                        </div>
+                      );
+                    }
                   })}
                   <div className="pt-2 border-t border-emerald-200 dark:border-emerald-700 flex justify-between font-bold">
                     <span className="text-slate-800 dark:text-white">Subtotal:</span>

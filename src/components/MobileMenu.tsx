@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Bars3Icon, XMarkIcon, CashIcon, UserIcon, Cog6ToothIcon } from './icons';
+import { Bars3Icon, XMarkIcon, CashIcon, UserIcon, Cog6ToothIcon, ServicesIcon } from './icons';
 
-type ViewType = 'home' | 'settings' | 'inventory' | 'libreta' | 'clients' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
+type ViewType = 'home' | 'settings' | 'inventory' | 'services' | 'libreta' | 'clients' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
 
 export interface MobileMenuProps {
   isOpen: boolean;
@@ -94,6 +94,16 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 >
                   <UserIcon className="w-6 h-6 text-slate-400" />
                   <span>Clientes</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNavigate('services')}
+                  aria-current={currentView === 'services' || undefined}
+                  className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                >
+                  <ServicesIcon className="w-6 h-6 text-slate-400" />
+                  <span>Servicios</span>
                 </button>
               </li>
               <li>
