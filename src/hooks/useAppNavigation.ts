@@ -36,7 +36,7 @@ export function useAppNavigation() {
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
 
   // Settings navigation
-  const [settingsViewMode, setSettingsViewMode] = useState<'main' | 'category-editor'>('main');
+  const [settingsViewMode, setSettingsViewMode] = useState<'main' | 'category-editor' | 'payment-methods-editor'>('main');
 
   // Transaction selection
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
@@ -95,7 +95,7 @@ export function useAppNavigation() {
     resetScrollPosition();
   }, []);
 
-  const changeSettingsView = useCallback((mode: 'main' | 'category-editor') => {
+  const changeSettingsView = useCallback((mode: 'main' | 'category-editor' | 'payment-methods-editor') => {
     setSettingsViewMode(mode);
     // Reset scroll when changing settings sub-views
     resetScrollPosition();

@@ -21,6 +21,7 @@ interface NewExpenseFormProps {
   }) => void;
   categoryConfig: CategoryConfig;
   currencyCode: string;
+  paymentMethods?: string[];
   onClose?: () => void;
   onSuccess?: (title: string, message: string, type: 'expense' | 'purchase') => void;
 }
@@ -29,6 +30,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
   onAddTransaction, 
   categoryConfig, 
   currencyCode,
+  paymentMethods = ['Efectivo', 'Tarjeta', 'Transferencia'],
   onClose,
   onSuccess
 }) => {
@@ -498,11 +500,10 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
               onChange={e => setPaymentMethod(e.target.value)} 
               className={INPUT_BASE_CLASSES}
             >
-              <option value="Efectivo">Efectivo</option>
-              <option value="Tarjeta">Tarjeta</option>
-              <option value="Transferencia">Transferencia</option>
-              <option value="Cheque">Cheque</option>
-              <option value="Otro">Otro</option>
+              <option value="">Seleccionar método</option>
+              {paymentMethods.map((method) => (
+                <option key={method} value={method}>{method}</option>
+              ))}
             </select>
           </div>
         )}

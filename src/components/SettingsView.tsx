@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import type { CategoryConfig } from '../types';
-import { SunIcon, MoonIcon, ChevronRightIcon } from './icons';
+import { SunIcon, MoonIcon, ChevronRightIcon, CreditCardIcon } from './icons';
 import { CURRENCIES, TEXT_PAGE_TITLE } from '../utils/constants';
 import { CARD_STYLES } from '../utils/styleConstants';
 
@@ -12,6 +12,8 @@ interface SettingsViewProps {
   currencyCode: string;
   onCurrencyChange: (currencyCode: string) => void;
   onEditCategories?: () => void;
+  onEditPaymentMethods?: () => void;
+  paymentMethods?: string[];
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -21,7 +23,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onToggleTheme,
   currencyCode,
   onCurrencyChange,
-  onEditCategories
+  onEditCategories,
+  onEditPaymentMethods,
+  paymentMethods = []
 }) => {
   // Local state for settings
   const [enabled, setEnabled] = useState(initialConfig.enabled);
@@ -61,6 +65,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         {/* Appearance Section */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Apariencia</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+            Cambia entre claro y modo nocturno
+          </p>
           <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-white dark:bg-slate-600">
@@ -106,6 +113,36 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+
+        {/* Payment Methods Section */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Métodos de Pago</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+            Configura los métodos de pago disponibles para tus transacciones
+          </p>
+
+          {/* Edit Payment Methods Button */}
+          {onEditPaymentMethods && (
+            <button
+              onClick={onEditPaymentMethods}
+              className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl mb-3"
+            >
+              <div className="p-2 rounded-lg bg-white dark:bg-slate-600">
+              <CreditCardIcon className="w-5 h-5 text-blue-500" />
+            </div>
+              <div className="flex-1">
+              <p className="font-medium text-slate-800 dark:text-white">{paymentMethods.length} métodos configurados</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                {paymentMethods.length > 0 ? paymentMethods.slice(0, 3).join(', ') + (paymentMethods.length > 3 ? '...' : '') : 'Sin métodos configurados'}
+              </p>
+            </div>
+              <ChevronRightIcon className="w-5 h-5 text-slate-400" />
+            </button>
+          )}
         </div>
 
         {/* Divider */}

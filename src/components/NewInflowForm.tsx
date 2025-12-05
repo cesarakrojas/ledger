@@ -15,16 +15,17 @@ interface NewInflowFormProps {
   onAddTransaction: (transaction: { description: string; amount: number; type: 'inflow'; category?: string; paymentMethod?: string; items?: { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[] }) => void;
   categoryConfig: CategoryConfig;
   currencyCode: string;
+  paymentMethods?: string[];
   onClose?: () => void;
   onSuccess?: (title: string, message: string) => void;
 }
 
-export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTransaction, categoryConfig, currencyCode, onClose, onSuccess }) => {
+export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTransaction, categoryConfig, currencyCode, paymentMethods = ['Efectivo', 'Tarjeta', 'Transferencia'], onClose, onSuccess }) => {
   // Mode State: 'inventory' (default) or 'manual'
   const [mode, setMode] = useState<'inventory' | 'manual'>('manual');
   
   const [productQuantities, setProductQuantities] = useState<ProductQuantity>({});
-  const [paymentMethod, setPaymentMethod] = useState('Efectivo');
+  const [paymentMethod, setPaymentMethod] = useState(paymentMethods[0] || 'Efectivo');
   const [searchTerm, setSearchTerm] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isCartConfirmed, setIsCartConfirmed] = useState(false);
@@ -496,11 +497,9 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
               onChange={(e) => setPaymentMethod(e.target.value)}
               className={INPUT_BASE_CLASSES}
             >
-              <option value="Efectivo">Efectivo</option>
-              <option value="Tarjeta">Tarjeta</option>
-              <option value="Transferencia">Transferencia</option>
-              <option value="Cheque">Cheque</option>
-              <option value="Otro">Otro</option>
+              {paymentMethods.map((method) => (
+                <option key={method} value={method}>{method}</option>
+              ))}
             </select>
           </div>
         )}

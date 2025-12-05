@@ -24,6 +24,7 @@ export const STORAGE_KEYS = {
   
   // App settings
   CATEGORY_CONFIG: 'app_category_config',
+  PAYMENT_METHODS: 'app_payment_methods',
   CURRENCY_CODE: 'app_currency_code',
   THEME: 'app_theme',
 } as const;

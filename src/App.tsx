@@ -6,6 +6,7 @@ import { CARD_EMPTY_STATE } from './utils/styleConstants';
 import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon } from './components/icons';
 import { SettingsView } from './components/SettingsView';
 import { CategoryEditorView } from './components/CategoryEditorView';
+import { PaymentMethodsEditorView } from './components/PaymentMethodsEditorView';
 import { InventoryView } from './components/InventoryView';
 import { ClientsView } from './components/ClientsView';
 import { ReportsView } from './components/ReportsView';
@@ -71,6 +72,7 @@ export default function App() {
     inflowCategories: ['Ventas', 'Otros Ingresos', 'Propinas'],
     outflowCategories: ['Gastos Operativos', 'Salarios', 'Servicios Públicos', 'Mantenimiento', 'Transporte', 'Otros Gastos']
   });
+  const [paymentMethods, setPaymentMethods] = useState<string[]>(['Efectivo', 'Tarjeta', 'Transferencia']);
 
   // Success modal state
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -104,6 +106,16 @@ export default function App() {
       }
     } catch (e) {
       console.error('Error loading category config:', e);
+    }
+
+    // Load payment methods
+    try {
+      const savedMethodsStr = localStorage.getItem(STORAGE_KEYS.PAYMENT_METHODS);
+      if (savedMethodsStr) {
+        setPaymentMethods(JSON.parse(savedMethodsStr));
+      }
+    } catch (e) {
+      console.error('Error loading payment methods:', e);
     }
     
     // Load currency
@@ -152,6 +164,11 @@ export default function App() {
   const handleSaveCategoryConfig = useCallback((config: CategoryConfig) => {
     setCategoryConfig(config);
     localStorage.setItem(STORAGE_KEYS.CATEGORY_CONFIG, JSON.stringify(config));
+  }, []);
+
+  const handleSavePaymentMethods = useCallback((methods: string[]) => {
+    setPaymentMethods(methods);
+    localStorage.setItem(STORAGE_KEYS.PAYMENT_METHODS, JSON.stringify(methods));
   }, []);
 
   const handleCurrencyChange = useCallback((newCurrencyCode: string) => {
@@ -253,6 +270,21 @@ export default function App() {
       );
     }
 
+    if (settingsViewMode === 'payment-methods-editor') {
+      return (
+        <FormViewWrapper title="Editar Métodos de Pago" onClose={() => changeSettingsView('main')}>
+          <PaymentMethodsEditorView
+            paymentMethods={paymentMethods}
+            onSave={(methods) => {
+              handleSavePaymentMethods(methods);
+              changeSettingsView('main');
+            }}
+            onCancel={() => changeSettingsView('main')}
+          />
+        </FormViewWrapper>
+      );
+    }
+
     return (
       <SettingsView
         onSave={handleSaveCategoryConfig}
@@ -262,6 +294,8 @@ export default function App() {
         currencyCode={currencyCode}
         onCurrencyChange={handleCurrencyChange}
         onEditCategories={() => changeSettingsView('category-editor')}
+        onEditPaymentMethods={() => changeSettingsView('payment-methods-editor')}
+        paymentMethods={paymentMethods}
       />
     );
   };
@@ -316,6 +350,7 @@ export default function App() {
           onAddTransaction={handleAddTransaction}
           categoryConfig={categoryConfig}
           currencyCode={currencyCode}
+          paymentMethods={paymentMethods}
           onClose={() => navigate('home')}
           onSuccess={(title, message) => {
             setSuccessModalTitle(title);
@@ -335,6 +370,7 @@ export default function App() {
           onAddTransaction={handleAddTransaction} 
           categoryConfig={categoryConfig}
           currencyCode={currencyCode}
+          paymentMethods={paymentMethods}
           onClose={() => navigate('home')}
           onSuccess={(title, message, type) => {
             setSuccessModalTitle(title);

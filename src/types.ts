@@ -23,6 +23,10 @@ export interface CategoryConfig {
   outflowCategories: string[];
 }
 
+export interface PaymentMethodsConfig {
+  methods: string[];
+}
+
 export interface ProductVariant {
   id: string;
   name: string;

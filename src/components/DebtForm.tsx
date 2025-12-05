@@ -61,7 +61,8 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
   const handleCounterpartyChange = (value: string) => {
     setCounterparty(value);
     setSearchQuery(value);
-    setShowDropdown(true);
+    // Only show dropdown if user has typed at least 1 character
+    setShowDropdown(value.trim().length >= 1);
   };
 
   const selectContact = (contact: Contact) => {
@@ -103,6 +104,22 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
     setIsSubmitting(true);
 
     try {
+      // Auto-create contact if it doesn't exist (only in create mode)
+      if (mode === 'create') {
+        const contactType = type === 'receivable' ? 'client' : 'supplier';
+        const existingContact = contacts.find(
+          c => c.name.toLowerCase() === counterparty.trim().toLowerCase() && c.type === contactType
+        );
+        
+        if (!existingContact) {
+          // Create new contact automatically
+          contactService.createContact({
+            type: contactType,
+            name: counterparty.trim()
+          });
+        }
+      }
+
       let result;
       if (mode === 'create') {
         result = debtService.createDebt(
@@ -193,7 +210,6 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
             type="text"
             value={counterparty}
             onChange={(e) => handleCounterpartyChange(e.target.value)}
-            onFocus={() => setShowDropdown(true)}
             placeholder={type === 'receivable' ? 'Nombre del cliente' : 'Nombre del proveedor'}
             className={INPUT_BASE_CLASSES}
             autoComplete="off"
