@@ -652,7 +652,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                 className={INPUT_BASE_CLASSES}
               />
             </div>
-            {categoryConfig.enabled && categoryConfig.inflowCategories.length > 0 && (
+            {categoryConfig.inflowCategories.length > 0 && (
               <div>
                 <label className={FORM_LABEL}>
                   Categoría

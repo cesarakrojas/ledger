@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import type { CategoryConfig } from '../types';
-import { SunIcon, MoonIcon, ChevronRightIcon, CreditCardIcon } from './icons';
+import { ServicesIcon, SunIcon, MoonIcon, ChevronRightIcon, CreditCardIcon } from './icons';
 import { CURRENCIES, TEXT_PAGE_TITLE } from '../utils/constants';
 import { CARD_STYLES } from '../utils/styleConstants';
 
@@ -28,22 +28,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   paymentMethods = []
 }) => {
   // Local state for settings
-  const [enabled, setEnabled] = useState(initialConfig.enabled);
   const [localCurrencyCode, setLocalCurrencyCode] = useState(currencyCode);
 
   // Track if there are unsaved changes
   const hasUnsavedChanges = useCallback(() => {
-    const configChanged = 
-      enabled !== initialConfig.enabled ||
-      localCurrencyCode !== currencyCode;
-    return configChanged;
-  }, [enabled, localCurrencyCode, initialConfig, currencyCode]);
+    return localCurrencyCode !== currencyCode;
+  }, [localCurrencyCode, currencyCode]);
 
   // Save all changes
   const handleSaveChanges = () => {
-    // Save category config (keeping existing categories)
+    // Save category config (categories always enabled)
     const config: CategoryConfig = {
-      enabled,
+      enabled: true,
       inflowCategories: initialConfig.inflowCategories,
       outflowCategories: initialConfig.outflowCategories
     };
@@ -150,52 +146,38 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         {/* Categories Section */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Categorías</h3>
-            
-            {/* Enable/Disable Toggle */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-slate-500 dark:text-slate-400">
-                {enabled ? 'Activadas' : 'Desactivadas'}
-              </span>
-              <button
-                onClick={() => setEnabled(!enabled)}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                  enabled ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-600'
-                }`}
-              >
-                <span
-                  className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform ${
-                    enabled ? 'translate-x-7' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
+          <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Categorías</h3>
 
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            Habilitar el campo de categoría en las transacciones
+            Organiza tus transacciones por categoría
           </p>
 
-          {/* Categories Summary & Edit Button */}
-          {enabled && (
-            <div className="space-y-4">
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-4">
-
-              </div>
-
-              {/* Edit Categories Button */}
-              {onEditCategories && (
-                <button
-                  onClick={onEditCategories}
-                  className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
-                >
-                  <span className="font-medium text-slate-700 dark:text-slate-200">Editar Categorías</span>
-                  <ChevronRightIcon className="w-5 h-5 text-slate-400" />
-                </button>
-              )}
+          {/* Edit Categories Button */}
+          {onEditCategories && ( 
+            <button
+            // Event handler for button click
+            onClick={onEditCategories}
+            // Styling for layout and appearance (using utility classes like Tailwind CSS)
+            className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl"
+          >
+            {/* Container for the icon with specific background */}
+            <div className="p-2 rounded-lg bg-white dark:bg-slate-600">
+              {/* Displaying a credit card icon */}
+              <ServicesIcon className="w-5 h-5 text-blue-500" />
             </div>
+            {/* Text container, takes up available space */}
+            <div className="flex-1">
+              {/* Button text label in Spanish: "Edit Categories" */}
+              <p className="font-medium text-slate-800 dark:text-white">Categorías de Transacciones</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                Para Ingresos y Gastos
+              </p>
+            </div>
+            
+            {/* Displaying a right chevron icon for navigation indication */}
+            <ChevronRightIcon className="w-5 h-5 text-slate-400" />
+            </button>
+
           )}
         </div>
       </div>

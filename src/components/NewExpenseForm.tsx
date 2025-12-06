@@ -311,7 +311,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
         )}
 
         {/* Category Selection - Only show for Regular Expenses */}
-        {categoryConfig.enabled && !isProductPurchase && (
+        {!isProductPurchase && categoryConfig.outflowCategories.length > 0 && (
           <div>
             <label className={FORM_LABEL}>
               Categoría
