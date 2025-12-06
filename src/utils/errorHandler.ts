@@ -57,35 +57,6 @@ export const createError = (
 });
 
 /**
- * Wrap a function with error handling
- */
-export const withErrorHandling = <T extends (...args: any[]) => any>(
-  fn: T,
-  errorMessage: string,
-  errorType: AppError['type'] = 'unknown'
-): T => {
-  return ((...args: Parameters<T>): ReturnType<T> => {
-    try {
-      const result = fn(...args);
-      
-      // Handle async functions
-      if (result instanceof Promise) {
-        return result.catch((error) => {
-          reportError(createError(errorType, errorMessage, error.message));
-          throw error;
-        }) as ReturnType<T>;
-      }
-      
-      return result;
-    } catch (error) {
-      const errorDetails = error instanceof Error ? error.message : String(error);
-      reportError(createError(errorType, errorMessage, errorDetails));
-      throw error;
-    }
-  }) as T;
-};
-
-/**
  * Check if localStorage is available and has space
  */
 export const checkStorageAvailability = (): { available: boolean; message?: string } => {
@@ -111,24 +82,6 @@ export const checkStorageAvailability = (): { available: boolean; message?: stri
       available: false, 
       message: 'Almacenamiento no disponible' 
     };
-  }
-};
-
-/**
- * Safe localStorage operations with error handling
- */
-export const safeStorageOperation = <T>(
-  operation: () => T,
-  operationName: string
-): T | null => {
-  try {
-    return operation();
-  } catch (error) {
-    const errorDetails = error instanceof Error ? error.message : String(error);
-    reportError(
-      createError('storage', `Error en ${operationName}`, errorDetails)
-    );
-    return null;
   }
 };
 
