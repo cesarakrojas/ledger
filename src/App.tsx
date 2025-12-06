@@ -70,7 +70,7 @@ export default function App() {
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>({
     enabled: true,
     inflowCategories: ['Ventas', 'Otros Ingresos', 'Propinas'],
-    outflowCategories: ['Gastos Operativos', 'Salarios', 'Servicios Públicos', 'Mantenimiento', 'Transporte', 'Otros Gastos']
+    outflowCategories: ['Gastos Operativos', 'Salarios', 'Servicios Públicos', 'Compras', 'Transporte', 'Otros Gastos']
   });
   const [paymentMethods, setPaymentMethods] = useState<string[]>(['Efectivo', 'Tarjeta', 'Transferencia']);
 

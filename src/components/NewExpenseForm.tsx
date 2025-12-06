@@ -225,8 +225,13 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
       if (description.trim() && parseFloat(amount) > 0) {
         const expenseAmount = parseFloat(amount);
         
+        // Add "Compra:" prefix if category is "Compras"
+        const finalDescription = category === 'Compras' 
+          ? `Compra: ${description}` 
+          : description;
+        
         onAddTransaction({ 
-          description, 
+          description: finalDescription, 
           amount: expenseAmount, 
           type: 'outflow',
           category: category || undefined,

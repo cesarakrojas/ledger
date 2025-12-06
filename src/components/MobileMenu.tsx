@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Bars3Icon, XMarkIcon, CashIcon, UserIcon, Cog6ToothIcon } from './icons';
 
-type ViewType = 'home' | 'settings' | 'inventory' | 'libreta' | 'clients' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
+// Must match AppView from useAppNavigation hook
+type ViewType = 'home' | 'inventory' | 'libreta' | 'clients' | 'settings' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
 
 export interface MobileMenuProps {
   isOpen: boolean;
@@ -93,7 +94,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                   className="w-full px-5 py-4 text-left flex items-center gap-4 text-lg font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                 >
                   <UserIcon className="w-6 h-6 text-slate-400" />
-                  <span>Clientes</span>
+                  <span>Contactos</span>
                 </button>
               </li>
               <li>
