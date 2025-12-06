@@ -152,12 +152,3 @@ export const deleteContact = (contactId: string): boolean => {
     return false;
   }
 };
-
-// Search contacts by name (for autocomplete)
-export const searchContactsByName = (searchTerm: string, type?: 'client' | 'supplier'): Contact[] => {
-  if (!searchTerm.trim()) {
-    return [];
-  }
-  
-  return getAllContacts({ searchTerm, type });
-};

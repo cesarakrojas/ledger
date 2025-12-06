@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
-import type { CategoryConfig, Product, ProductQuantity } from '../types';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import type { CategoryConfig, Product, ProductQuantity, Contact } from '../types';
 import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
 import { CARD_PRODUCT_ITEM, CART_SUMMARY_OUTFLOW } from '../utils/styleConstants';
 import { formatCurrency } from '../utils/formatters';
 import { ExclamationCircleIcon } from './icons';
 import * as inventoryService from '../services/inventoryService';
 import * as dataService from '../services/dataService';
+import * as contactService from '../services/contactService';
 import { getTopProducts } from '../utils/commerce';
 import QuantityStepper from './QuantityStepper';
 
@@ -47,9 +48,43 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [showProductSelection, setShowProductSelection] = useState(false);
   const [isCartConfirmed, setIsCartConfirmed] = useState(false);
+  
+  // Supplier selection states
+  const [suppliers, setSuppliers] = useState<Contact[]>([]);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>('');
+  const [supplierSearch, setSupplierSearch] = useState('');
+  const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
+  const supplierDropdownRef = useRef<HTMLDivElement>(null);
 
   // Derived state for the mode
   const isProductPurchase = category === 'Compra de Productos';
+  
+  // Load suppliers on mount
+  useEffect(() => {
+    setSuppliers(contactService.getAllContacts({ type: 'supplier' }));
+  }, []);
+  
+  // Close supplier dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (supplierDropdownRef.current && !supplierDropdownRef.current.contains(event.target as Node)) {
+        setShowSupplierDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  // Filter suppliers based on search
+  const filteredSuppliers = useMemo(() => {
+    if (!supplierSearch.trim()) return suppliers;
+    return suppliers.filter(s => 
+      s.name.toLowerCase().includes(supplierSearch.toLowerCase())
+    );
+  }, [suppliers, supplierSearch]);
+  
+  // Get selected supplier name
+  const selectedSupplier = suppliers.find(s => s.id === selectedSupplierId);
 
   // Use shared top-products helper
 
@@ -64,12 +99,16 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
       setSearchTerm('');
       setShowProductSelection(true); // Open selection immediately
       setIsCartConfirmed(false);
+      // Reload suppliers in case new ones were added
+      setSuppliers(contactService.getAllContacts({ type: 'supplier' }));
     } else {
       setCategory('');
       setProducts([]);
       setProductQuantities({});
       setShowProductSelection(false);
       setIsCartConfirmed(false);
+      setSelectedSupplierId('');
+      setSupplierSearch('');
     }
   };
 
@@ -174,10 +213,14 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
         }
       }
 
-      // Create transaction description
-      const transactionDescription = itemCount === 1 
+      // Create transaction description (include supplier if selected)
+      const supplierName = selectedSupplier?.name;
+      const baseDescription = itemCount === 1 
         ? `Compra: ${products.find(p => p.id === Object.keys(productQuantities)[0])?.name}${Object.values(productQuantities)[0].quantity > 1 ? ` x${Object.values(productQuantities)[0].quantity}` : ''}`
         : `Compra: ${itemCount} productos`;
+      const transactionDescription = supplierName 
+        ? `${baseDescription} (Proveedor: ${supplierName})`
+        : baseDescription;
 
       // Build items array
       const items = Object.entries(productQuantities).map(([productId, data]) => {
@@ -254,6 +297,8 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
       setProducts([]);
       setSearchTerm('');
       setFormError(null);
+      setSelectedSupplierId('');
+      setSupplierSearch('');
   };
 
   const filteredProducts = isProductPurchase 
@@ -448,6 +493,80 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
                   <span>Subtotal:</span>
                   <span className="text-lg">{formatCurrency(calculateProductsTotal(), currencyCode)}</span>
                 </div>
+              </div>
+            )}
+            
+            {/* Supplier Selection - Show when cart is confirmed */}
+            {isCartConfirmed && (
+              <div ref={supplierDropdownRef} className="relative">
+                <label className={FORM_LABEL}>
+                  Proveedor (opcional)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={selectedSupplier ? selectedSupplier.name : supplierSearch}
+                    onChange={(e) => {
+                      setSupplierSearch(e.target.value);
+                      setSelectedSupplierId('');
+                      setShowSupplierDropdown(true);
+                    }}
+                    onFocus={() => setShowSupplierDropdown(true)}
+                    placeholder="Buscar o seleccionar proveedor..."
+                    className={INPUT_BASE_CLASSES}
+                  />
+                  {selectedSupplier && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedSupplierId('');
+                        setSupplierSearch('');
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                
+                {/* Supplier Dropdown */}
+                {showSupplierDropdown && !selectedSupplier && (
+                  <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    {filteredSuppliers.length === 0 ? (
+                      <div className="p-3 text-sm text-slate-500 dark:text-slate-400 text-center">
+                        {suppliers.length === 0 
+                          ? 'No hay proveedores registrados' 
+                          : 'No se encontraron proveedores'}
+                      </div>
+                    ) : (
+                      filteredSuppliers.map(supplier => (
+                        <button
+                          key={supplier.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedSupplierId(supplier.id);
+                            setSupplierSearch('');
+                            setShowSupplierDropdown(false);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                          <span className="text-slate-800 dark:text-white">{supplier.name}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+                
+                {suppliers.length === 0 && (
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Puedes agregar proveedores desde Clientes → Nuevo → Proveedor
+                  </p>
+                )}
               </div>
             )}
           </>

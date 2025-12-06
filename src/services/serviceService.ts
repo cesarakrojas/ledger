@@ -42,11 +42,6 @@ export const getAllServices = (filters?: ServiceFilters): Service[] => {
   return services.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 };
 
-// Get only active services (for selection lists)
-export const getActiveServices = (): Service[] => {
-  return getAllServices({ activeOnly: true });
-};
-
 // Create a new service with error handling
 export const createService = (
   name: string,

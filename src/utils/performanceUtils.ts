@@ -109,7 +109,7 @@ class StorageCache {
 }
 
 // Singleton instance
-export const storageCache = new StorageCache();
+const storageCache = new StorageCache();
 
 /**
  * Generic storage accessor factory
@@ -196,20 +196,4 @@ export const createStorageAccessor = <T>(
   };
 
   return { get, save };
-};
-
-/**
- * Hook to invalidate cache when localStorage changes (multi-tab sync)
- */
-export const useStorageCacheInvalidation = (keys: string[]) => {
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key && keys.includes(event.key)) {
-        storageCache.invalidate(event.key);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [keys]);
 };

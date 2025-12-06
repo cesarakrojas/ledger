@@ -8,15 +8,6 @@ const CARD_BASE = 'bg-white dark:bg-slate-800 shadow-lg rounded-2xl';
 // Standard card with padding
 export const CARD_STYLES = `${CARD_BASE} p-6`;
 
-// Card without padding (for custom layouts)
-export const CARD_STYLES_NO_PADDING = CARD_BASE;
-
-// Interactive card for clickable elements
-export const CARD_INTERACTIVE = `${CARD_BASE} hover:shadow-xl transition-shadow cursor-pointer`;
-
-// Interactive card with padding and enhanced hover effects
-export const CARD_INTERACTIVE_ENHANCED = `group ${CARD_BASE} p-5 hover:shadow-xl transition-all cursor-pointer border border-transparent hover:border-emerald-500/20`;
-
 // Empty state card with centered content
 export const CARD_EMPTY_STATE = `${CARD_BASE} p-12 text-center`;
 
@@ -51,7 +42,6 @@ export const ICON_BTN_CLOSE = 'p-2 -mr-1 text-slate-400 hover:text-slate-600 dar
 export const BTN_FOOTER_PRIMARY = 'flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/20 transition-colors';
 export const BTN_FOOTER_SECONDARY = 'flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-semibold transition-colors';
 export const BTN_FOOTER_DANGER = 'flex items-center justify-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl font-semibold transition-colors';
-export const BTN_FOOTER_EDIT = 'flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/30 transition-colors';
 
 // Detail View Container (outer wrapper for detail modals)
 export const DETAIL_VIEW_CONTAINER = 'w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 rounded-t-[2rem] overflow-hidden shadow-2xl';
