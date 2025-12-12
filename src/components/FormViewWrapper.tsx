@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { XMarkIcon } from './icons';
-import { CARD_FORM, ICON_BTN } from '../utils/styleConstants';
-import { TEXT_PAGE_TITLE_RESPONSIVE } from '../utils/constants';
+import { CARD_FORM } from '../utils/styleConstants';
+import { TEXT_PAGE_TITLE, TRANSITION_COLORS } from '../utils/constants';
 
 interface FormViewWrapperProps {
   title: string;
@@ -25,18 +25,18 @@ export const FormViewWrapper: React.FC<FormViewWrapperProps> = ({
   
   return (
     <div ref={containerRef} className="w-full h-full mx-auto animate-fade-in flex items-stretch">
-      <div className={`w-full mx-auto flex flex-col ${CARD_FORM}`}>
-        <div className="flex items-center justify-between p-4 pb-2 flex-shrink-0">
-          <h2 className={TEXT_PAGE_TITLE_RESPONSIVE}>{title}</h2>
+      <div className={`w-full ${CARD_FORM}`}>
+        <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
+          <h2 className={TEXT_PAGE_TITLE}>{title}</h2>
           <button
             onClick={onClose}
-            className={`${ICON_BTN} p-2.5`}
+            className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
             aria-label="Cerrar"
           >
-            <XMarkIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+            <XMarkIcon className="w-6 h-6" />
           </button>
         </div>
-        <div className="flex-1 px-4 min-h-0 flex flex-col">
+        <div className="flex-1 overflow-hidden px-6">
           {children}
         </div>
       </div>

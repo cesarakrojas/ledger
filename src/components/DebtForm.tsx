@@ -160,7 +160,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto space-y-4 pr-2 scroll-container">
+      <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-4 scroll-container">
         {/* Error Banner */}
         {formError && (
           <div className={ERROR_BANNER}>

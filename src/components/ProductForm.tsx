@@ -80,17 +80,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto pr-2 pb-4 space-y-4 scroll-container">
-      {/* Error Banner */}
-      {formError && (
-        <div className={ERROR_BANNER}>
-          <ExclamationCircleIcon className="w-5 h-5 flex-shrink-0" />
-          {formError}
-        </div>
-      )}
+      <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-4 scroll-container">
+        {/* Error Banner */}
+        {formError && (
+          <div className={ERROR_BANNER}>
+            <ExclamationCircleIcon className="w-5 h-5 flex-shrink-0" />
+            {formError}
+          </div>
+        )}
 
-      {/* Product Name */}
-      <div>
+        {/* Product Name */}
+        <div>
         <label className={FORM_LABEL}>
           Nombre del Producto <span className="text-red-500">*</span>
         </label>
@@ -104,8 +104,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
         />
       </div>
 
-      {/* Description */}
-      <div>
+        {/* Description */}
+        <div>
         <label className={FORM_LABEL}>
           Descripción
         </label>
@@ -118,8 +118,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
         />
       </div>
 
-      {/* Price and Category */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Price and Category */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={FORM_LABEL}>
             Precio <span className="text-red-500">*</span>
@@ -149,8 +149,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
         </div>
       </div>
 
-      {/* Quantity Field */}
-      <div>
+        {/* Quantity Field */}
+        <div>
         <label className={FORM_LABEL}>
           Cantidad Disponible <span className="text-red-500">*</span>
         </label>

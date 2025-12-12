@@ -14,6 +14,7 @@ import { NewInflowForm } from './components/NewInflowForm';
 import { NewExpenseForm } from './components/NewExpenseForm';
 import { LibretaView } from './components/LibretaView';
 import { FormViewWrapper } from './components/FormViewWrapper';
+import { ProductForm } from './components/ProductForm';
 import { DebtForm } from './components/DebtForm';
 import { DebtDetailView } from './components/DebtDetailView';
 import { ErrorNotification } from './components/ErrorNotification';
@@ -21,7 +22,7 @@ import { SuccessModal } from './components/SuccessModal';
 import { HomeView } from './components/views/HomeView';
 import { TransactionDetailPage } from './components/views/TransactionDetailPage';
 import { ProductDetailPage } from './components/views/ProductDetailPage';
-import { ProductFormPage } from './components/views/ProductFormPage';
+
 import { ContactFormPage } from './components/views/ContactFormPage';
 import { ContactDetailPage } from './components/views/ContactDetailPage';
 import { MobileMenu } from './components/MobileMenu';
@@ -318,7 +319,29 @@ export default function App() {
 
   const InventoryModule = () => {
     if (inventoryViewMode === 'create' || inventoryViewMode === 'edit') {
-      return <ProductFormPage mode={inventoryViewMode} productId={editingProductId} onBack={handleInventoryListNav} />;
+      return (
+        <FormViewWrapper 
+          title={inventoryViewMode === 'edit' ? 'Editar Producto' : 'Nuevo Producto'}
+          onClose={handleInventoryListNav}
+        >
+          <ProductForm
+            product={inventoryViewMode === 'edit' && editingProductId ? (() => {
+              const allProducts = inventoryService.getAllProducts();
+              return allProducts.find(p => p.id === editingProductId) || null;
+            })() : null}
+            onSave={handleInventoryListNav}
+            onCancel={handleInventoryListNav}
+            onDelete={inventoryViewMode === 'edit' && editingProductId ? () => {
+              const allProducts = inventoryService.getAllProducts();
+              const product = allProducts.find(p => p.id === editingProductId);
+              if (product && confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+                const success = inventoryService.deleteProduct(product.id);
+                if (success) handleInventoryListNav();
+              }
+            } : undefined}
+          />
+        </FormViewWrapper>
+      );
     }
 
     if (inventoryViewMode === 'detail') {
