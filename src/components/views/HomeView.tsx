@@ -31,7 +31,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
-      <header className={CARD_STYLES}>
+      <div className={CARD_STYLES}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className={TEXT_PAGE_TITLE}>Transacciones</h2>
@@ -64,11 +64,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </p>
           </div>
         </div>
-      </header>
-
-      <div className="grid grid-cols-1 gap-6">
+        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
         <div>
-          <div className={CARD_STYLES}>
             {transactions.length === 0 ? (
               <div className="text-center py-10 text-slate-500 dark:text-slate-400">
                 <p>No hay transacciones de hoy.</p>
@@ -86,7 +83,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </ul>
             )}
           </div>
-        </div>
       </div>
     </div>
   );

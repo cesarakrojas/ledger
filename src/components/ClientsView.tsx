@@ -25,8 +25,7 @@ const ContactFilters = memo<ContactFiltersProps>(({
   setSelectedType 
 }) => {
   return (
-    <div className={CARD_STYLES}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
           type="text"
           placeholder="Buscar contactos..."
@@ -43,7 +42,6 @@ const ContactFilters = memo<ContactFiltersProps>(({
           <option value="client">Clientes</option>
           <option value="supplier">Proveedores</option>
         </select>
-      </div>
     </div>
   );
 });
@@ -145,7 +143,6 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
 
   return (
 <div className="w-full max-w-7xl mx-auto space-y-6">
-      {/* Header */}
       <div className={CARD_STYLES}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
@@ -163,19 +160,16 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
             <span>Nuevo Contacto</span>
           </button>
         </div>
-      </div>
+        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+        <ContactFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedType={selectedType}
+          setSelectedType={setSelectedType}
+        />
 
-      {/* Filters */}
-      <ContactFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedType={selectedType}
-        setSelectedType={setSelectedType}
-      />
-
-      {/* Contact List */}
-      {contacts.length === 0 ? (
-        <div className={CARD_STYLES}>
+        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+        {contacts.length === 0 ? (
           <div className="text-center py-12">
             <UserIcon className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
             <p className="text-slate-500 dark:text-slate-400">
@@ -190,51 +184,48 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
               Agregar Contacto
             </button>
           </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {/* Show grouped if no type filter */}
-          {!selectedType ? (
-            <>
-              {/* Clients Section */}
-              {clients.length > 0 && (
-                <div className={CARD_STYLES}>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                    Clientes ({clients.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {clients.map(contact => (
-                      <ContactItem
-                        key={contact.id}
-                        contact={contact}
-                        onClick={() => handleContactClick(contact.id)}
-                      />
-                    ))}
+        ) : (
+          <div>
+            {!selectedType ? (
+              <>
+                {clients.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+                      Clientes ({clients.length})
+                    </h3>
+                    <div className="space-y-2">
+                      {clients.map(contact => (
+                        <ContactItem
+                          key={contact.id}
+                          contact={contact}
+                          onClick={() => handleContactClick(contact.id)}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Suppliers Section */}
-              {suppliers.length > 0 && (
-                <div className={CARD_STYLES}>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                    Proveedores ({suppliers.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {suppliers.map(contact => (
-                      <ContactItem
-                        key={contact.id}
-                        contact={contact}
-                        onClick={() => handleContactClick(contact.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            /* Show flat list when filtered by type */
-            <div className={CARD_STYLES}>
+                {suppliers.length > 0 && (
+                  <>
+                    <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+                        Proveedores ({suppliers.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {suppliers.map(contact => (
+                          <ContactItem
+                            key={contact.id}
+                            contact={contact}
+                            onClick={() => handleContactClick(contact.id)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
               <div className="space-y-2">
                 {contacts.map(contact => (
                   <ContactItem
@@ -244,10 +235,10 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
                   />
                 ))}
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

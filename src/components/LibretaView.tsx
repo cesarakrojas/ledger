@@ -66,7 +66,6 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
-      {/* Header */}
       <div className={CARD_STYLES}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
@@ -129,10 +128,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
             )}
           </div>
         </div>
-      </div>
-
-      {/* Debts List */}
-      <div className={CARD_STYLES}>
+        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
         {debts.length === 0 ? (
           /* Empty State */
           <div>
