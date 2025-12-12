@@ -71,7 +71,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
           <div>
             <h2 className={TEXT_PAGE_TITLE}>Libreta de Deudas</h2>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
-              Gestión de cuentas por cobrar y pagar
+              Cuentas por cobrar y pagar
             </p>
           </div>
           <button

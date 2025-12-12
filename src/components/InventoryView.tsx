@@ -73,7 +73,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           <div>
             <h2 className={TEXT_PAGE_TITLE}>Inventario</h2>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
-              Gestiona tus productos y existencias
+              Gestiona tus productos
             </p>
           </div>
           <button
