@@ -13,7 +13,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({
   onBack,
 }) => {
   return (
-    <div className="w-full h-full max-w-4xl mx-auto flex items-center justify-center">
+    <div className="w-full h-full flex items-center justify-center">
       <div className="text-center">
         <p className="text-xl text-slate-600 dark:text-slate-400">{message}</p>
         <button

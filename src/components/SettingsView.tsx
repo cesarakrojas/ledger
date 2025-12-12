@@ -53,7 +53,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-40">
+    <div className="w-full space-y-6 pb-40">
       {/* Single Settings Card */}
       <div className={CARD_STYLES}>
         {/* Header */}

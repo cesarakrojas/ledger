@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { Product } from '../types';
 import { PlusIcon } from './icons';
 import { InventoryIcon } from './icons';
@@ -14,64 +14,6 @@ interface InventoryViewProps {
   currencyCode: string;
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', productId?: string) => void;
 }
-
-// Memoized filter controls
-interface InventoryFiltersProps {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
-  showLowStock: boolean;
-  setShowLowStock: (show: boolean) => void;
-  categories: string[];
-}
-
-const InventoryFilters = memo<InventoryFiltersProps>(({ 
-  searchTerm, 
-  setSearchTerm, 
-  selectedCategory, 
-  setSelectedCategory, 
-  showLowStock, 
-  setShowLowStock, 
-  categories 
-}) => {
-  return (
-    <div className={CARD_STYLES}>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <input
-          type="text"
-          placeholder="Buscar productos..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
-        />
-        <div className="grid grid-cols-2 gap-4">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
-          >
-            <option value="">Categorías</option>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-          <label className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showLowStock}
-              onChange={(e) => setShowLowStock(e.target.checked)}
-              className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
-            />
-            <span className="text-slate-700 dark:text-slate-200">Stock bajo</span>
-          </label>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-InventoryFilters.displayName = 'InventoryFilters';
 
 export const InventoryView: React.FC<InventoryViewProps> = ({ 
   currencyCode,
@@ -123,9 +65,10 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6">
-      {/* Header */}
+    <div className="w-full">
+      {/* Unified Card */}
       <div className={CARD_STYLES}>
+        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h2 className={TEXT_PAGE_TITLE}>Inventario</h2>
@@ -143,7 +86,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center mb-6">
           <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl">
             <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Productos</p>
             <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{products.length}</p>
@@ -153,21 +96,46 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
             <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{getLowStockCount()}</p>
           </div>
         </div>
-      </div>
 
-      {/* Filters */}
-      <InventoryFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        showLowStock={showLowStock}
-        setShowLowStock={setShowLowStock}
-        categories={categories}
-      />
+        <hr className="border-slate-200 dark:border-slate-700 my-6" />
 
-      {/* Products List */}
-      <div className={CARD_STYLES}>
+        {/* Filters */}
+        <div className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
+              >
+                <option value="">Categorías</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <label className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showLowStock}
+                  onChange={(e) => setShowLowStock(e.target.checked)}
+                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                />
+                <span className="text-slate-700 dark:text-slate-200">Stock bajo</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <hr className="border-slate-200 dark:border-slate-700 my-6" />
+
+        {/* Products List */}
         {products.length === 0 ? (
           <div>
             <div className="text-slate-400 dark:text-slate-500 mb-4">

@@ -21,12 +21,11 @@ export const FormViewWrapper: React.FC<FormViewWrapperProps> = ({
   children,
   maxWidth = '4xl'
 }) => {
-  const maxWidthClass = `max-w-${maxWidth}`;
   const containerRef = useRef<HTMLDivElement>(null);
   
   return (
-    <div ref={containerRef} className="w-full h-full mx-auto animate-fade-in flex items-stretch p-2 sm:p-4">
-      <div className={`w-full ${maxWidthClass} mx-auto flex flex-col ${CARD_FORM}`}>
+    <div ref={containerRef} className="w-full h-full mx-auto animate-fade-in flex items-stretch">
+      <div className={`w-full mx-auto flex flex-col ${CARD_FORM}`}>
         <div className="flex items-center justify-between p-4 pb-2 flex-shrink-0">
           <h2 className={TEXT_PAGE_TITLE_RESPONSIVE}>{title}</h2>
           <button

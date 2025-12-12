@@ -165,7 +165,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ transactions, debts: _
     }`;
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {/* Header with Filters */}
       <div className={CARD_STYLES}>
         <h2 className={`${TEXT_PAGE_TITLE} mb-6`}>Reportes Historicos</h2>

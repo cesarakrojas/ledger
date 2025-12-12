@@ -41,7 +41,7 @@ export const ContactFormPage: React.FC<ContactFormPageProps> = ({ mode, contactI
 
   return (
     <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
-      <div className={`w-full max-w-4xl mx-auto ${CARD_FORM}`}>
+      <div className={`w-full ${CARD_FORM}`}>
         <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
           <h2 className={TEXT_PAGE_TITLE}>
             {mode === 'edit' ? 'Editar Contacto' : 'Nuevo Contacto'}

@@ -65,7 +65,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div className={CARD_STYLES}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>

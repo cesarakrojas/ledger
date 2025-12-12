@@ -307,7 +307,7 @@ export default function App() {
 
   // Placeholder shown when a module is intentionally deactivated/unmounted
   const DisabledModule: React.FC<{ name: string }> = ({ name }) => (
-    <div className="w-full max-w-4xl mx-auto animate-fade-in space-y-6">
+    <div className="w-full animate-fade-in space-y-6">
       <div className={CARD_EMPTY_STATE}>
         <h3 className="text-xl font-bold text-slate-800 dark:text-white">{name}</h3>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Este módulo está temporalmente desactivado.</p>
@@ -435,7 +435,7 @@ export default function App() {
     
     if (!debt) {
       return (
-        <div className="w-full h-full max-w-4xl mx-auto flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center">
           <div className="text-center">
             <p className="text-xl text-slate-600 dark:text-slate-400">Deuda no encontrada</p>
             <button
@@ -538,8 +538,8 @@ export default function App() {
   return (
     <div className="h-screen text-slate-900 dark:text-slate-200 transition-colors duration-300 font-sans flex flex-col overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-72 bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-800 dark:to-teal-900 rounded-b-[3rem]"></div>
-      <div className="relative p-2 sm:p-4 md:p-6 flex flex-col flex-1 min-h-0">
-        <nav className="flex justify-between items-center mb-4 sm:mb-6 relative z-10 flex-shrink-0">
+      <div className="relative flex flex-col flex-1 min-h-0">
+        <nav className="flex justify-between items-center mb-4 sm:mb-6 relative z-10 flex-shrink-0 px-4 pt-4">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="p-2 text-white hover:bg-white/20 rounded-lg transition-colors"
@@ -564,7 +564,7 @@ export default function App() {
           onNavigate={navigate}
         />
 
-        <main className={`flex flex-col items-center flex-1 overflow-y-auto overflow-x-hidden scroll-container min-h-0 ${showBottomNav ? 'pb-20' : 'pb-2'}`}>
+        <main className={`flex flex-col items-center flex-1 overflow-y-auto overflow-x-hidden scroll-container min-h-0 ${showBottomNav ? 'pb-20' : ''}`}>
           {view === 'home' ? (
             <HomeView
               transactions={todayTransactions}
