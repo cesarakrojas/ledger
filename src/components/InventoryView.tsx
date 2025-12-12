@@ -6,7 +6,20 @@ import { formatCurrency } from '../utils/formatters';
 import * as inventoryService from '../services/inventoryService';
 import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
 import { TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY } from '../utils/constants';
-import { useDebouncedValue } from '../utils/performanceUtils';
+
+// Simple Search Icon Component (SVG)
+const SearchIcon = ({ className }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    fill="none" 
+    viewBox="0 0 24 24" 
+    strokeWidth={2} 
+    stroke="currentColor" 
+    className={className}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  </svg>
+);
 
 interface InventoryViewProps {
   viewMode?: 'list' | 'create' | 'edit' | 'detail';
@@ -20,37 +33,23 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
   onChangeView 
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [showLowStock, setShowLowStock] = useState(false);
-  const [categories, setCategories] = useState<string[]>([]);
   
-  // Debounce search term to avoid excessive filtering
-  const debouncedSearchTerm = useDebouncedValue(searchTerm, 300);
-
   // Load products
   const loadProducts = useCallback(() => {
-    const filters = {
-      searchTerm: debouncedSearchTerm || undefined,
-      category: selectedCategory || undefined,
-      lowStock: showLowStock || undefined
-    };
-    const loadedProducts = inventoryService.getAllProducts(filters);
+    const loadedProducts = inventoryService.getAllProducts();
     setProducts(loadedProducts);
-  }, [debouncedSearchTerm, selectedCategory, showLowStock]);
+  }, []);
 
   useEffect(() => {
     loadProducts();
-    setCategories(inventoryService.getCategories());
 
     // Subscribe to changes
     const unsubscribe = inventoryService.subscribeToInventory(() => {
       loadProducts();
-      setCategories(inventoryService.getCategories());
     });
 
     return unsubscribe;
-  }, [debouncedSearchTerm, selectedCategory, showLowStock]);
+  }, [loadProducts]);
 
   const handleCreateProduct = () => {
     if (onChangeView) onChangeView('create');
@@ -70,12 +69,26 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
       <div className={CARD_STYLES}>
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h2 className={TEXT_PAGE_TITLE}>Inventario</h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">
-              Gestiona tus productos
-            </p>
+          
+          {/* Title + Search Icon Container */}
+          <div className="flex w-full sm:w-auto justify-between items-center sm:gap-8">
+            
+            {/* Text Block */}
+            <div>
+              <h2 className={TEXT_PAGE_TITLE}>Inventario</h2>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">
+                Gestiona tus productos
+              </p>
+            </div>
+
+            {/* Search Icon */}
+            <button className="p-2 text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+              <SearchIcon className="w-6 h-6" />
+            </button>
+            
           </div>
+
+          {/* Action Button */}
           <button
             onClick={handleCreateProduct}
             className={BTN_ACTION_PRIMARY}
@@ -94,42 +107,6 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           <div className="bg-orange-100 dark:bg-orange-900/50 p-4 rounded-xl">
             <p className="text-sm font-medium text-orange-700 dark:text-orange-400">Stock Bajo</p>
             <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{getLowStockCount()}</p>
-          </div>
-        </div>
-
-        <hr className="border-slate-200 dark:border-slate-700 my-6" />
-
-        {/* Filters */}
-        <div className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input
-              type="text"
-              placeholder="Buscar productos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100"
-              >
-                <option value="">Categorías</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-              <label className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showLowStock}
-                  onChange={(e) => setShowLowStock(e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
-                />
-                <span className="text-slate-700 dark:text-slate-200">Stock bajo</span>
-              </label>
-            </div>
           </div>
         </div>
 
