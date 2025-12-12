@@ -23,7 +23,7 @@ export const addTransaction = (
   amount: number,
   category?: string,
   paymentMethod?: string,
-  items?: { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[]
+  items?: { productId: string; productName: string; quantity: number; price: number; }[]
 ): Transaction | null => {
   const transactions = transactionStorage.get();
   

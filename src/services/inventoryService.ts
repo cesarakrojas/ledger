@@ -1,4 +1,4 @@
-import type { Product, ProductVariant, InventoryFilters } from '../types';
+import type { Product, InventoryFilters } from '../types';
 import { STORAGE_KEYS } from '../utils/storageKeys';
 import { generateId } from '../utils/idGenerator';
 import { reportError, createError, ERROR_MESSAGES } from '../utils/errorHandler';
@@ -18,48 +18,9 @@ const productStorage = createStorageAccessor<Product>(
   (error) => reportError(createError(error.type as 'storage', error.message, error.details))
 );
 
-// Calculate total quantity based on product mode
-const calculateTotalQuantity = (hasVariants: boolean, variants: ProductVariant[], standaloneQty: number): number => {
-  if (hasVariants && variants.length > 0) {
-    return variants.reduce((sum, v) => sum + v.quantity, 0);
-  }
-  return standaloneQty;
-};
-
-/**
- * Migrate old products that don't have standaloneQuantity field.
- * For products without variants: standaloneQuantity = totalQuantity
- * For products with variants: standaloneQuantity = 0 (quantity is in variants)
- */
-const migrateProduct = (product: Product): Product => {
-  // Check if migration is needed (standaloneQuantity is undefined)
-  if (product.standaloneQuantity === undefined) {
-    return {
-      ...product,
-      standaloneQuantity: product.hasVariants ? 0 : product.totalQuantity
-    };
-  }
-  return product;
-};
-
 // Get all products with optional filters
 export const getAllProducts = (filters?: InventoryFilters): Product[] => {
   let products = productStorage.get();
-  
-  // Migrate old products that don't have standaloneQuantity
-  let needsMigration = false;
-  products = products.map(p => {
-    if (p.standaloneQuantity === undefined) {
-      needsMigration = true;
-      return migrateProduct(p);
-    }
-    return p;
-  });
-  
-  // Persist migration if any products were updated
-  if (needsMigration) {
-    productStorage.save(products);
-  }
   
   if (filters?.searchTerm) {
     const term = filters.searchTerm.toLowerCase();
@@ -75,7 +36,7 @@ export const getAllProducts = (filters?: InventoryFilters): Product[] => {
   }
   
   if (filters?.lowStock) {
-    products = products.filter(p => p.totalQuantity <= 10);
+    products = products.filter(p => p.quantity <= 10);
   }
   
   return products.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
@@ -85,11 +46,9 @@ export const getAllProducts = (filters?: InventoryFilters): Product[] => {
 export const createProduct = (
   name: string,
   price: number,
+  quantity: number = 0,
   description?: string,
-  category?: string,
-  hasVariants: boolean = false,
-  variants: Omit<ProductVariant, 'id'>[] = [],
-  standaloneQuantity: number = 0
+  category?: string
 ): Product | null => {
   try {
     // Validation
@@ -103,26 +62,19 @@ export const createProduct = (
       return null;
     }
     
+    if (quantity < 0) {
+      reportError(createError('validation', 'La cantidad debe ser mayor o igual a cero'));
+      return null;
+    }
+    
     const products = productStorage.get();
-    
-    const productVariants: ProductVariant[] = variants.map(v => ({
-      ...v,
-      id: generateId()
-    }));
-    
-    // For variant products, standaloneQuantity should be 0
-    const effectiveStandaloneQty = hasVariants ? 0 : standaloneQuantity;
-    const totalQuantity = calculateTotalQuantity(hasVariants, productVariants, effectiveStandaloneQty);
     
     const newProduct: Product = {
       id: generateId(),
       name: name.trim(),
       description: description?.trim(),
       price,
-      standaloneQuantity: effectiveStandaloneQty,
-      totalQuantity,
-      hasVariants,
-      variants: productVariants,
+      quantity: Math.max(0, quantity),
       category: category?.trim(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -151,9 +103,7 @@ export const updateProduct = (
     description?: string;
     price?: number;
     category?: string;
-    hasVariants?: boolean;
-    variants?: ProductVariant[];
-    standaloneQuantity?: number;
+    quantity?: number;
   }
 ): Product | null => {
   try {
@@ -165,25 +115,7 @@ export const updateProduct = (
       return null;
     }
   
-    // Migrate product if needed (for old products without standaloneQuantity)
-    const currentProduct = migrateProduct(products[productIndex]);
-    
-    // Determine final hasVariants state
-    const hasVariants = updates.hasVariants !== undefined ? updates.hasVariants : currentProduct.hasVariants;
-    const variants = updates.variants !== undefined ? updates.variants : currentProduct.variants;
-    
-    // Determine standaloneQuantity:
-    // - If explicitly provided in updates, use it
-    // - Otherwise, use the current product's standaloneQuantity
-    // - For variant products, always set to 0
-    let standaloneQty: number;
-    if (hasVariants) {
-      standaloneQty = 0; // Variant products don't use standaloneQuantity
-    } else if (updates.standaloneQuantity !== undefined) {
-      standaloneQty = Math.max(0, updates.standaloneQuantity);
-    } else {
-      standaloneQty = currentProduct.standaloneQuantity;
-    }
+    const currentProduct = products[productIndex];
     
     const updatedProduct: Product = {
       ...currentProduct,
@@ -191,10 +123,7 @@ export const updateProduct = (
       name: updates.name?.trim() || currentProduct.name,
       description: updates.description?.trim(),
       category: updates.category?.trim(),
-      hasVariants,
-      variants,
-      standaloneQuantity: standaloneQty,
-      totalQuantity: Math.max(0, calculateTotalQuantity(hasVariants, variants, standaloneQty)),
+      quantity: updates.quantity !== undefined ? Math.max(0, updates.quantity) : currentProduct.quantity,
       updatedAt: new Date().toISOString()
     };
     
@@ -233,61 +162,10 @@ export const deleteProduct = (productId: string): boolean => {
   }
 };
 
-// Update variant quantity with error handling
-export const updateVariantQuantity = (
-  productId: string,
-  variantId: string,
-  newQuantity: number
-): Product | null => {
-  try {
-    if (newQuantity < 0) {
-      reportError(createError('validation', 'La cantidad debe ser mayor o igual a cero'));
-      return null;
-    }
-    
-    const products = productStorage.get();
-    const productIndex = products.findIndex(p => p.id === productId);
-    
-    if (productIndex === -1) {
-      reportError(createError('validation', ERROR_MESSAGES.NOT_FOUND, 'Producto no encontrado'));
-      return null;
-    }
-    
-    // Migrate product if needed
-    const product = migrateProduct(products[productIndex]);
-    const variantIndex = product.variants.findIndex(v => v.id === variantId);
-    
-    if (variantIndex === -1) {
-      reportError(createError('validation', ERROR_MESSAGES.NOT_FOUND, 'Variante no encontrada'));
-      return null;
-    }
-    
-    product.variants[variantIndex].quantity = Math.max(0, newQuantity);
-    // Use calculateTotalQuantity for consistency
-    product.standaloneQuantity = 0; // Variant products don't use standaloneQuantity
-    product.totalQuantity = calculateTotalQuantity(true, product.variants, 0);
-    product.updatedAt = new Date().toISOString();
-    
-    products[productIndex] = product;
-    const saved = productStorage.save(products);
-    
-    if (!saved) {
-      return null;
-    }
-    
-    return product;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    reportError(createError('storage', 'Error al actualizar cantidad de variante', errorMsg));
-    return null;
-  }
-};
-
 // Get product by ID
 export const getProductById = (productId: string): Product | null => {
   const products = productStorage.get();
-  const product = products.find(p => p.id === productId);
-  return product ? migrateProduct(product) : null;
+  return products.find(p => p.id === productId) || null;
 };
 
 // Get all unique categories

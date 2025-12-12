@@ -61,7 +61,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
   };
 
   const getLowStockCount = () => {
-    return products.filter(p => p.totalQuantity <= 10).length;
+    return products.filter(p => p.quantity <= 10).length;
   };
 
   return (
@@ -156,10 +156,10 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
               let statusColor = "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300";
               let statusText = "En Stock";
 
-              if (product.totalQuantity === 0) {
+              if (product.quantity === 0) {
                 statusColor = "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400";
                 statusText = "Sin Stock";
-              } else if (product.totalQuantity <= 10) {
+              } else if (product.quantity <= 10) {
                 statusColor = "bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300";
                 statusText = "Stock Bajo";
               }
@@ -208,7 +208,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                           <div className="flex items-center text-xs text-slate-400 dark:text-slate-500 font-medium">
                           
                             <span className="whitespace-nowrap">
-                              {product.totalQuantity} unid
+                              {product.quantity} unid
                             </span>
                           </div>
                         </div>

@@ -17,7 +17,7 @@ interface NewExpenseFormProps {
     type: 'outflow'; 
     category?: string; 
     paymentMethod?: string;
-    items?: { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[];
+    items?: { productId: string; productName: string; quantity: number; price: number; }[];
   }) => void;
   categoryConfig: CategoryConfig;
   currencyCode: string;
@@ -100,7 +100,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
     setShowProductSelection(true);
   };
 
-  const updateProductQuantity = (productId: string, newQuantity: number, variantId?: string) => {
+  const updateProductQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity === 0) {
       const newQuantities = { ...productQuantities };
       delete newQuantities[productId];
@@ -108,32 +108,16 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
     } else {
       setProductQuantities({
         ...productQuantities,
-        [productId]: {
-          quantity: newQuantity,
-          selectedVariantId: variantId
-        }
+        [productId]: newQuantity
       });
     }
   };
 
-  const updateProductVariant = (productId: string, variantId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-
-    setProductQuantities({
-      ...productQuantities,
-      [productId]: {
-        quantity: 1,
-        selectedVariantId: variantId
-      }
-    });
-  };
-
   const calculateProductsTotal = () => {
-    return Object.entries(productQuantities).reduce((sum, [productId, data]) => {
+    return Object.entries(productQuantities).reduce((sum, [productId, quantity]) => {
       const product = products.find(p => p.id === productId);
       if (!product) return sum;
-      return sum + (product.price * data.quantity);
+      return sum + (product.price * quantity);
     }, 0);
   };
 
@@ -152,52 +136,33 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
       const total = calculateProductsTotal();
 
       // Update inventory for each item (add to stock)
-      for (const [productId, data] of Object.entries(productQuantities)) {
+      for (const [productId, quantity] of Object.entries(productQuantities)) {
         const product = products.find(p => p.id === productId);
         if (!product) continue;
 
-        if (data.selectedVariantId) {
-          // Update variant quantity
-          const variant = product.variants.find(v => v.id === data.selectedVariantId);
-          if (variant) {
-            inventoryService.updateVariantQuantity(
-              productId,
-              data.selectedVariantId,
-              variant.quantity + data.quantity
-            );
-          }
-        } else {
-          // Update standalone product quantity (add to existing stock)
-          inventoryService.updateProduct(productId, {
-            standaloneQuantity: product.standaloneQuantity + data.quantity
-          });
-        }
+        // Update product quantity (add to existing stock)
+        inventoryService.updateProduct(productId, {
+          quantity: product.quantity + quantity
+        });
       }
 
       // Create transaction description
       const transactionDescription = itemCount === 1 
-        ? `Compra: ${products.find(p => p.id === Object.keys(productQuantities)[0])?.name}${Object.values(productQuantities)[0].quantity > 1 ? ` x${Object.values(productQuantities)[0].quantity}` : ''}`
+        ? `Compra: ${products.find(p => p.id === Object.keys(productQuantities)[0])?.name}${Object.values(productQuantities)[0] > 1 ? ` x${Object.values(productQuantities)[0]}` : ''}`
         : `Compra: ${itemCount} productos`;
 
       // Build items array
-      const items = Object.entries(productQuantities).map(([productId, data]) => {
+      const items = Object.entries(productQuantities).map(([productId, quantity]) => {
         const product = products.find(p => p.id === productId);
         if (!product) return null;
-        
-        let variantName: string | undefined;
-        if (data.selectedVariantId) {
-          const variant = product.variants.find(v => v.id === data.selectedVariantId);
-          variantName = variant?.name;
-        }
         
         return {
           productId: product.id,
           productName: product.name,
-          quantity: data.quantity,
-          variantName,
+          quantity: quantity,
           price: product.price
         };
-      }).filter(item => item !== null) as { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[];
+      }).filter(item => item !== null) as { productId: string; productName: string; quantity: number; price: number; }[];
 
       onAddTransaction({
         description: transactionDescription,
@@ -370,37 +335,30 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
                 </div>
               ) : (
                 filteredProducts.map(product => {
-                  const productData = productQuantities[product.id];
-                  const currentQuantity = productData?.quantity || 0;
-                  const selectedVariantId = productData?.selectedVariantId || (product.hasVariants && product.variants.length > 0 ? product.variants[0].id : undefined);
+                  const currentQuantity = productQuantities[product.id] || 0;
 
                   return (
                     <div
                       key={product.id}
                       className={CARD_PRODUCT_ITEM}
                     >
-                    
-
-                      {/* Variant selector and quantity stepper rendered by QuantityStepper */}
 
                       {/* Product Info */}
                       <div className="flex-1 p-3 flex flex-col justify-between">
-                        <div className={product.hasVariants && product.variants.length > 0 ? "pr-20" : ""}>
+                        <div>
                           <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-1 line-clamp-2">{product.name}</h3>
                         </div>
 
                         <div className="flex justify-between items-end gap-3">
                           <div>
                             <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(product.price, currencyCode)}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Stock actual: {product.totalQuantity}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Stock actual: {product.quantity}</p>
                           </div>
 
                           <QuantityStepper
                             product={product}
                             currentQuantity={currentQuantity}
-                            selectedVariantId={selectedVariantId}
-                            onQuantityChange={(q, variantId) => updateProductQuantity(product.id, q, variantId)}
-                            onVariantChange={(variantId) => updateProductVariant(product.id, variantId)}
+                            onQuantityChange={(q) => updateProductQuantity(product.id, q)}
                           />
                         </div>
                       </div>
@@ -432,17 +390,16 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
                 </div>
                 
                 <div className="space-y-2 mb-3">
-                  {Object.entries(productQuantities).map(([productId, data]) => {
+                  {Object.entries(productQuantities).map(([productId, quantity]) => {
                     const product = products.find(p => p.id === productId);
-                    if (!product || data.quantity === 0) return null;
-                    const variant = data.selectedVariantId ? product.variants.find(v => v.id === data.selectedVariantId) : null;
+                    if (!product || quantity === 0) return null;
                     return (
                       <div key={productId} className="flex justify-between items-center text-sm bg-white/50 dark:bg-slate-800/50 rounded-lg p-2">
                         <span className="text-slate-700 dark:text-slate-300">
-                          {product.name} {variant && `(${variant.name})`} × {data.quantity}
+                          {product.name} × {quantity}
                         </span>
                         <span className="font-bold text-slate-800 dark:text-white">
-                          {formatCurrency(product.price * data.quantity, currencyCode)}
+                          {formatCurrency(product.price * quantity, currencyCode)}
                         </span>
                       </div>
                     );

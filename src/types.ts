@@ -2,7 +2,6 @@ export interface TransactionItem {
   productId: string;
   productName: string;
   quantity: number;
-  variantName?: string;
   price: number;
 }
 
@@ -27,24 +26,13 @@ export interface PaymentMethodsConfig {
   methods: string[];
 }
 
-export interface ProductVariant {
-  id: string;
-  name: string;
-  quantity: number;
-  sku?: string;
-}
-
 export interface Product {
   id: string;
   name: string;
   description?: string;
   price: number;
-  /** Stock quantity for non-variant products. When hasVariants=true, this should be 0. */
-  standaloneQuantity: number;
-  /** Total quantity: equals standaloneQuantity when !hasVariants, or sum of variants when hasVariants */
-  totalQuantity: number;
-  hasVariants: boolean;
-  variants: ProductVariant[];
+  /** Stock quantity for the product */
+  quantity: number;
   category?: string;
   createdAt: string;
   updatedAt: string;
@@ -52,10 +40,7 @@ export interface Product {
 
 // Reusable product quantity map used by inflow/purchase forms
 export interface ProductQuantity {
-  [productId: string]: {
-    quantity: number;
-    selectedVariantId?: string;
-  };
+  [productId: string]: number;
 }
 
 export interface InventoryFilters {

@@ -27,20 +27,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     }
   }, [product, onEdit]);
 
-  const handleUpdateStock = useCallback((productId: string, newStock: number, variantId?: string) => {
+  const handleUpdateStock = useCallback((productId: string, newStock: number) => {
     const currentProduct = inventoryService.getProductById(productId);
     if (!currentProduct) return;
 
-    if (variantId && currentProduct.hasVariants) {
-      // Update variant stock
-      const updatedVariants = currentProduct.variants.map(v =>
-        v.id === variantId ? { ...v, quantity: newStock } : v
-      );
-      inventoryService.updateProduct(productId, { variants: updatedVariants });
-    } else {
-      // Update main stock for non-variant product
-      inventoryService.updateProduct(productId, { standaloneQuantity: newStock });
-    }
+    // Update stock
+    inventoryService.updateProduct(productId, { quantity: newStock });
 
     onProductsChange();
     if (onSuccess) {

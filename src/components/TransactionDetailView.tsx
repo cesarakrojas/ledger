@@ -91,11 +91,6 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
             .item-name {
               flex: 1;
             }
-            .item-variant {
-              font-size: 12px;
-              color: #666;
-              margin-left: 4px;
-            }
             .item-qty {
               margin: 0 8px;
             }
@@ -137,11 +132,6 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
                         <div class="item-row">
                           <span class="item-name">
                             ${item.productName}
-                            ${
-                              item.variantName
-                                ? `<span class="item-variant">(${item.variantName})</span>`
-                                : ''
-                            }
                           </span>
                           <span class="item-qty">x${item.quantity}</span>
                           <span class="item-price">
@@ -279,11 +269,6 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
                     <span className="font-medium text-slate-800 dark:text-slate-200">
                       {item.productName}
                     </span>
-                    {item.variantName && (
-                      <span className="text-slate-500 dark:text-slate-400 ml-1">
-                        ({item.variantName})
-                      </span>
-                    )}
                     <div className="text-xs text-slate-400">
                       {item.quantity} x {formatCurrency(item.price, currencyCode)}
                     </div>

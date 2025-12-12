@@ -12,7 +12,7 @@ import QuantityStepper from './QuantityStepper';
 
 interface NewInflowFormProps {
   products: Product[];
-  onAddTransaction: (transaction: { description: string; amount: number; type: 'inflow'; category?: string; paymentMethod?: string; items?: { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[] }) => void;
+  onAddTransaction: (transaction: { description: string; amount: number; type: 'inflow'; category?: string; paymentMethod?: string; items?: { productId: string; productName: string; quantity: number; price: number; }[] }) => void;
   categoryConfig: CategoryConfig;
   currencyCode: string;
   paymentMethods?: string[];
@@ -58,7 +58,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
       )
     : getTopProducts(products, dataService.getTransactionsWithFilters({}));
 
-  const updateProductQuantity = (productId: string, newQuantity: number, variantId?: string) => {
+  const updateProductQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity === 0) {
       const newQuantities = { ...productQuantities };
       delete newQuantities[productId];
@@ -66,43 +66,16 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
     } else {
       setProductQuantities({
         ...productQuantities,
-        [productId]: {
-          quantity: newQuantity,
-          selectedVariantId: variantId
-        }
+        [productId]: newQuantity
       });
     }
-  };
-
-  const updateProductVariant = (productId: string, variantId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-
-    const variant = product.variants.find(v => v.id === variantId);
-    if (variant && variant.quantity > 0) {
-      setProductQuantities({
-        ...productQuantities,
-        [productId]: {
-          quantity: 1,
-          selectedVariantId: variantId
-        }
-      });
-    }
-  };
-
-  const getMaxStock = (product: Product, variantId?: string) => {
-    if (variantId) {
-      const variant = product.variants.find(v => v.id === variantId);
-      return variant?.quantity || 0;
-    }
-    return product.totalQuantity;
   };
 
   const calculateTotal = () => {
-    return Object.entries(productQuantities).reduce((sum, [productId, data]) => {
+    return Object.entries(productQuantities).reduce((sum, [productId, quantity]) => {
       const product = products.find(p => p.id === productId);
       if (!product) return sum;
-      return sum + (product.price * data.quantity);
+      return sum + (product.price * quantity);
     }, 0);
   };
 
@@ -157,7 +130,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
 
     const latestProductsMap: Record<string, Product> = {};
 
-    for (const [productId, data] of Object.entries(productQuantities)) {
+    for (const [productId, quantity] of Object.entries(productQuantities)) {
       const latest = inventoryService.getProductById(productId);
       if (!latest) {
         setFormError('Producto no encontrado. Actualiza la lista e intenta de nuevo.');
@@ -165,67 +138,38 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
       }
       latestProductsMap[productId] = latest;
 
-      if (data.selectedVariantId) {
-        const variant = latest.variants.find(v => v.id === data.selectedVariantId);
-        const available = variant ? variant.quantity : 0;
-        if (data.quantity > available) {
-          setFormError(`Stock insuficiente para ${latest.name}${variant ? ` (${variant.name})` : ''}. Disponibles: ${available}`);
-          return;
-        }
-      } else {
-        // Non-variant product: use standaloneQuantity
-        const available = latest.standaloneQuantity;
-        if (data.quantity > available) {
-          setFormError(`Stock insuficiente para ${latest.name}. Disponibles: ${available}`);
-          return;
-        }
+      const available = latest.quantity;
+      if (quantity > available) {
+        setFormError(`Stock insuficiente para ${latest.name}. Disponibles: ${available}`);
+        return;
       }
     }
 
     // Update inventory for each item using latest persisted quantities
-    for (const [productId, data] of Object.entries(productQuantities)) {
+    for (const [productId, quantity] of Object.entries(productQuantities)) {
       const latest = latestProductsMap[productId];
       if (!latest) continue;
 
-      if (data.selectedVariantId) {
-        const variant = latest.variants.find(v => v.id === data.selectedVariantId);
-        if (variant) {
-          inventoryService.updateVariantQuantity(
-            productId,
-            data.selectedVariantId,
-            Math.max(0, variant.quantity - data.quantity)
-          );
-        }
-      } else {
-        // Non-variant product: update standaloneQuantity
-        inventoryService.updateProduct(productId, {
-          standaloneQuantity: Math.max(0, latest.standaloneQuantity - data.quantity)
-        });
-      }
+      inventoryService.updateProduct(productId, {
+        quantity: Math.max(0, latest.quantity - quantity)
+      });
     }
 
     const description = itemCount === 1 
-      ? `Ingreso: ${products.find(p => p.id === Object.keys(productQuantities)[0])?.name}${Object.values(productQuantities)[0].quantity > 1 ? ` x${Object.values(productQuantities)[0].quantity}` : ''}`
+      ? `Ingreso: ${products.find(p => p.id === Object.keys(productQuantities)[0])?.name}${Object.values(productQuantities)[0] > 1 ? ` x${Object.values(productQuantities)[0]}` : ''}`
       : `Ingreso: ${itemCount} productos`;
 
-    const items = Object.entries(productQuantities).map(([productId, data]) => {
+    const items = Object.entries(productQuantities).map(([productId, quantity]) => {
       const product = products.find(p => p.id === productId);
       if (!product) return null;
-      
-      let variantName: string | undefined;
-      if (data.selectedVariantId) {
-        const variant = product.variants.find(v => v.id === data.selectedVariantId);
-        variantName = variant?.name;
-      }
       
       return {
         productId: product.id,
         productName: product.name,
-        quantity: data.quantity,
-        variantName,
+        quantity: quantity,
         price: product.price
       };
-    }).filter(item => item !== null) as { productId: string; productName: string; quantity: number; variantName?: string; price: number; }[];
+    }).filter(item => item !== null) as { productId: string; productName: string; quantity: number; price: number; }[];
 
     onAddTransaction({
       description,
@@ -344,10 +288,8 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                     </div>
                   ) : (
                     filteredProducts.map(product => {
-                      const productData = productQuantities[product.id];
-                      const currentQuantity = productData?.quantity || 0;
-                      const selectedVariantId = productData?.selectedVariantId || (product.hasVariants && product.variants.length > 0 ? product.variants[0].id : undefined);
-                      const maxStock = getMaxStock(product, selectedVariantId);
+                      const currentQuantity = productQuantities[product.id] || 0;
+                      const maxStock = product.quantity;
                       const isOutOfStock = maxStock === 0;
 
                       return (
@@ -356,12 +298,9 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                           className={`${CARD_PRODUCT_ITEM} ${isOutOfStock ? 'opacity-60' : ''}`}
                         >
 
-
-                          {/* Variant selector and stepper handled by QuantityStepper */}
-
                           {/* Info & Controls */}
                           <div className="flex-1 p-3 flex flex-col justify-between">
-                            <div className={product.hasVariants ? "pr-20" : ""}>
+                            <div>
                               <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-1 line-clamp-2">{product.name}</h3>
                             </div>
 
@@ -377,9 +316,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                                 <QuantityStepper
                                   product={product}
                                   currentQuantity={currentQuantity}
-                                  selectedVariantId={selectedVariantId}
-                                  onQuantityChange={(q, variantId) => updateProductQuantity(product.id, q, variantId)}
-                                  onVariantChange={(variantId) => updateProductVariant(product.id, variantId)}
+                                  onQuantityChange={(q) => updateProductQuantity(product.id, q)}
                                 />
                               )}
                             </div>
@@ -405,17 +342,16 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ products, onAddTra
                   </button>
                 </div>
                 <div className="space-y-2 mb-3">
-                  {Object.entries(productQuantities).map(([productId, data]) => {
+                  {Object.entries(productQuantities).map(([productId, quantity]) => {
                     const product = products.find(p => p.id === productId);
                     if (!product) return null;
-                    const variant = data.selectedVariantId ? product.variants.find(v => v.id === data.selectedVariantId) : null;
                     return (
                       <div key={productId} className="flex justify-between text-sm">
                         <span className="text-slate-700 dark:text-slate-300">
-                          {product.name} {variant && `(${variant.name})`} x{data.quantity}
+                          {product.name} x{quantity}
                         </span>
                         <span className="font-semibold text-slate-800 dark:text-white">
-                          {formatCurrency(product.price * data.quantity, currencyCode)}
+                          {formatCurrency(product.price * quantity, currencyCode)}
                         </span>
                       </div>
                     );
