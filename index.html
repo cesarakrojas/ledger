@@ -3,11 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    
+    <link rel="manifest" href="/manifest.json" />
+    
+    <meta name="theme-color" content="#0f172a" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Income and Expenses</title>
     <script>
-      // Set theme based on localStorage or system preference
-      // Note: Uses 'app_theme' key (matches STORAGE_KEYS.THEME from storageKeys.ts)
+      // Your existing theme script...
       const themeKey = 'app_theme';
       if (localStorage.getItem(themeKey) === 'dark' || (!(themeKey in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
