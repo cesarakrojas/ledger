@@ -70,7 +70,7 @@ export default function App() {
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>({
     enabled: true,
-    inflowCategories: ['Ventas', 'Otros Ingresos', 'Propinas'],
+    inflowCategories: ['Servicios', 'Otros Ingresos', 'Propinas'],
     outflowCategories: ['Gastos Operativos', 'Salarios', 'Servicios Públicos', 'Compras', 'Transporte', 'Otros Gastos']
   });
   const [paymentMethods, setPaymentMethods] = useState<string[]>(['Efectivo', 'Tarjeta', 'Transferencia']);
@@ -79,7 +79,7 @@ export default function App() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successModalTitle, setSuccessModalTitle] = useState('');
   const [successModalMessage, setSuccessModalMessage] = useState('');
-  const [successModalType, setSuccessModalType] = useState<'inflow' | 'expense' | 'purchase'>('inflow');
+  const [successModalType, setSuccessModalType] = useState<'inflow' | 'expense'>('inflow');
 
   // Centralized data loading function - memoized to prevent re-creation on every render
   const loadAllData = useCallback(() => {
@@ -369,7 +369,6 @@ export default function App() {
     return (
       <FormViewWrapper title="Nuevo Ingreso" onClose={() => navigate('home')}>
         <NewInflowForm 
-          products={products}
           onAddTransaction={handleAddTransaction}
           categoryConfig={categoryConfig}
           currencyCode={currencyCode}
@@ -395,10 +394,10 @@ export default function App() {
           currencyCode={currencyCode}
           paymentMethods={paymentMethods}
           onClose={() => navigate('home')}
-          onSuccess={(title, message, type) => {
+          onSuccess={(title, message) => {
             setSuccessModalTitle(title);
             setSuccessModalMessage(message);
-            setSuccessModalType(type as 'expense' | 'purchase');
+            setSuccessModalType('expense');
             setShowSuccessModal(true);
           }}
         />

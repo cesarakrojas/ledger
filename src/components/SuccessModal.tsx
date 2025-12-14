@@ -5,7 +5,7 @@ interface SuccessModalProps {
   onClose: () => void;
   title: string;
   message: string;
-  type: 'inflow' | 'expense' | 'purchase';
+  type: 'inflow' | 'expense';
 }
 
 export const SuccessModal: React.FC<SuccessModalProps> = ({ 
@@ -38,7 +38,6 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           text: 'text-emerald-700 dark:text-emerald-300'
         };
       case 'expense':
-      case 'purchase':
         return {
           bg: 'bg-red-50 dark:bg-red-900/20',
           border: 'border-red-200 dark:border-red-700',

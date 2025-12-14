@@ -22,11 +22,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
 
   useEffect(() => {
     if (product) {
-      setName(product.name);
+      setName(product.name || '');
       setDescription(product.description || '');
-      setPrice(product.price.toString());
+      setPrice(product.price !== undefined && product.price !== null ? product.price.toString() : '');
       setCategory(product.category || '');
-      setQuantity(product.quantity.toString());
+      setQuantity(product.quantity !== undefined && product.quantity !== null ? product.quantity.toString() : '');
+    } else {
+      // Reset form when product is null
+      setName('');
+      setDescription('');
+      setPrice('');
+      setCategory('');
+      setQuantity('');
     }
   }, [product]);
 

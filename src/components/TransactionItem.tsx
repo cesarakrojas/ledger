@@ -12,12 +12,7 @@ export interface TransactionItemProps {
 
 export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, currencyCode, onClick }) => {
   const is_inflow = transaction.type === 'inflow';
-  const isSale = transaction.category === 'Ventas';
-  
-  // For sales, replace "Ingreso:" prefix with "Venta:"
-  const displayDescription = isSale 
-    ? transaction.description.replace(/^Ingreso:/, 'Venta:') 
-    : transaction.description;
+  const displayDescription = transaction.description;
 
   return (
     <li
