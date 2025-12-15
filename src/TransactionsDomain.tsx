@@ -21,6 +21,7 @@ import {
   DETAIL_VIEW_CONTAINER,
   DETAIL_VIEW_HEADER,
   DETAIL_VIEW_FOOTER,
+  TEXT_DETAIL_HEADER_TITLE,
   ICON_BTN_CLOSE,
   BTN_FOOTER_PRIMARY,
   BTN_FOOTER_SECONDARY,
@@ -592,7 +593,7 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
     <div className={DETAIL_VIEW_CONTAINER}>
       
       <div className={DETAIL_VIEW_HEADER}>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white ml-2">Detalles</h2>
+        <h2 className={TEXT_DETAIL_HEADER_TITLE}>Detalles</h2>
 
         <button onClick={onClose} aria-label="Cerrar" className={ICON_BTN_CLOSE}>
           <CloseIcon className="w-5 h-5" />

@@ -21,6 +21,7 @@ import {
   DETAIL_VIEW_CONTAINER,
   DETAIL_VIEW_HEADER,
   DETAIL_VIEW_FOOTER,
+  TEXT_DETAIL_HEADER_TITLE,
   ICON_BTN_CLOSE,
   CARD_FORM,
   TRANSITION_COLORS,
@@ -403,7 +404,7 @@ export const ContactDetailView: React.FC<ContactDetailViewProps> = ({ contact, o
   return (
     <div className={DETAIL_VIEW_CONTAINER}>
       <div className={DETAIL_VIEW_HEADER}>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white ml-2">Contacto</h2>
+        <h2 className={TEXT_DETAIL_HEADER_TITLE}>Contacto</h2>
         <button onClick={onClose} className={ICON_BTN_CLOSE} aria-label="Cerrar">
           <CloseIcon className="w-5 h-5" />
         </button>

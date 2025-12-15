@@ -170,8 +170,9 @@ export const SETTINGS_SECTION = 'p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg
 export const CART_SUMMARY_INFLOW = 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl p-4';
 export const CART_SUMMARY_OUTFLOW = 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-4';
 
-// Detail View Header (TransactionDetailView, ProductDetailView, DebtDetailView)
+// Detail View Header (TransactionDetailView, ProductDetailView, DebtDetailView, ContactDetailView)
 export const DETAIL_VIEW_HEADER = 'flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0 z-10';
+export const TEXT_DETAIL_HEADER_TITLE = 'text-lg font-bold text-slate-800 dark:text-white ml-2';
 
 // List Item Interactive (App.tsx transactions, LibretaView debts, InventoryView products)
 export const LIST_ITEM_INTERACTIVE = 'group flex items-center justify-between py-4 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors duration-200 cursor-pointer';
