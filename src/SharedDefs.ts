@@ -121,7 +121,8 @@ export const STORAGE_KEYS = {
   // App settings
   CATEGORY_CONFIG: 'app_category_config',
   PAYMENT_METHODS: 'app_payment_methods',
-  CURRENCY_CODE: 'app_currency_code',
+  COUNTRY_ISO: 'app_country_iso',
+  CURRENCY_CODE: 'app_currency_code', // Legacy, kept for backward compatibility
   THEME: 'app_theme',
 } as const;
 
@@ -322,9 +323,27 @@ export const CURRENCIES: CurrencyOption[] = [
   { name: "Venezuela", iso: "ve", currency_name: "Bolívar", currency_code: "VES", currency_symbol: "Bs" }
 ];
 
+export const DEFAULT_COUNTRY_ISO = "us"; // United States
 export const DEFAULT_CURRENCY = "USD";
 
-// Helper to get currency symbol by code
+// Helper to get currency by country ISO code
+export const getCurrencyByIso = (countryIso: string) => {
+  return CURRENCIES.find(c => c.iso === countryIso);
+};
+
+// Helper to get currency symbol by country ISO code
+export const getCurrencySymbolByIso = (countryIso: string): string => {
+  const currency = getCurrencyByIso(countryIso);
+  return currency?.currency_symbol || '$';
+};
+
+// Helper to get currency code by country ISO code
+export const getCurrencyCodeByIso = (countryIso: string): string => {
+  const currency = getCurrencyByIso(countryIso);
+  return currency?.currency_code || DEFAULT_CURRENCY;
+};
+
+// Helper to get currency symbol by code (legacy, for backward compatibility)
 export const getCurrencySymbol = (currencyCode: string): string => {
   const currency = CURRENCIES.find(c => c.currency_code === currencyCode);
   return currency?.currency_symbol || '$';

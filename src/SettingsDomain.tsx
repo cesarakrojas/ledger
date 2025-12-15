@@ -1,11 +1,10 @@
 /**
  * SettingsDomain.tsx
  * Domain module for all settings and configuration functionality
- * Contains: SettingsView, CategoryEditorView, PaymentMethodsEditorView
+ * Contains: SettingsView, CurrencyEditorView, CategoryEditorView, PaymentMethodsEditorView
  */
 
-import React, { useState, useCallback } from 'react';
-import type { CategoryConfig } from './SharedDefs';
+import React, { useState } from 'react';
 import {
   CURRENCIES,
   CARD_STYLES,
@@ -41,46 +40,26 @@ export interface CategoryRename {
 // SettingsView
 // =============================================================================
 interface SettingsViewProps {
-  onSave: (config: CategoryConfig) => void;
-  initialConfig: CategoryConfig;
   isDarkMode: boolean;
   onToggleTheme: () => void;
-  currencyCode: string;
-  onCurrencyChange: (currencyCode: string) => void;
+  countryIso: string;
   onEditCategories?: () => void;
   onEditPaymentMethods?: () => void;
+  onEditCurrency?: () => void;
   paymentMethods?: string[];
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
-  onSave,
-  initialConfig,
   isDarkMode,
   onToggleTheme,
-  currencyCode,
-  onCurrencyChange,
+  countryIso,
   onEditCategories,
   onEditPaymentMethods,
+  onEditCurrency,
   paymentMethods = []
 }) => {
-  const [localCurrencyCode, setLocalCurrencyCode] = useState(currencyCode);
-
-  const hasUnsavedChanges = useCallback(() => {
-    return localCurrencyCode !== currencyCode;
-  }, [localCurrencyCode, currencyCode]);
-
-  const handleSaveChanges = () => {
-    const config: CategoryConfig = {
-      enabled: true,
-      inflowCategories: initialConfig.inflowCategories,
-      outflowCategories: initialConfig.outflowCategories
-    };
-    onSave(config);
-    
-    if (localCurrencyCode !== currencyCode) {
-      onCurrencyChange(localCurrencyCode);
-    }
-  };
+  // Find current currency details by country ISO
+  const currentCurrency = CURRENCIES.find(c => c.iso === countryIso);
 
   return (
     <div className="w-full space-y-6 pb-40">
@@ -114,15 +93,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         {/* Currency Section */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">Moneda</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Selecciona la moneda para mostrar los montos</p>
-          <select value={localCurrencyCode} onChange={(e) => setLocalCurrencyCode(e.target.value)}
-            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
-            {CURRENCIES.map((currency) => (
-              <option key={currency.iso} value={currency.currency_code}>
-                {currency.name} - {currency.currency_name} ({currency.currency_code})
-              </option>
-            ))}
-          </select>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Selecciona la moneda para mostrar los montos</p>
+          {onEditCurrency && (
+            <button onClick={onEditCurrency} className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl w-full">
+              <div className="p-2 rounded-lg bg-white dark:bg-slate-600">
+                <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 text-left">
+                <p className="font-medium text-slate-800 dark:text-white">
+                  {currentCurrency ? `${currentCurrency.currency_name} (${currentCurrency.currency_code})` : 'Seleccionar moneda'}
+                </p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {currentCurrency ? currentCurrency.name : 'No configurada'}
+                </p>
+              </div>
+              <ChevronRightIcon className="w-5 h-5 text-slate-400" />
+            </button>
+          )}
         </div>
 
         <div className={DIVIDER}></div>
@@ -162,21 +151,108 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           )}
         </div>
       </div>
+    </div>
+  );
+};
 
-      {/* Footer */}
-      <div className="fixed bottom-20 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-4 z-40">
-        <div className="max-w-7xl mx-auto flex justify-center">
-          <button onClick={handleSaveChanges} disabled={!hasUnsavedChanges()}
-            className={`px-6 py-3 font-bold rounded-xl transition-all flex items-center gap-2 ${
-              hasUnsavedChanges()
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/30'
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-            }`}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Guardar Cambios
-          </button>
+// =============================================================================
+// CurrencyEditorView
+// =============================================================================
+interface CurrencyEditorViewProps {
+  currentCountryIso: string;
+  onSave: (countryIso: string) => void;
+  onCancel: () => void;
+}
+
+export const CurrencyEditorView: React.FC<CurrencyEditorViewProps> = ({
+  currentCountryIso,
+  onSave,
+  onCancel
+}) => {
+  const [selectedIso, setSelectedIso] = useState(currentCountryIso);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredCurrencies = CURRENCIES.filter(currency =>
+    currency.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    currency.currency_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    currency.currency_code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleSave = () => {
+    onSave(selectedIso);
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto space-y-4 pr-2 scroll-container">
+        <p className="text-sm text-slate-500 dark:text-slate-400">Selecciona la moneda para mostrar todos los montos en la aplicación</p>
+        
+        {/* Search */}
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Buscar país o moneda..."
+          className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        />
+
+        {/* Currency List */}
+        <div className="space-y-2">
+          {filteredCurrencies.length === 0 ? (
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+              <p>No se encontraron monedas</p>
+            </div>
+          ) : (
+            filteredCurrencies.map((currency) => (
+              <button
+                key={currency.iso}
+                onClick={() => setSelectedIso(currency.iso)}
+                className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-all ${
+                  selectedIso === currency.iso
+                    ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-500 dark:border-emerald-400'
+                    : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <div className={`p-2 rounded-lg ${
+                  selectedIso === currency.iso
+                    ? 'bg-emerald-100 dark:bg-emerald-900/50'
+                    : 'bg-white dark:bg-slate-600'
+                }`}>
+                  <span className={`text-lg font-bold ${
+                    selectedIso === currency.iso
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-slate-600 dark:text-slate-300'
+                  }`}>
+                    {currency.currency_symbol}
+                  </span>
+                </div>
+                <div className="flex-1 text-left">
+                  <p className={`font-medium ${
+                    selectedIso === currency.iso
+                      ? 'text-emerald-700 dark:text-emerald-300'
+                      : 'text-slate-800 dark:text-white'
+                  }`}>
+                    {currency.currency_name} ({currency.currency_code})
+                  </p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {currency.name}
+                  </p>
+                </div>
+                {selectedIso === currency.iso && (
+                  <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+
+      <div className={FORM_FOOTER}>
+        <div className="grid grid-cols-2 gap-3 w-full">
+          <button type="button" onClick={handleSave} className={BTN_FOOTER_PRIMARY}>Guardar</button>
+          <button type="button" onClick={onCancel} className={BTN_FOOTER_SECONDARY}>Cancelar</button>
         </div>
       </div>
     </div>

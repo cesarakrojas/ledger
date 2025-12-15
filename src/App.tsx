@@ -1,10 +1,10 @@
 // Main Mobile web app for the management of micro and very small businesses in latin america.
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Transaction, CategoryConfig, Product, DebtEntry, Contact } from './SharedDefs';
-import { STORAGE_KEYS, CARD_EMPTY_STATE, calculateTotalInflows, calculateTotalOutflows } from './SharedDefs';
+import { STORAGE_KEYS, CARD_EMPTY_STATE, calculateTotalInflows, calculateTotalOutflows, getCurrencyCodeByIso, DEFAULT_COUNTRY_ISO } from './SharedDefs';
 import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, QuestionMarkIcon, FormViewWrapper, ErrorNotification, SuccessModal, MobileMenu } from './UIComponents';
 import { TransactionService, InventoryService, DebtService, ContactService } from './CoreServices';
-import { SettingsView, CategoryEditorView, PaymentMethodsEditorView } from './SettingsDomain';
+import { SettingsView, CurrencyEditorView, CategoryEditorView, PaymentMethodsEditorView } from './SettingsDomain';
 import { InventoryView, ProductForm, ProductDetailPage } from './InventoryDomain';
 import { LibretaView, DebtForm, DebtDetailView } from './DebtsDomain';
 import { ClientsView, ContactFormPage, ContactDetailPage } from './ContactsDomain';
@@ -36,7 +36,7 @@ export default function App() {
   const [clientsViewMode, setClientsViewMode] = useState<'list' | 'create' | 'edit' | 'detail'>('list');
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
-  const [settingsViewMode, setSettingsViewMode] = useState<'main' | 'category-editor' | 'payment-methods-editor'>('main');
+  const [settingsViewMode, setSettingsViewMode] = useState<'main' | 'currency-editor' | 'category-editor' | 'payment-methods-editor'>('main');
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
   // App state
@@ -46,7 +46,8 @@ export default function App() {
   const [_debts, setDebts] = useState<DebtEntry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currencyCode, setCurrencyCode] = useState<string>('USD');
+  const [countryIso, setCountryIso] = useState<string>(DEFAULT_COUNTRY_ISO);
+  const currencyCode = getCurrencyCodeByIso(countryIso); // Derive currency code from country ISO
   const [categoryConfig, setCategoryConfig] = useState<CategoryConfig>({
     enabled: true,
     inflowCategories: ['Servicios', 'Otros Ingresos', 'Propinas'],
@@ -98,10 +99,10 @@ export default function App() {
       console.error('Error loading payment methods:', e);
     }
     
-    // Load currency
-    const savedCurrency = localStorage.getItem(STORAGE_KEYS.CURRENCY_CODE);
-    if (savedCurrency) {
-      setCurrencyCode(savedCurrency);
+    // Load currency (now stored as country ISO)
+    const savedCountryIso = localStorage.getItem(STORAGE_KEYS.COUNTRY_ISO);
+    if (savedCountryIso) {
+      setCountryIso(savedCountryIso);
     }
   }, []);
 
@@ -151,9 +152,9 @@ export default function App() {
     localStorage.setItem(STORAGE_KEYS.PAYMENT_METHODS, JSON.stringify(methods));
   }, []);
 
-  const handleCurrencyChange = useCallback((newCurrencyCode: string) => {
-    setCurrencyCode(newCurrencyCode);
-    localStorage.setItem(STORAGE_KEYS.CURRENCY_CODE, newCurrencyCode);
+  const handleCountryIsoChange = useCallback((newCountryIso: string) => {
+    setCountryIso(newCountryIso);
+    localStorage.setItem(STORAGE_KEYS.COUNTRY_ISO, newCountryIso);
   }, []);
 
   const handleAddTransaction = useCallback((transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
@@ -231,7 +232,7 @@ export default function App() {
     resetScrollPosition();
   }, []);
 
-  const changeSettingsView = useCallback((mode: 'main' | 'category-editor' | 'payment-methods-editor') => {
+  const changeSettingsView = useCallback((mode: 'main' | 'currency-editor' | 'category-editor' | 'payment-methods-editor') => {
     setSettingsViewMode(mode);
     resetScrollPosition();
   }, []);
@@ -300,6 +301,21 @@ export default function App() {
 
 
   const SettingsModule = () => {
+    if (settingsViewMode === 'currency-editor') {
+      return (
+        <FormViewWrapper title="Seleccionar Moneda" onClose={() => changeSettingsView('main')}>
+          <CurrencyEditorView
+            currentCountryIso={countryIso}
+            onSave={(newCountryIso) => {
+              handleCountryIsoChange(newCountryIso);
+              changeSettingsView('main');
+            }}
+            onCancel={() => changeSettingsView('main')}
+          />
+        </FormViewWrapper>
+      );
+    }
+
     if (settingsViewMode === 'category-editor') {
       return (
         <FormViewWrapper title="Editar Categorías" onClose={() => changeSettingsView('main')}>
@@ -364,12 +380,10 @@ export default function App() {
 
     return (
       <SettingsView
-        onSave={handleSaveCategoryConfig}
-        initialConfig={categoryConfig}
         isDarkMode={isDarkMode}
         onToggleTheme={toggleTheme}
-        currencyCode={currencyCode}
-        onCurrencyChange={handleCurrencyChange}
+        countryIso={countryIso}
+        onEditCurrency={() => changeSettingsView('currency-editor')}
         onEditCategories={() => changeSettingsView('category-editor')}
         onEditPaymentMethods={() => changeSettingsView('payment-methods-editor')}
         paymentMethods={paymentMethods}
