@@ -18,6 +18,7 @@ import {
   BTN_FOOTER_PRIMARY,
   BTN_FOOTER_DANGER,
   BTN_FOOTER_SECONDARY,
+  BTN_FOOTER_DISABLED,
   DETAIL_VIEW_CONTAINER,
   DETAIL_VIEW_HEADER,
   DETAIL_VIEW_FOOTER,
@@ -25,6 +26,9 @@ import {
   ICON_BTN_CLOSE,
   CARD_FORM,
   TRANSITION_COLORS,
+  STAT_CARD_EMERALD,
+  ICON_BG_EMERALD,
+  TEXT_AMOUNT_INFLOW,
   formatCurrency,
   formatDate
 } from './SharedDefs';
@@ -118,7 +122,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center mb-6">
-          <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl">
+          <div className={STAT_CARD_EMERALD}>
             <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Productos</p>
             <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{products.length}</p>
           </div>
@@ -158,7 +162,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                 <li key={product.id} onClick={() => handleViewProduct(product)} className={LIST_ITEM_INTERACTIVE}>
                   <div className="flex items-center justify-between gap-4 w-full">
                     <div className="flex flex-1 items-center gap-3 min-w-0">
-                      <div className="p-3 rounded-xl shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                      <div className={`p-3 rounded-xl shrink-0 ${ICON_BG_EMERALD}`}>
                         <InventoryIcon className="w-6 h-6" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -178,7 +182,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
                       </div>
                     </div>
                     <div className="flex flex-col items-end shrink-0 ml-2">
-                      <div className="text-xl sm:text-2xl font-bold whitespace-nowrap flex items-baseline gap-1 text-emerald-600 dark:text-emerald-400">
+                      <div className={`text-xl sm:text-2xl font-bold whitespace-nowrap flex items-baseline gap-1 ${TEXT_AMOUNT_INFLOW}`}>
                         <span>{formatCurrency(product.price, currencyCode)}</span>
                       </div>
                       <span className="text-xs text-slate-400 font-medium">Precio unitario</span>
@@ -429,7 +433,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       <div className={DETAIL_VIEW_FOOTER}>
         <div className="grid grid-cols-2 gap-3">
           <button onClick={handleUpdateStock} disabled={!hasStockChanges}
-            className={hasStockChanges ? BTN_FOOTER_PRIMARY : 'flex items-center justify-center gap-2 px-4 py-3 bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 rounded-xl font-semibold cursor-not-allowed transition-colors'}>
+            className={hasStockChanges ? BTN_FOOTER_PRIMARY : BTN_FOOTER_DISABLED}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>

@@ -12,7 +12,12 @@ import {
   TEXT_PAGE_TITLE,
   FORM_FOOTER,
   BTN_FOOTER_PRIMARY,
-  BTN_FOOTER_SECONDARY
+  BTN_FOOTER_SECONDARY,
+  DIVIDER,
+  TOGGLE_BTN_BASE,
+  TOGGLE_BTN_INACTIVE,
+  TOGGLE_BTN_ACTIVE_EMERALD,
+  TOGGLE_BTN_ACTIVE_RED
 } from './SharedDefs';
 import {
   SunIcon,
@@ -104,7 +109,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </div>
 
-        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+        <div className={DIVIDER}></div>
 
         {/* Currency Section */}
         <div className="mb-6">
@@ -120,7 +125,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </select>
         </div>
 
-        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+        <div className={DIVIDER}></div>
 
         {/* Payment Methods Section */}
         <div className="mb-6">
@@ -142,7 +147,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           )}
         </div>
 
-        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+        <div className={DIVIDER}></div>
 
         {/* Categories Section */}
         <div>
@@ -304,15 +309,11 @@ export const CategoryEditorView: React.FC<CategoryEditorViewProps> = ({
         {/* Tab Toggle */}
         <div className="bg-slate-100 dark:bg-slate-700/50 p-1 rounded-xl flex">
           <button type="button" onClick={() => setActiveTab('inflow')}
-            className={`flex-1 py-3 px-4 rounded-lg font-semibold text-sm transition-all ${
-              activeTab === 'inflow' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-            }`}>
+            className={`flex-1 ${TOGGLE_BTN_BASE} text-sm ${activeTab === 'inflow' ? TOGGLE_BTN_ACTIVE_EMERALD : TOGGLE_BTN_INACTIVE}`}>
             Ingresos ({inflowCategories.length})
           </button>
           <button type="button" onClick={() => setActiveTab('outflow')}
-            className={`flex-1 py-3 px-4 rounded-lg font-semibold text-sm transition-all ${
-              activeTab === 'outflow' ? 'bg-red-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-            }`}>
+            className={`flex-1 ${TOGGLE_BTN_BASE} text-sm ${activeTab === 'outflow' ? TOGGLE_BTN_ACTIVE_RED : TOGGLE_BTN_INACTIVE}`}>
             Gastos ({outflowCategories.length})
           </button>
         </div>

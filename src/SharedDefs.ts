@@ -240,6 +240,54 @@ export const FORM_FOOTER = 'flex-shrink-0 pt-4 px-4 pb-4 -mx-4 bg-white dark:bg-
 export const ERROR_BANNER = 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm font-medium flex items-center gap-2 animate-fade-in';
 
 // ============================================
+// STATUS BADGES
+// ============================================
+export const BADGE_SUCCESS = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+export const BADGE_DANGER = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+export const BADGE_WARNING = 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+export const BADGE_INFO = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+
+// ============================================
+// ICON BACKGROUNDS
+// ============================================
+export const ICON_BG_EMERALD = 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400';
+export const ICON_BG_RED = 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+export const ICON_BG_BLUE = 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+export const ICON_BG_ORANGE = 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400';
+
+// ============================================
+// AMOUNT/CURRENCY TEXT COLORS
+// ============================================
+export const TEXT_AMOUNT_INFLOW = 'text-emerald-600 dark:text-emerald-400';
+export const TEXT_AMOUNT_OUTFLOW = 'text-red-600 dark:text-red-400';
+
+// ============================================
+// STAT CARDS
+// ============================================
+export const STAT_CARD_EMERALD = 'bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl';
+export const STAT_CARD_RED = 'bg-red-100 dark:bg-red-900/50 p-4 rounded-xl';
+export const STAT_CARD_ORANGE = 'bg-orange-100 dark:bg-orange-900/50 p-4 rounded-xl';
+
+// ============================================
+// DIVIDERS & SEPARATORS
+// ============================================
+export const DIVIDER = 'border-t border-slate-200 dark:border-slate-700 my-6';
+
+// ============================================
+// DISABLED BUTTON STATE
+// ============================================
+export const BTN_FOOTER_DISABLED = 'flex items-center justify-center gap-2 px-4 py-3 bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 rounded-xl font-semibold cursor-not-allowed transition-colors';
+
+// ============================================
+// TOGGLE BUTTONS (Type selectors)
+// ============================================
+export const TOGGLE_BTN_BASE = 'py-3 px-4 rounded-lg font-semibold transition-all';
+export const TOGGLE_BTN_INACTIVE = 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600';
+export const TOGGLE_BTN_ACTIVE_EMERALD = 'bg-emerald-600 text-white shadow-lg';
+export const TOGGLE_BTN_ACTIVE_RED = 'bg-red-600 text-white shadow-lg';
+export const TOGGLE_BTN_ACTIVE_BLUE = 'bg-blue-600 text-white shadow-lg';
+
+// ============================================
 // CURRENCY CONFIGURATION
 // ============================================
 

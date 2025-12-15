@@ -18,6 +18,7 @@ import {
   BTN_FOOTER_PRIMARY,
   BTN_FOOTER_DANGER,
   BTN_FOOTER_SECONDARY,
+  BTN_FOOTER_DISABLED,
   DETAIL_VIEW_CONTAINER,
   DETAIL_VIEW_HEADER,
   DETAIL_VIEW_FOOTER,
@@ -25,6 +26,11 @@ import {
   ICON_BTN_CLOSE,
   CARD_FORM,
   TRANSITION_COLORS,
+  DIVIDER,
+  TOGGLE_BTN_BASE,
+  TOGGLE_BTN_INACTIVE,
+  TOGGLE_BTN_ACTIVE_EMERALD,
+  TOGGLE_BTN_ACTIVE_BLUE,
   useDebouncedValue,
   formatDate
 } from './SharedDefs';
@@ -180,7 +186,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({ onChangeView }) => {
           </button>
         </div>
 
-        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+        <div className={DIVIDER}></div>
 
         <ContactFilters
           searchTerm={searchTerm}
@@ -189,7 +195,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({ onChangeView }) => {
           setSelectedType={setSelectedType}
         />
 
-        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+        <div className={DIVIDER}></div>
 
         {contacts.length === 0 ? (
           <div className="text-center py-12">
@@ -222,7 +228,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({ onChangeView }) => {
                 )}
                 {suppliers.length > 0 && (
                   <>
-                    <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+                    <div className={DIVIDER}></div>
                     <div>
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
                         Proveedores ({suppliers.length})
@@ -329,15 +335,11 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contact, onSave, onCan
           <label className={FORM_LABEL}>Tipo de Contacto</label>
           <div className="grid grid-cols-2 gap-2">
             <button type="button" onClick={() => setType('client')}
-              className={`py-3 px-4 rounded-lg font-semibold transition-colors ${
-                type === 'client' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-              }`}>
+              className={`${TOGGLE_BTN_BASE} ${type === 'client' ? TOGGLE_BTN_ACTIVE_EMERALD : TOGGLE_BTN_INACTIVE}`}>
               Cliente
             </button>
             <button type="button" onClick={() => setType('supplier')}
-              className={`py-3 px-4 rounded-lg font-semibold transition-colors ${
-                type === 'supplier' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-              }`}>
+              className={`${TOGGLE_BTN_BASE} ${type === 'supplier' ? TOGGLE_BTN_ACTIVE_BLUE : TOGGLE_BTN_INACTIVE}`}>
               Proveedor
             </button>
           </div>
@@ -468,7 +470,7 @@ export const ContactDetailView: React.FC<ContactDetailViewProps> = ({ contact, o
               <span>Llamar</span>
             </button>
           ) : (
-            <button disabled className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 rounded-xl font-semibold cursor-not-allowed transition-colors">
+            <button disabled className={BTN_FOOTER_DISABLED}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>

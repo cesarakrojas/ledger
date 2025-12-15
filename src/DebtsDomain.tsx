@@ -18,11 +18,23 @@ import {
   BTN_FOOTER_PRIMARY,
   BTN_FOOTER_SECONDARY,
   BTN_FOOTER_DANGER,
+  BTN_FOOTER_DISABLED,
   DETAIL_VIEW_CONTAINER,
   DETAIL_VIEW_HEADER,
   DETAIL_VIEW_FOOTER,
   TEXT_DETAIL_HEADER_TITLE,
   ICON_BTN_CLOSE,
+  DIVIDER,
+  STAT_CARD_EMERALD,
+  STAT_CARD_RED,
+  ICON_BG_EMERALD,
+  ICON_BG_RED,
+  TEXT_AMOUNT_INFLOW,
+  TEXT_AMOUNT_OUTFLOW,
+  TOGGLE_BTN_BASE,
+  TOGGLE_BTN_INACTIVE,
+  TOGGLE_BTN_ACTIVE_EMERALD,
+  TOGGLE_BTN_ACTIVE_RED,
   formatCurrency,
   formatDate
 } from './SharedDefs';
@@ -112,13 +124,13 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
         </div>
 
         <div className="grid grid-cols-2 gap-4 text-center">
-          <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl flex flex-col justify-between">
+          <div className={`${STAT_CARD_EMERALD} flex flex-col justify-between`}>
             <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400 mb-1">Por Cobrar</p>
             <p className="text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300">
               {formatCurrency(stats.totalReceivablesPending, currencyCode)}
             </p>
             {stats.overdueReceivables > 0 && (
-              <p className="text-xs font-medium text-red-600 dark:text-red-400 mt-2 flex items-center gap-1">
+              <p className={`text-xs font-medium ${TEXT_AMOUNT_OUTFLOW} mt-2 flex items-center gap-1`}>
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -126,7 +138,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
               </p>
             )}
           </div>
-          <div className="bg-red-100 dark:bg-red-900/50 p-4 rounded-xl flex flex-col justify-between">
+          <div className={`${STAT_CARD_RED} flex flex-col justify-between`}>
             <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-1">Por Pagar</p>
             <p className="text-2xl font-bold tracking-tight text-red-700 dark:text-red-300">
               {formatCurrency(stats.totalPayablesPending, currencyCode)}
@@ -142,7 +154,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
           </div>
         </div>
 
-        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+        <div className={DIVIDER}></div>
 
         {debts.length === 0 ? (
           <div>
@@ -162,11 +174,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
               <li key={debt.id} onClick={() => handleViewDebt(debt.id)} className={LIST_ITEM_INTERACTIVE}>
                 <div className="flex items-center justify-between gap-4 w-full">
                   <div className="flex flex-1 items-center gap-3 min-w-0">
-                    <div className={`p-3 rounded-xl shrink-0 ${
-                      debt.type === 'receivable'
-                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-                    }`}>
+                    <div className={`p-3 rounded-xl shrink-0 ${debt.type === 'receivable' ? ICON_BG_EMERALD : ICON_BG_RED}`}>
                       {debt.type === 'receivable' ? <ArrowUpIcon className="w-6 h-6" /> : <ArrowDownIcon className="w-6 h-6" />}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -193,11 +201,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
                     </div>
                   </div>
                   <div className="flex flex-col items-end shrink-0 ml-2">
-                    <p className={`text-xl sm:text-2xl font-bold whitespace-nowrap ${
-                      debt.type === 'receivable'
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-red-600 dark:text-red-400'
-                    }`}>
+                    <p className={`text-xl sm:text-2xl font-bold whitespace-nowrap ${debt.type === 'receivable' ? TEXT_AMOUNT_INFLOW : TEXT_AMOUNT_OUTFLOW}`}>
                       {formatCurrency(debt.amount, currencyCode)}
                     </p>
                     <span className="text-xs text-slate-400 font-medium">
@@ -355,15 +359,11 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
           <label className={FORM_LABEL}>Tipo de Deuda <span className="text-red-500">*</span></label>
           <div className="grid grid-cols-2 gap-3">
             <button type="button" onClick={() => setType('receivable')}
-              className={`py-3 px-4 rounded-lg font-semibold transition-all ${
-                type === 'receivable' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-              }`}>
+              className={`${TOGGLE_BTN_BASE} ${type === 'receivable' ? TOGGLE_BTN_ACTIVE_EMERALD : TOGGLE_BTN_INACTIVE}`}>
               Por Cobrar
             </button>
             <button type="button" onClick={() => setType('payable')}
-              className={`py-3 px-4 rounded-lg font-semibold transition-all ${
-                type === 'payable' ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-              }`}>
+              className={`${TOGGLE_BTN_BASE} ${type === 'payable' ? TOGGLE_BTN_ACTIVE_RED : TOGGLE_BTN_INACTIVE}`}>
               Por Pagar
             </button>
           </div>
@@ -584,7 +584,7 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = ({
       <div className={DETAIL_VIEW_FOOTER}>
         <div className="grid grid-cols-2 gap-3">
           <button onClick={handleOpenPaymentModal} disabled={isPaid}
-            className={!isPaid ? BTN_FOOTER_PRIMARY : 'flex items-center justify-center gap-2 px-4 py-3 bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 rounded-xl font-semibold cursor-not-allowed transition-colors'}>
+            className={!isPaid ? BTN_FOOTER_PRIMARY : BTN_FOOTER_DISABLED}>
             <CheckCircleIcon className="w-5 h-5" />
             <span>{isPaid ? 'Pagado' : 'Abonar'}</span>
           </button>

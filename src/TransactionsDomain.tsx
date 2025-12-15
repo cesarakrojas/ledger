@@ -25,6 +25,9 @@ import {
   ICON_BTN_CLOSE,
   BTN_FOOTER_PRIMARY,
   BTN_FOOTER_SECONDARY,
+  DIVIDER,
+  STAT_CARD_EMERALD,
+  STAT_CARD_RED,
   formatCurrency,
   formatDate,
   formatTime
@@ -142,14 +145,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {/* Stats Grid */}
         <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
-          <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-xl">
+          <div className={STAT_CARD_EMERALD}>
             <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Ingresos</p>
             <p className={`${TEXT_VALUE_XL} text-emerald-700 dark:text-emerald-300`}>{formatCurrency(totalInflows, currencyCode)}</p>
             <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">
               {inflowCount} transacción{inflowCount !== 1 ? 'es' : ''}
             </p>
           </div>
-          <div className="bg-red-100 dark:bg-red-900/50 p-4 rounded-xl">
+          <div className={STAT_CARD_RED}>
             <p className="text-sm font-medium text-red-700 dark:text-red-300">Total Gastos</p>
             <p className={`${TEXT_VALUE_XL} text-red-700 dark:text-red-300`}>{formatCurrency(totalOutflows, currencyCode)}</p>
             <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-1">
@@ -157,7 +160,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </p>
           </div>
         </div>
-        <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+        <div className={DIVIDER}></div>
         
         {/* List Section */}
         <div>
