@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
-import type { Product } from '../../types';
+import type { Product } from '../../SharedDefs';
 import { ProductDetailView } from '../ProductDetailView';
 import { NotFoundView } from './NotFoundView';
-import * as inventoryService from '../../services/inventoryService';
+import { InventoryService } from '../../CoreServices';
 
 export interface ProductDetailPageProps {
   product: Product | undefined;
@@ -28,11 +28,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   }, [product, onEdit]);
 
   const handleUpdateStock = useCallback((productId: string, newStock: number) => {
-    const currentProduct = inventoryService.getProductById(productId);
+    const currentProduct = InventoryService.getById(productId);
     if (!currentProduct) return;
 
     // Update stock
-    inventoryService.updateProduct(productId, { quantity: newStock });
+    InventoryService.update(productId, { quantity: newStock });
 
     onProductsChange();
     if (onSuccess) {

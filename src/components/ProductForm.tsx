@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import type { Product } from '../types';
-import { TrashIcon, ExclamationCircleIcon } from './icons';
-import { INPUT_BASE_CLASSES, FORM_LABEL, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
-import { SETTINGS_SECTION, BTN_FOOTER_PRIMARY, BTN_FOOTER_DANGER, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
-import * as inventoryService from '../services/inventoryService';
+import type { Product } from '../SharedDefs';
+import { INPUT_BASE_CLASSES, FORM_LABEL, FORM_FOOTER, ERROR_BANNER, BTN_FOOTER_PRIMARY, BTN_FOOTER_DANGER, BTN_FOOTER_SECONDARY } from '../SharedDefs';
+import { TrashIcon, ExclamationCircleIcon } from '../UIComponents';
+import { InventoryService } from '../CoreServices';
 
 interface ProductFormProps {
   product: Product | null;
@@ -55,7 +54,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       let result;
       if (product) {
         // Update existing product
-        result = inventoryService.updateProduct(product.id, {
+        result = InventoryService.update(product.id, {
           name,
           description: description || undefined,
           price: parseFloat(price),
@@ -64,7 +63,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
         });
       } else {
         // Create new product
-        result = inventoryService.createProduct(
+        result = InventoryService.create(
           name,
           parseFloat(price),
           parseInt(quantity),

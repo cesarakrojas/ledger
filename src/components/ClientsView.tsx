@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
-import type { Contact } from '../types';
-import { PlusIcon, UserIcon } from './icons';
-import * as contactService from '../services/contactService';
-import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
-import { TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY } from '../utils/constants';
-import { useDebouncedValue } from '../utils/performanceUtils';
+import type { Contact } from '../SharedDefs';
+import { CARD_STYLES, LIST_ITEM_INTERACTIVE, TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY, useDebouncedValue } from '../SharedDefs';
+import { PlusIcon, UserIcon } from '../UIComponents';
+import { ContactService } from '../CoreServices';
 
 interface ClientsViewProps {
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', contactId?: string) => void;
@@ -108,7 +106,7 @@ export const ClientsView: React.FC<ClientsViewProps> = ({
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 200);
 
   const loadContacts = useCallback(() => {
-    const allContacts = contactService.getAllContacts({
+    const allContacts = ContactService.getAll({
       searchTerm: debouncedSearchTerm || undefined,
       type: selectedType as 'client' | 'supplier' | undefined
     });

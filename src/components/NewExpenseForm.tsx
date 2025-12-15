@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import type { CategoryConfig } from '../types';
-import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
-import { formatCurrency } from '../utils/formatters';
-import { ExclamationCircleIcon } from './icons';
+import type { CategoryConfig } from '../SharedDefs';
+import { INPUT_BASE_CLASSES, FORM_LABEL, BTN_PRIMARY, FORM_FOOTER, ERROR_BANNER, formatCurrency } from '../SharedDefs';
+import { ExclamationCircleIcon } from '../UIComponents';
 
 
 interface NewExpenseFormProps {

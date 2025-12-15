@@ -1,9 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import type { Transaction, DebtEntry } from '../types';
-import { ArrowUpIcon, ArrowDownIcon, ChartBarIcon } from './icons';
-import { formatCurrency, formatTime } from '../utils/formatters';
-import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
-import { TEXT_PAGE_TITLE, TEXT_SECTION_HEADER, INPUT_DATE_CLASSES, TRANSITION_COLORS, BTN_ACTION_PRIMARY, BTN_ACTION_SECONDARY } from '../utils/constants';
+import type { Transaction, DebtEntry } from '../SharedDefs';
+import { CARD_STYLES, LIST_ITEM_INTERACTIVE, TEXT_PAGE_TITLE, TEXT_SECTION_HEADER, INPUT_DATE_CLASSES, TRANSITION_COLORS, BTN_ACTION_PRIMARY, BTN_ACTION_SECONDARY, formatCurrency, formatTime } from '../SharedDefs';
+import { ArrowUpIcon, ArrowDownIcon, ChartBarIcon } from '../UIComponents';
 
 interface ReportsViewProps {
   transactions: Transaction[];

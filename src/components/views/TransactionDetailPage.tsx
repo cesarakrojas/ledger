@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Transaction } from '../../types';
+import type { Transaction } from '../../SharedDefs';
 import { TransactionDetailView } from '../TransactionDetailView';
 import { NotFoundView } from './NotFoundView';
 

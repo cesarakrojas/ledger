@@ -1,8 +1,7 @@
 import React from 'react';
-import type { Transaction } from '../types';
-import { formatCurrency, formatDate, formatTime } from '../utils/formatters';
-import { CloseIcon, ArrowUpIcon, ArrowDownIcon, PencilIcon, PrinterIcon } from './icons';
-import { DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
+import type { Transaction } from '../SharedDefs';
+import { formatCurrency, formatDate, formatTime, DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../SharedDefs';
+import { CloseIcon, ArrowUpIcon, ArrowDownIcon, PencilIcon, PrinterIcon } from '../UIComponents';
 
 interface TransactionDetailViewProps {
   transaction: Transaction;

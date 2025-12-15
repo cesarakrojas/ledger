@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { DebtEntry } from '../types';
-import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from './icons';
-import * as debtService from '../services/debtService';
-import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
-import { TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY } from '../utils/constants';
-import { formatCurrency } from '../utils/formatters';
+import type { DebtEntry } from '../SharedDefs';
+import { CARD_STYLES, LIST_ITEM_INTERACTIVE, TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY, formatCurrency } from '../SharedDefs';
+import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from '../UIComponents';
+import { DebtService } from '../CoreServices';
 
 interface LibretaViewProps {
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => void;
@@ -23,15 +21,15 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
   });
 
   const loadDebts = useCallback(() => {
-    const loadedDebts = debtService.getAllDebts();
+    const loadedDebts = DebtService.getAll();
     setDebts(loadedDebts);
-    setStats(debtService.getDebtStats());
+    setStats(DebtService.getStats());
   }, []);
 
   useEffect(() => {
     loadDebts();
 
-    const unsubscribe = debtService.subscribeToDebts(() => {
+    const unsubscribe = DebtService.subscribe(() => {
       loadDebts();
     });
 

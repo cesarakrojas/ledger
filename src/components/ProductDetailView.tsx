@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import type { Product } from '../types';
-import { formatCurrency, formatDate } from '../utils/formatters';
-import { CloseIcon, PencilIcon } from './icons';
-import { DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
+import type { Product } from '../SharedDefs';
+import { formatCurrency, formatDate, DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../SharedDefs';
+import { CloseIcon, PencilIcon } from '../UIComponents';
 
 interface ProductDetailViewProps {
   product: Product;

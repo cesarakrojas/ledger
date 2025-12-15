@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import type { Product } from '../../types';
+import type { Product } from '../../SharedDefs';
+import { CARD_FORM, TEXT_PAGE_TITLE, TRANSITION_COLORS } from '../../SharedDefs';
 import { ProductForm } from '../ProductForm';
-import { XMarkIcon } from '../icons';
-import { CARD_FORM } from '../../utils/styleConstants';
-import { TEXT_PAGE_TITLE, TRANSITION_COLORS } from '../../utils/constants';
-import * as inventoryService from '../../services/inventoryService';
+import { XMarkIcon } from '../../UIComponents';
+import { InventoryService } from '../../CoreServices';
 
 export interface ProductFormPageProps {
   mode: 'create' | 'edit';
@@ -17,7 +16,7 @@ export const ProductFormPage: React.FC<ProductFormPageProps> = ({ mode, productI
 
   useEffect(() => {
     if (mode === 'edit' && productId) {
-      const allProducts = inventoryService.getAllProducts();
+      const allProducts = InventoryService.getAll();
       const foundProduct = allProducts.find(p => p.id === productId);
       setProduct(foundProduct || null);
     } else {
@@ -33,7 +32,7 @@ export const ProductFormPage: React.FC<ProductFormPageProps> = ({ mode, productI
     if (!product) return;
     
     if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      const success = inventoryService.deleteProduct(product.id);
+      const success = InventoryService.delete(product.id);
       if (success) {
         onBack();
       }

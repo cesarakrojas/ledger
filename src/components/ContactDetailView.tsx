@@ -1,8 +1,7 @@
 import React from 'react';
-import type { Contact } from '../types';
-import { formatDate } from '../utils/formatters';
-import { CloseIcon, PencilIcon, UserIcon } from './icons';
-import { DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
+import type { Contact } from '../SharedDefs';
+import { formatDate, DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../SharedDefs';
+import { CloseIcon, PencilIcon, UserIcon } from '../UIComponents';
 
 interface ContactDetailViewProps {
   contact: Contact;

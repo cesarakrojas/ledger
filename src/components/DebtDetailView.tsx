@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import type { DebtEntry } from '../types';
-import { formatCurrency, formatDate } from '../utils/formatters';
-import { CloseIcon, CheckCircleIcon, PencilIcon, ArrowUpIcon, ArrowDownIcon } from './icons';
-import { DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
-import { INPUT_BASE_CLASSES } from '../utils/constants';
+import type { DebtEntry } from '../SharedDefs';
+import { formatCurrency, formatDate, DETAIL_VIEW_CONTAINER, DETAIL_VIEW_HEADER, DETAIL_VIEW_FOOTER, ICON_BTN_CLOSE, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY, INPUT_BASE_CLASSES } from '../SharedDefs';
+import { CloseIcon, CheckCircleIcon, PencilIcon, ArrowUpIcon, ArrowDownIcon } from '../UIComponents';
 
 interface DebtDetailViewProps {
   debt: DebtEntry;

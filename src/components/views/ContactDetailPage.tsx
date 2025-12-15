@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import type { Contact } from '../../types';
+import type { Contact } from '../../SharedDefs';
 import { ContactDetailView } from '../ContactDetailView';
 import { NotFoundView } from './NotFoundView';
 

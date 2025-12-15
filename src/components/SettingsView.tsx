@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import type { CategoryConfig } from '../types';
-import { SunIcon, MoonIcon, ChevronRightIcon, CreditCardIcon } from './icons';
-import { CURRENCIES, TEXT_PAGE_TITLE } from '../utils/constants';
-import { CARD_STYLES } from '../utils/styleConstants';
+import type { CategoryConfig } from '../SharedDefs';
+import { CURRENCIES, TEXT_PAGE_TITLE, CARD_STYLES } from '../SharedDefs';
+import { SunIcon, MoonIcon, ChevronRightIcon, CreditCardIcon } from '../UIComponents';
 
 interface SettingsViewProps {
   onSave: (config: CategoryConfig) => void;

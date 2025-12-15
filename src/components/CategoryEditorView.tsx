@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { PlusIcon, TrashIcon, PencilIcon } from './icons';
-import { FORM_FOOTER } from '../utils/constants';
-import { BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
+import { FORM_FOOTER, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../SharedDefs';
+import { PlusIcon, TrashIcon, PencilIcon } from '../UIComponents';
 
 export interface CategoryRename {
   oldName: string;

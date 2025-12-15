@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { INPUT_BASE_CLASSES, FORM_LABEL, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
-import { BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY, BTN_FOOTER_DANGER } from '../utils/styleConstants';
-import { ExclamationCircleIcon, TrashIcon } from './icons';
-import * as debtService from '../services/debtService';
-import * as contactService from '../services/contactService';
-import { Contact } from '../types';
+import type { Contact } from '../SharedDefs';
+import { INPUT_BASE_CLASSES, FORM_LABEL, FORM_FOOTER, ERROR_BANNER, BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY, BTN_FOOTER_DANGER } from '../SharedDefs';
+import { ExclamationCircleIcon, TrashIcon } from '../UIComponents';
+import { DebtService, ContactService } from '../CoreServices';
 
 interface DebtFormProps {
   mode: 'create' | 'edit';
@@ -34,7 +32,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
   // Load contacts on mount
   useEffect(() => {
-    setContacts(contactService.getAllContacts());
+    setContacts(ContactService.getAll());
   }, []);
 
   // Close dropdown when clicking outside
@@ -73,7 +71,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
   useEffect(() => {
     if (mode === 'edit' && debtId) {
-      const debt = debtService.getDebtById(debtId);
+      const debt = DebtService.getById(debtId);
       if (debt) {
         setType(debt.type);
         setCounterparty(debt.counterparty);
@@ -113,7 +111,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
         
         if (!existingContact) {
           // Create new contact automatically
-          contactService.createContact({
+          ContactService.create({
             type: contactType,
             name: counterparty.trim()
           });
@@ -122,7 +120,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
       let result;
       if (mode === 'create') {
-        result = debtService.createDebt(
+        result = DebtService.create(
           type,
           counterparty,
           amountNum,
@@ -132,7 +130,7 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
           notes || undefined
         );
       } else if (debtId) {
-        result = debtService.updateDebt(debtId, {
+        result = DebtService.update(debtId, {
           type,
           counterparty,
           amount: amountNum,

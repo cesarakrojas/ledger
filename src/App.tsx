@@ -1,9 +1,9 @@
 // Main Mobile web app for the management of micro and very small businesses in latin america.
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Transaction, CategoryConfig, Product, DebtEntry, Contact } from './types';
-import { STORAGE_KEYS } from './utils/storageKeys';
-import { CARD_EMPTY_STATE } from './utils/styleConstants';
-import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon } from './components/icons';
+import type { Transaction, CategoryConfig, Product, DebtEntry, Contact } from './SharedDefs';
+import { STORAGE_KEYS, CARD_EMPTY_STATE, calculateTotalInflows, calculateTotalOutflows } from './SharedDefs';
+import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon, FormViewWrapper, ErrorNotification, SuccessModal, MobileMenu } from './UIComponents';
+import { TransactionService, InventoryService, DebtService, ContactService } from './CoreServices';
 import { SettingsView } from './components/SettingsView';
 import { CategoryEditorView } from './components/CategoryEditorView';
 import { PaymentMethodsEditorView } from './components/PaymentMethodsEditorView';
@@ -13,24 +13,14 @@ import { ReportsView } from './components/ReportsView';
 import { NewInflowForm } from './components/NewInflowForm';
 import { NewExpenseForm } from './components/NewExpenseForm';
 import { LibretaView } from './components/LibretaView';
-import { FormViewWrapper } from './components/FormViewWrapper';
 import { ProductForm } from './components/ProductForm';
 import { DebtForm } from './components/DebtForm';
 import { DebtDetailView } from './components/DebtDetailView';
-import { ErrorNotification } from './components/ErrorNotification';
-import { SuccessModal } from './components/SuccessModal';
 import { HomeView } from './components/views/HomeView';
 import { TransactionDetailPage } from './components/views/TransactionDetailPage';
 import { ProductDetailPage } from './components/views/ProductDetailPage';
-
 import { ContactFormPage } from './components/views/ContactFormPage';
 import { ContactDetailPage } from './components/views/ContactDetailPage';
-import { MobileMenu } from './components/MobileMenu';
-import * as inventoryService from './services/inventoryService';
-import * as debtService from './services/debtService';
-import * as contactService from './services/contactService';
-import { calculateTotalInflows, calculateTotalOutflows } from './utils/calculations';
-import * as dataService from './services/dataService';
 import { useAppNavigation } from './hooks/useAppNavigation';
 
 // --- MAIN APP COMPONENT ---
@@ -84,19 +74,19 @@ export default function App() {
   // Centralized data loading function - memoized to prevent re-creation on every render
   const loadAllData = useCallback(() => {
     // Load products
-    const prods = inventoryService.getAllProducts();
+    const prods = InventoryService.getAll();
     setProducts(prods);
     
     // Load transactions
-    const txs = dataService.getTransactionsWithFilters({});
+    const txs = TransactionService.getWithFilters({});
     setTransactions(txs);
     
     // Load debts
-    const loadedDebts = debtService.getAllDebts();
+    const loadedDebts = DebtService.getAll();
     setDebts(loadedDebts);
     
     // Load contacts
-    const loadedContacts = contactService.getAllContacts({});
+    const loadedContacts = ContactService.getAll({});
     setContacts(loadedContacts);
     
     // Load category config
@@ -178,7 +168,7 @@ export default function App() {
   }, []);
 
   const handleAddTransaction = useCallback((transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
-    const result = dataService.addTransaction(
+    const result = TransactionService.add(
       transaction.type,
       transaction.description,
       transaction.amount,
@@ -192,12 +182,12 @@ export default function App() {
     }
     
     // Reload all transactions
-    const txs = dataService.getTransactionsWithFilters({});
+    const txs = TransactionService.getWithFilters({});
     setTransactions(txs);
   }, []);
 
   const loadProducts = useCallback(() => {
-    const prods = inventoryService.getAllProducts();
+    const prods = InventoryService.getAll();
     setProducts(prods);
   }, []);
 
@@ -261,9 +251,9 @@ export default function App() {
               
               if (renames.length > 0) {
                 renames.forEach(({ oldName, newName }) => {
-                  const transactionsUpdated = dataService.migrateCategoryName(oldName, newName);
-                  const debtsUpdated = debtService.migrateCategoryName(oldName, newName);
-                  const productsUpdated = inventoryService.migrateCategoryName(oldName, newName);
+                  const transactionsUpdated = TransactionService.migrateCategoryName(oldName, newName);
+                  const debtsUpdated = DebtService.migrateCategoryName(oldName, newName);
+                  const productsUpdated = InventoryService.migrateCategoryName(oldName, newName);
                   
                   totalUpdated += transactionsUpdated + debtsUpdated + productsUpdated;
                 });
@@ -351,16 +341,16 @@ export default function App() {
         >
           <ProductForm
             product={inventoryViewMode === 'edit' && editingProductId ? (() => {
-              const allProducts = inventoryService.getAllProducts();
+              const allProducts = InventoryService.getAll();
               return allProducts.find(p => p.id === editingProductId) || null;
             })() : null}
             onSave={handleInventoryListNav}
             onCancel={handleInventoryListNav}
             onDelete={inventoryViewMode === 'edit' && editingProductId ? () => {
-              const allProducts = inventoryService.getAllProducts();
+              const allProducts = InventoryService.getAll();
               const product = allProducts.find(p => p.id === editingProductId);
               if (product && confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-                const success = inventoryService.deleteProduct(product.id);
+                const success = InventoryService.delete(product.id);
                 if (success) handleInventoryListNav();
               }
             } : undefined}
@@ -454,7 +444,7 @@ export default function App() {
 
     const handleDelete = () => {
       if (editingDebtId && confirm('¿Estás seguro de que deseas eliminar esta deuda?')) {
-        const success = debtService.deleteDebt(editingDebtId);
+        const success = DebtService.delete(editingDebtId);
         if (success) {
           handleLibretaViewChange('list');
         }
@@ -478,7 +468,7 @@ export default function App() {
   };
 
   const DebtDetailPageView = () => {
-    const debt = selectedDebtId ? debtService.getDebtById(selectedDebtId) : null;
+    const debt = selectedDebtId ? DebtService.getById(selectedDebtId) : null;
     
     if (!debt) {
       return (
@@ -501,14 +491,14 @@ export default function App() {
     };
 
     const handleMarkAsPaid = () => {
-      const result = debtService.markAsPaid(debt.id);
+      const result = DebtService.markAsPaid(debt.id);
       if (result) {
         handleLibretaViewChange('list');
       }
     };
 
     const handlePartialPayment = (amount: number) => {
-      const result = debtService.makePartialPayment(debt.id, amount);
+      const result = DebtService.makePartialPayment(debt.id, amount);
       if (result) {
         // Refresh the view - if fully paid, go to list, otherwise stay on detail
         if (result.debt.status === 'paid') {

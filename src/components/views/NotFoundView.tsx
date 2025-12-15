@@ -1,5 +1,5 @@
 import React from 'react';
-import { BTN_ACTION_PRIMARY } from '../../utils/constants';
+import { BTN_ACTION_PRIMARY } from '../../SharedDefs';
 
 export interface NotFoundViewProps {
   message: string;

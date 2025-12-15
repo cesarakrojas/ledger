@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { Product } from '../types';
-import { PlusIcon } from './icons';
-import { InventoryIcon } from './icons';
-import { formatCurrency } from '../utils/formatters';
-import * as inventoryService from '../services/inventoryService';
-import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
-import { TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY } from '../utils/constants';
+import type { Product } from '../SharedDefs';
+import { CARD_STYLES, LIST_ITEM_INTERACTIVE, TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY, formatCurrency } from '../SharedDefs';
+import { PlusIcon, InventoryIcon } from '../UIComponents';
+import { InventoryService } from '../CoreServices';
 
 // Simple Search Icon Component (SVG)
 const SearchIcon = ({ className }: { className?: string }) => (
@@ -36,7 +33,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
   
   // Load products
   const loadProducts = useCallback(() => {
-    const loadedProducts = inventoryService.getAllProducts();
+    const loadedProducts = InventoryService.getAll();
     setProducts(loadedProducts);
   }, []);
 
@@ -44,7 +41,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
     loadProducts();
 
     // Subscribe to changes
-    const unsubscribe = inventoryService.subscribeToInventory(() => {
+    const unsubscribe = InventoryService.subscribe(() => {
       loadProducts();
     });
 

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import type { Contact } from '../types';
-import { ExclamationCircleIcon } from './icons';
-import { INPUT_BASE_CLASSES, FORM_LABEL, FORM_FOOTER, ERROR_BANNER } from '../utils/constants';
-import { BTN_FOOTER_PRIMARY, BTN_FOOTER_DANGER, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
-import { TrashIcon } from './icons';
-import * as contactService from '../services/contactService';
+import type { Contact } from '../SharedDefs';
+import { INPUT_BASE_CLASSES, FORM_LABEL, FORM_FOOTER, ERROR_BANNER, BTN_FOOTER_PRIMARY, BTN_FOOTER_DANGER, BTN_FOOTER_SECONDARY } from '../SharedDefs';
+import { ExclamationCircleIcon, TrashIcon } from '../UIComponents';
+import { ContactService } from '../CoreServices';
 
 interface ContactFormProps {
   contact: Contact | null;
@@ -41,7 +39,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contact, onSave, onCan
     try {
       if (contact) {
         // Update existing contact
-        const result = contactService.updateContact(contact.id, {
+        const result = ContactService.update(contact.id, {
           type,
           name: name.trim(),
           phone: phone.trim() || undefined,
@@ -53,7 +51,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ contact, onSave, onCan
         }
       } else {
         // Create new contact
-        const result = contactService.createContact({
+        const result = ContactService.create({
           type,
           name: name.trim(),
           phone: phone.trim() || undefined,

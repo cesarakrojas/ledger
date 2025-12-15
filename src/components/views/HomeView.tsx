@@ -1,10 +1,7 @@
 import React from 'react';
-import type { Transaction } from '../../types';
-import { CARD_STYLES } from '../../utils/styleConstants';
-import { BTN_HEADER_INFLOW, BTN_HEADER_OUTFLOW, TEXT_PAGE_TITLE, TEXT_VALUE_XL } from '../../utils/constants';
-import { ArrowUpIcon, ArrowDownIcon } from '../icons';
-import { TransactionItem } from '../TransactionItem';
-import { formatCurrency } from '../../utils/formatters';
+import type { Transaction } from '../../SharedDefs';
+import { CARD_STYLES, BTN_HEADER_INFLOW, BTN_HEADER_OUTFLOW, TEXT_PAGE_TITLE, TEXT_VALUE_XL, formatCurrency } from '../../SharedDefs';
+import { ArrowUpIcon, ArrowDownIcon, TransactionItem } from '../../UIComponents';
 
 // Simple Search Icon Component (SVG)
 const SearchIcon = ({ className }: { className?: string }) => (

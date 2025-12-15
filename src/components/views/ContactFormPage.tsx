@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import type { Contact } from '../../types';
+import type { Contact } from '../../SharedDefs';
+import { CARD_FORM, TEXT_PAGE_TITLE, TRANSITION_COLORS } from '../../SharedDefs';
 import { ContactForm } from '../ContactForm';
-import { XMarkIcon } from '../icons';
-import { CARD_FORM } from '../../utils/styleConstants';
-import { TEXT_PAGE_TITLE, TRANSITION_COLORS } from '../../utils/constants';
-import * as contactService from '../../services/contactService';
+import { XMarkIcon } from '../../UIComponents';
+import { ContactService } from '../../CoreServices';
 
 export interface ContactFormPageProps {
   mode: 'create' | 'edit';
@@ -17,7 +16,7 @@ export const ContactFormPage: React.FC<ContactFormPageProps> = ({ mode, contactI
 
   useEffect(() => {
     if (mode === 'edit' && contactId) {
-      const foundContact = contactService.getContactById(contactId);
+      const foundContact = ContactService.getById(contactId);
       setContact(foundContact);
     } else {
       setContact(null);
@@ -32,7 +31,7 @@ export const ContactFormPage: React.FC<ContactFormPageProps> = ({ mode, contactI
     if (!contact) return;
     
     if (confirm('¿Estás seguro de que deseas eliminar este contacto?')) {
-      const success = contactService.deleteContact(contact.id);
+      const success = ContactService.delete(contact.id);
       if (success) {
         onBack();
       }
