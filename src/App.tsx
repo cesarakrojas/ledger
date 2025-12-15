@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Transaction, CategoryConfig, Product, DebtEntry, Contact } from './SharedDefs';
 import { STORAGE_KEYS, CARD_EMPTY_STATE, calculateTotalInflows, calculateTotalOutflows } from './SharedDefs';
-import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon, FormViewWrapper, ErrorNotification, SuccessModal, MobileMenu } from './UIComponents';
+import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, QuestionMarkIcon, FormViewWrapper, ErrorNotification, SuccessModal, MobileMenu } from './UIComponents';
 import { TransactionService, InventoryService, DebtService, ContactService } from './CoreServices';
-import { SettingsView, CategoryEditorView, PaymentMethodsEditorView, ReportsView } from './SettingsDomain';
+import { SettingsView, CategoryEditorView, PaymentMethodsEditorView } from './SettingsDomain';
 import { InventoryView, ProductForm, ProductDetailPage } from './InventoryDomain';
 import { LibretaView, DebtForm, DebtDetailView } from './DebtsDomain';
 import { ClientsView, ContactFormPage, ContactDetailPage } from './ContactsDomain';
@@ -13,7 +13,7 @@ import { HomeView, NewInflowForm, NewExpenseForm, TransactionDetailPage } from '
 // =============================================================================
 // Navigation Types & Utilities
 // =============================================================================
-type AppView = 'home' | 'inventory' | 'libreta' | 'clients' | 'settings' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
+type AppView = 'home' | 'inventory' | 'libreta' | 'clients' | 'settings' | 'coming-soon' | 'new-inflow' | 'new-expense' | 'transaction-detail';
 
 const resetScrollPosition = () => {
   const mainElement = document.querySelector('main');
@@ -43,7 +43,7 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [debts, setDebts] = useState<DebtEntry[]>([]);
+  const [_debts, setDebts] = useState<DebtEntry[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
@@ -377,9 +377,16 @@ export default function App() {
     );
   };
 
-  // Reports Module - wraps imported ReportsView with current data
-  const ReportsModule = () => (
-    <ReportsView transactions={transactions} debts={debts} currencyCode={currencyCode} />
+  // Coming Soon placeholder module
+  const ComingSoonModule = () => (
+    <div className="w-full animate-fade-in space-y-6">
+      <div className={CARD_EMPTY_STATE}>
+        <QuestionMarkIcon className="w-16 h-16 text-emerald-500 dark:text-emerald-400 mx-auto mb-4" />
+        <h3 className="text-xl font-bold text-slate-800 dark:text-white">Próximamente</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Estamos trabajando en algo nuevo para ti.</p>
+        <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-3 font-medium">¡Mantente atento!</p>
+      </div>
+    </div>
   );
 
   // Placeholder shown when a module is intentionally deactivated/unmounted
@@ -689,7 +696,7 @@ export default function App() {
            view === 'clients' ? <ClientsModule /> :
            view === 'settings' ? <SettingsModule /> : 
            view === 'inventory' ? <InventoryModule /> :
-           view === 'reports' ? <ReportsModule /> :
+           view === 'coming-soon' ? <ComingSoonModule /> :
            <DisabledModule name="Módulo desactivado" />}
         </main>
       </div>
@@ -739,13 +746,13 @@ export default function App() {
               <span className="text-xs font-medium">Inventario</span>
             </button>
             <button
-              onClick={() => navigate('reports')}
+              onClick={() => navigate('coming-soon')}
               className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition ${
-                view === 'reports' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400'
+                view === 'coming-soon' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 'text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400'
               }`}
             >
-              <ChartBarIcon className="w-6 h-6"/>
-              <span className="text-xs font-medium">Reportes</span>
+              <QuestionMarkIcon className="w-6 h-6"/>
+              <span className="text-xs font-medium">Pronto</span>
             </button>
           </div>
         </div>

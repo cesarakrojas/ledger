@@ -198,7 +198,7 @@ export const DETAIL_VIEW_FOOTER = 'bg-white dark:bg-slate-800 border-t border-sl
 
 export const INPUT_BASE_CLASSES = 'w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-slate-100';
 
-// Date input variant (larger for touch, used in ReportsView)
+// Date input variant (larger for touch)
 export const INPUT_DATE_CLASSES = 'w-full px-4 py-3.5 text-lg bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-700 dark:text-slate-200';
 
 // Typography Constants
