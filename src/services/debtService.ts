@@ -42,36 +42,31 @@ const updateOverdueStatuses = (): DebtEntry[] => {
   return updatedDebts;
 };
 
-// Get all debts with optional filters
-export const getAllDebts = (filters?: {
-  type?: 'receivable' | 'payable';
-  status?: 'pending' | 'paid' | 'overdue';
-  searchTerm?: string;
-}): DebtEntry[] => {
+// Get all debts
+export const getAllDebts = (): DebtEntry[] => {
   // First, update any overdue statuses and persist
-  let debts = updateOverdueStatuses();
-
-  // Filter by type
-  if (filters?.type) {
-    debts = debts.filter(d => d.type === filters.type);
-  }
-
-  // Filter by status
-  if (filters?.status) {
-    debts = debts.filter(d => d.status === filters.status);
-  }
-
-  // Filter by search term
-  if (filters?.searchTerm) {
-    const term = filters.searchTerm.toLowerCase();
-    debts = debts.filter(d =>
-      d.counterparty.toLowerCase().includes(term) ||
-      d.description.toLowerCase().includes(term) ||
-      d.category?.toLowerCase().includes(term)
-    );
-  }
-
+  const debts = updateOverdueStatuses();
   return debts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+};
+
+// Migrate category name across all debts
+export const migrateCategoryName = (oldName: string, newName: string): number => {
+  const debts = debtStorage.get();
+  let updatedCount = 0;
+  
+  const updatedDebts = debts.map(debt => {
+    if (debt.category === oldName) {
+      updatedCount++;
+      return { ...debt, category: newName };
+    }
+    return debt;
+  });
+  
+  if (updatedCount > 0) {
+    debtStorage.save(updatedDebts);
+  }
+  
+  return updatedCount;
 };
 
 // Get a single debt by ID
@@ -196,8 +191,7 @@ export const markAsPaid = (debtId: string): { debt: DebtEntry; transaction: Tran
     transactionDescription,
     debt.amount,
     debt.category,
-    undefined, // paymentMethod
-    undefined  // items
+    undefined // paymentMethod
   );
   
   if (!transaction) {
@@ -275,8 +269,7 @@ export const makePartialPayment = (
     transactionDescription,
     paymentAmount,
     debt.category,
-    undefined, // paymentMethod
-    undefined  // items
+    undefined // paymentMethod
   );
   
   if (!transaction) {

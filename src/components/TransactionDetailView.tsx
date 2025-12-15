@@ -75,28 +75,6 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
                   : 'background-color: #fee2e2; color: #991b1b;'
               }
             }
-            .items-section {
-              border-top: 1px dashed #000;
-              border-bottom: 1px dashed #000;
-              padding: 10px 0;
-              margin: 15px 0;
-            }
-            .item-row {
-              display: flex;
-              justify-content: space-between;
-              margin: 6px 0;
-              font-size: 14px;
-            }
-            .item-name {
-              flex: 1;
-            }
-            .item-qty {
-              margin: 0 8px;
-            }
-            .item-price {
-              text-align: right;
-              min-width: 70px;
-            }
           </style>
         </head>
         <body>
@@ -120,35 +98,10 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
             <span>${formatTime(transaction.timestamp)}</span>
           </div>
 
-          ${
-            transaction.items && transaction.items.length > 0
-              ? `
-                <div class="items-section">
-                  <div style="font-weight: bold; margin-bottom: 8px;">PRODUCTOS:</div>
-                  ${transaction.items
-                    .map(item => {
-                      return `
-                        <div class="item-row">
-                          <span class="item-name">
-                            ${item.productName}
-                          </span>
-                          <span class="item-qty">x${item.quantity}</span>
-                          <span class="item-price">
-                            ${formatCurrency(item.price * item.quantity, currencyCode)}
-                          </span>
-                        </div>
-                      `;
-                    })
-                    .join('')}
-                </div>
-              `
-              : `
-                <div class="row">
-                  <span class="label">Descripción:</span>
-                  <span>${transaction.description}</span>
-                </div>
-              `
-          }
+          <div class="row">
+            <span class="label">Descripción:</span>
+            <span>${transaction.description}</span>
+          </div>
 
           ${
             transaction.category
@@ -254,40 +207,6 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
 
           <DetailRow label="ID Referencia" value={transaction.id} monospace />
         </div>
-
-        {transaction.items && transaction.items.length > 0 && (
-          <div className="mt-4 bg-white dark:bg-slate-800 border-y border-slate-200 dark:border-slate-700 px-4 py-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-              Productos
-            </h3>
-
-            <div className="space-y-3">
-              {transaction.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-start text-sm">
-                  <div className="flex-1">
-                    <span className="font-medium text-slate-800 dark:text-slate-200">
-                      {item.productName}
-                    </span>
-                    <div className="text-xs text-slate-400">
-                      {item.quantity} x {formatCurrency(item.price, currencyCode)}
-                    </div>
-                  </div>
-
-                  <span className="font-semibold text-slate-900 dark:text-white">
-                    {formatCurrency(item.price * item.quantity, currencyCode)}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Total Items</span>
-              <span className="text-sm font-bold text-slate-900 dark:text-white">
-                {formatCurrency(transaction.amount, currencyCode)}
-              </span>
-            </div>
-          </div>
-        )}
 
         <div className="h-6"></div>
       </div>

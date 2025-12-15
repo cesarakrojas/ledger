@@ -1,10 +1,3 @@
-export interface TransactionItem {
-  productId: string;
-  productName: string;
-  quantity: number;
-  price: number;
-}
-
 export interface Transaction {
   id: string;
   type: 'inflow' | 'outflow';
@@ -13,7 +6,6 @@ export interface Transaction {
   paymentMethod?: string;
   amount: number;
   timestamp: string;
-  items?: TransactionItem[];
 }
 
 export interface CategoryConfig {

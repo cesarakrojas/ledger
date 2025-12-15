@@ -42,6 +42,26 @@ export const getAllProducts = (filters?: InventoryFilters): Product[] => {
   return products.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 };
 
+// Migrate category name across all products
+export const migrateCategoryName = (oldName: string, newName: string): number => {
+  const products = productStorage.get();
+  let updatedCount = 0;
+  
+  const updatedProducts = products.map(product => {
+    if (product.category === oldName) {
+      updatedCount++;
+      return { ...product, category: newName, updatedAt: new Date().toISOString() };
+    }
+    return product;
+  });
+  
+  if (updatedCount > 0) {
+    productStorage.save(updatedProducts);
+  }
+  
+  return updatedCount;
+};
+
 // Create a new product with error handling
 export const createProduct = (
   name: string,

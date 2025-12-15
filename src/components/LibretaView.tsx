@@ -6,20 +6,6 @@ import { CARD_STYLES, LIST_ITEM_INTERACTIVE } from '../utils/styleConstants';
 import { TEXT_PAGE_TITLE, BTN_ACTION_PRIMARY } from '../utils/constants';
 import { formatCurrency } from '../utils/formatters';
 
-// Simple Search Icon Component (SVG)
-const SearchIcon = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    fill="none" 
-    viewBox="0 0 24 24" 
-    strokeWidth={2} 
-    stroke="currentColor" 
-    className={className}
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-  </svg>
-);
-
 interface LibretaViewProps {
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => void;
   currencyCode: string;
@@ -37,7 +23,7 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
   });
 
   const loadDebts = useCallback(() => {
-    const loadedDebts = debtService.getAllDebts({});
+    const loadedDebts = debtService.getAllDebts();
     setDebts(loadedDebts);
     setStats(debtService.getDebtStats());
   }, []);
@@ -83,22 +69,12 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
       <div className={CARD_STYLES}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           
-          {/* Title + Search Icon Container */}
-          <div className="flex w-full sm:w-auto justify-between items-center sm:gap-8">
-            
-            {/* Text Block */}
-            <div>
-              <h2 className={TEXT_PAGE_TITLE}>Libreta de Deudas</h2>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">
-                Cuentas por cobrar y pagar
-              </p>
-            </div>
-
-            {/* Search Icon */}
-            <button className="p-2 text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-              <SearchIcon className="w-6 h-6" />
-            </button>
-            
+          {/* Title */}
+          <div>
+            <h2 className={TEXT_PAGE_TITLE}>Libreta de Deudas</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">
+              Cuentas por cobrar y pagar
+            </p>
           </div>
 
           {/* Action Button */}

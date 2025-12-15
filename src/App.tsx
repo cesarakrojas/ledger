@@ -92,7 +92,7 @@ export default function App() {
     setTransactions(txs);
     
     // Load debts
-    const loadedDebts = debtService.getAllDebts({});
+    const loadedDebts = debtService.getAllDebts();
     setDebts(loadedDebts);
     
     // Load contacts
@@ -183,8 +183,7 @@ export default function App() {
       transaction.description,
       transaction.amount,
       transaction.category,
-      transaction.paymentMethod,
-      transaction.items
+      transaction.paymentMethod
     );
     
     if (!result) {
@@ -256,13 +255,39 @@ export default function App() {
           <CategoryEditorView
             inflowCategories={categoryConfig.inflowCategories}
             outflowCategories={categoryConfig.outflowCategories}
-            onSave={(inflowCategories, outflowCategories) => {
+            onSave={(inflowCategories, outflowCategories, renames) => {
+              // Perform category migrations if any renames detected
+              let totalUpdated = 0;
+              
+              if (renames.length > 0) {
+                renames.forEach(({ oldName, newName }) => {
+                  const transactionsUpdated = dataService.migrateCategoryName(oldName, newName);
+                  const debtsUpdated = debtService.migrateCategoryName(oldName, newName);
+                  const productsUpdated = inventoryService.migrateCategoryName(oldName, newName);
+                  
+                  totalUpdated += transactionsUpdated + debtsUpdated + productsUpdated;
+                });
+              }
+              
+              // Save the new category configuration
               const newConfig: CategoryConfig = {
                 ...categoryConfig,
                 inflowCategories,
                 outflowCategories
               };
               handleSaveCategoryConfig(newConfig);
+              
+              // Reload all data to reflect changes
+              loadAllData();
+              
+              // Show success message if categories were migrated
+              if (totalUpdated > 0) {
+                setSuccessModalTitle('Categorías Actualizadas');
+                setSuccessModalMessage(`Categorías guardadas y ${totalUpdated} registro${totalUpdated > 1 ? 's actualizados' : ' actualizado'}`);
+                setSuccessModalType('inflow');
+                setShowSuccessModal(true);
+              }
+              
               changeSettingsView('main');
             }}
             onCancel={() => changeSettingsView('main')}

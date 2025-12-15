@@ -22,8 +22,7 @@ export const addTransaction = (
   description: string,
   amount: number,
   category?: string,
-  paymentMethod?: string,
-  items?: { productId: string; productName: string; quantity: number; price: number; }[]
+  paymentMethod?: string
 ): Transaction | null => {
   const transactions = transactionStorage.get();
   
@@ -34,8 +33,7 @@ export const addTransaction = (
     amount,
     timestamp: new Date().toISOString(),
     category,
-    paymentMethod,
-    items
+    paymentMethod
   };
   
   transactions.push(newTransaction);
@@ -82,4 +80,24 @@ export const getTransactionsWithFilters = (filters: {
   }
   
   return transactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+};
+
+// Migrate category name across all transactions
+export const migrateCategoryName = (oldName: string, newName: string): number => {
+  const transactions = transactionStorage.get();
+  let updatedCount = 0;
+  
+  const updatedTransactions = transactions.map(transaction => {
+    if (transaction.category === oldName) {
+      updatedCount++;
+      return { ...transaction, category: newName };
+    }
+    return transaction;
+  });
+  
+  if (updatedCount > 0) {
+    transactionStorage.save(updatedTransactions);
+  }
+  
+  return updatedCount;
 };

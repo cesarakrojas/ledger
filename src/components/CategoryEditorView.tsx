@@ -3,10 +3,15 @@ import { PlusIcon, TrashIcon, PencilIcon } from './icons';
 import { FORM_FOOTER } from '../utils/constants';
 import { BTN_FOOTER_PRIMARY, BTN_FOOTER_SECONDARY } from '../utils/styleConstants';
 
+export interface CategoryRename {
+  oldName: string;
+  newName: string;
+}
+
 interface CategoryEditorViewProps {
   inflowCategories: string[];
   outflowCategories: string[];
-  onSave: (inflowCategories: string[], outflowCategories: string[]) => void;
+  onSave: (inflowCategories: string[], outflowCategories: string[], renames: CategoryRename[]) => void;
   onCancel: () => void;
 }
 
@@ -100,7 +105,30 @@ export const CategoryEditorView: React.FC<CategoryEditorViewProps> = ({
   };
 
   const handleSave = () => {
-    onSave(inflowCategories, outflowCategories);
+    // Detect renamed categories
+    const renames: CategoryRename[] = [];
+    
+    // Check inflow categories for renames
+    initialInflow.forEach((oldName, index) => {
+      if (index < inflowCategories.length) {
+        const newName = inflowCategories[index];
+        if (oldName !== newName) {
+          renames.push({ oldName, newName });
+        }
+      }
+    });
+    
+    // Check outflow categories for renames
+    initialOutflow.forEach((oldName, index) => {
+      if (index < outflowCategories.length) {
+        const newName = outflowCategories[index];
+        if (oldName !== newName) {
+          renames.push({ oldName, newName });
+        }
+      }
+    });
+    
+    onSave(inflowCategories, outflowCategories, renames);
   };
 
   return (
