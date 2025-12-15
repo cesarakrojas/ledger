@@ -4,53 +4,42 @@ import type { Transaction, CategoryConfig, Product, DebtEntry, Contact } from '.
 import { STORAGE_KEYS, CARD_EMPTY_STATE, calculateTotalInflows, calculateTotalOutflows } from './SharedDefs';
 import { CashIcon, BookOpenIcon, InventoryIcon, Bars3Icon, BellIcon, ChartBarIcon, FormViewWrapper, ErrorNotification, SuccessModal, MobileMenu } from './UIComponents';
 import { TransactionService, InventoryService, DebtService, ContactService } from './CoreServices';
-import { SettingsView } from './components/SettingsView';
-import { CategoryEditorView } from './components/CategoryEditorView';
-import { PaymentMethodsEditorView } from './components/PaymentMethodsEditorView';
-import { InventoryView } from './components/InventoryView';
-import { ClientsView } from './components/ClientsView';
-import { ReportsView } from './components/ReportsView';
-import { NewInflowForm } from './components/NewInflowForm';
-import { NewExpenseForm } from './components/NewExpenseForm';
-import { LibretaView } from './components/LibretaView';
-import { ProductForm } from './components/ProductForm';
-import { DebtForm } from './components/DebtForm';
-import { DebtDetailView } from './components/DebtDetailView';
-import { HomeView } from './components/views/HomeView';
-import { TransactionDetailPage } from './components/views/TransactionDetailPage';
-import { ProductDetailPage } from './components/views/ProductDetailPage';
-import { ContactFormPage } from './components/views/ContactFormPage';
-import { ContactDetailPage } from './components/views/ContactDetailPage';
-import { useAppNavigation } from './hooks/useAppNavigation';
+import { SettingsView, CategoryEditorView, PaymentMethodsEditorView, ReportsView } from './SettingsDomain';
+import { InventoryView, ProductForm, ProductDetailPage } from './InventoryDomain';
+import { LibretaView, DebtForm, DebtDetailView } from './DebtsDomain';
+import { ClientsView, ContactFormPage, ContactDetailPage } from './ContactsDomain';
+import { HomeView, NewInflowForm, NewExpenseForm, TransactionDetailPage } from './TransactionsDomain';
 
-// --- MAIN APP COMPONENT ---
+// =============================================================================
+// Navigation Types & Utilities
+// =============================================================================
+type AppView = 'home' | 'inventory' | 'libreta' | 'clients' | 'settings' | 'reports' | 'new-inflow' | 'new-expense' | 'transaction-detail';
 
+const resetScrollPosition = () => {
+  const mainElement = document.querySelector('main');
+  if (mainElement) mainElement.scrollTop = 0;
+  window.scrollTo(0, 0);
+};
+
+// =============================================================================
+// Main App Component
+// =============================================================================
 export default function App() {
-  const {
-    view,
-    navigate,
+  // Navigation state
+  const [view, setView] = useState<AppView>('home');
+  const [inventoryViewMode, setInventoryViewMode] = useState<'list' | 'create' | 'edit' | 'detail'>('list');
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [libretaViewMode, setLibretaViewMode] = useState<'list' | 'create' | 'edit' | 'detail'>('list');
+  const [editingDebtId, setEditingDebtId] = useState<string | null>(null);
+  const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
+  const [clientsViewMode, setClientsViewMode] = useState<'list' | 'create' | 'edit' | 'detail'>('list');
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
+  const [settingsViewMode, setSettingsViewMode] = useState<'main' | 'category-editor' | 'payment-methods-editor'>('main');
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
-    inventoryViewMode,
-    changeInventoryView,
-    editingProductId,
-    selectedProductId,
-
-    libretaViewMode,
-    changeLibretaView,
-    editingDebtId,
-    selectedDebtId,
-
-    clientsViewMode,
-    changeClientsView,
-    editingContactId,
-    selectedContactId,
-
-    selectedTransactionId,
-    setSelectedTransactionId,
-
-    settingsViewMode,
-    changeSettingsView,
-  } = useAppNavigation();
+  // App state
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -191,23 +180,95 @@ export default function App() {
     setProducts(prods);
   }, []);
 
+  // Navigation functions
+  const navigate = useCallback((to: AppView) => {
+    setView(to);
+    resetScrollPosition();
+  }, []);
+
+  const changeInventoryView = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', productId?: string) => {
+    setInventoryViewMode(mode);
+    if (mode === 'edit' && productId) {
+      setEditingProductId(productId);
+      setSelectedProductId(null);
+    } else if (mode === 'detail' && productId) {
+      setSelectedProductId(productId);
+      setEditingProductId(null);
+    } else {
+      setEditingProductId(null);
+      setSelectedProductId(null);
+    }
+    resetScrollPosition();
+  }, []);
+
+  const changeLibretaView = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => {
+    setLibretaViewMode(mode);
+    if (mode === 'edit' && debtId) {
+      setEditingDebtId(debtId);
+      setSelectedDebtId(null);
+    } else if (mode === 'detail' && debtId) {
+      setSelectedDebtId(debtId);
+      setEditingDebtId(null);
+    } else {
+      setEditingDebtId(null);
+      setSelectedDebtId(null);
+    }
+    resetScrollPosition();
+  }, []);
+
+  const changeClientsView = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', contactId?: string) => {
+    setClientsViewMode(mode);
+    if (mode === 'edit' && contactId) {
+      setEditingContactId(contactId);
+      setSelectedContactId(null);
+    } else if (mode === 'detail' && contactId) {
+      setSelectedContactId(contactId);
+      setEditingContactId(null);
+    } else {
+      setEditingContactId(null);
+      setSelectedContactId(null);
+    }
+    resetScrollPosition();
+  }, []);
+
+  const changeSettingsView = useCallback((mode: 'main' | 'category-editor' | 'payment-methods-editor') => {
+    setSettingsViewMode(mode);
+    resetScrollPosition();
+  }, []);
+
+  // Reset child module states when leaving their modules
+  useEffect(() => {
+    if (view !== 'inventory') {
+      setInventoryViewMode('list');
+      setEditingProductId(null);
+      setSelectedProductId(null);
+    }
+    if (view !== 'libreta') {
+      setLibretaViewMode('list');
+      setEditingDebtId(null);
+      setSelectedDebtId(null);
+    }
+    if (view !== 'clients') {
+      setClientsViewMode('list');
+      setEditingContactId(null);
+      setSelectedContactId(null);
+    }
+    if (view !== 'settings') {
+      setSettingsViewMode('main');
+    }
+  }, [view]);
+
   const handleInventoryViewChange = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', productId?: string) => {
-    // delegate to navigation hook which centralizes reset logic
     changeInventoryView(mode, productId);
   }, [changeInventoryView]);
 
   const handleLibretaViewChange = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => {
-    // delegate to navigation hook which centralizes reset logic
     changeLibretaView(mode, debtId);
   }, [changeLibretaView]);
 
   const handleClientsViewChange = useCallback((mode: 'list' | 'create' | 'edit' | 'detail', contactId?: string) => {
-    // delegate to navigation hook which centralizes reset logic
     changeClientsView(mode, contactId);
   }, [changeClientsView]);
-
-  // Reset inventory view mode when leaving inventory - only run cleanup on view change
-  // Navigation state resets are handled inside `useAppNavigation`.
 
   // Filter transactions to show only today's transactions in the main view
   const todayTransactions = useMemo(() => {
