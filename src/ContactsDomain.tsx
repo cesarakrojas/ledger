@@ -44,7 +44,7 @@ import {
   XMarkIcon
 } from './UIComponents';
 import { ContactService } from './CoreServices';
-import { useContactStore, useUIStore } from './stores';
+import { useContactStore } from './stores';
 import { paths } from './routes';
 
 // =============================================================================
@@ -139,8 +139,11 @@ export interface ClientsViewProps {
 export const ClientsView: React.FC<ClientsViewProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use Zustand store
-  const { contacts, clients, suppliers, loadContacts, setFilters } = useContactStore();
+  // Use Zustand store with selectors for performance
+  const contacts = useContactStore(state => state.contacts);
+  const clients = useContactStore(state => state.clients);
+  const suppliers = useContactStore(state => state.suppliers);
+  const loadContacts = useContactStore(state => state.loadContacts);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
 

@@ -4,7 +4,7 @@
  * Contains: LibretaView, DebtForm, DebtDetailView
  */
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DebtEntry, Contact } from './SharedDefs';
 import {
@@ -49,7 +49,7 @@ import {
   CheckCircleIcon,
   PencilIcon
 } from './UIComponents';
-import { DebtService, ContactService } from './CoreServices';
+import { ContactService } from './CoreServices';
 import { useDebtStore, useConfigStore, useUIStore } from './stores';
 import { paths } from './routes';
 
@@ -64,12 +64,14 @@ export interface LibretaViewProps {
 export const LibretaView: React.FC<LibretaViewProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use Zustand stores
-  const { debts, stats, loadDebts } = useDebtStore();
-  const configStore = useConfigStore();
+  // Use Zustand stores with selectors for performance
+  const debts = useDebtStore(state => state.debts);
+  const stats = useDebtStore(state => state.stats);
+  const loadDebts = useDebtStore(state => state.loadDebts);
+  const storeCurrencyCode = useConfigStore(state => state.currencyCode);
   
   // Resolve currencyCode from props or store
-  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  const currencyCode = props.currencyCode ?? storeCurrencyCode;
 
   // Load debts on mount
   useEffect(() => {
@@ -233,13 +235,16 @@ export interface DebtFormProps {
 export const DebtForm: React.FC<DebtFormProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use stores
-  const debtStore = useDebtStore();
-  const uiStore = useUIStore();
+  // Use stores with selectors for performance
+  const getById = useDebtStore(state => state.getById);
+  const createDebt = useDebtStore(state => state.createDebt);
+  const updateDebt = useDebtStore(state => state.updateDebt);
+  const deleteDebt = useDebtStore(state => state.deleteDebt);
+  const showSuccessModal = useUIStore(state => state.showSuccessModal);
   
   // Resolve mode and debt from props or defaults
   const mode = props.mode ?? (props.debtId ? 'edit' : 'create');
-  const existingDebt = props.debtId ? debtStore.getById(props.debtId) : null;
+  const existingDebt = props.debtId ? getById(props.debtId) : null;
   
   const [type, setType] = useState<'receivable' | 'payable'>('receivable');
   const [counterparty, setCounterparty] = useState('');
@@ -293,9 +298,9 @@ export const DebtForm: React.FC<DebtFormProps> = (props) => {
   
   const handleDelete = () => {
     if (props.debtId && confirm('¿Estás seguro de que deseas eliminar esta deuda?')) {
-      const success = debtStore.deleteDebt(props.debtId);
+      const success = deleteDebt(props.debtId);
       if (success) {
-        uiStore.showSuccessModal('Deuda Eliminada', 'La deuda ha sido eliminada');
+        showSuccessModal('Deuda Eliminada', 'La deuda ha sido eliminada');
         if (props.onDelete) {
           props.onDelete();
         } else {
@@ -357,9 +362,9 @@ export const DebtForm: React.FC<DebtFormProps> = (props) => {
 
       let result;
       if (mode === 'create') {
-        result = debtStore.createDebt(type, counterparty, amountNum, description, dueDate, category || undefined, notes || undefined);
+        result = createDebt(type, counterparty, amountNum, description, dueDate, category || undefined, notes || undefined);
       } else if (props.debtId) {
-        result = debtStore.updateDebt(props.debtId, { type, counterparty, amount: amountNum, description, dueDate, category: category || undefined, notes: notes || undefined });
+        result = updateDebt(props.debtId, { type, counterparty, amount: amountNum, description, dueDate, category: category || undefined, notes: notes || undefined });
       }
       
       if (!result) {
@@ -367,7 +372,7 @@ export const DebtForm: React.FC<DebtFormProps> = (props) => {
         return;
       }
       
-      uiStore.showSuccessModal(
+      showSuccessModal(
         mode === 'create' ? 'Deuda Creada' : 'Deuda Actualizada',
         `La deuda ha sido ${mode === 'create' ? 'creada' : 'actualizada'}`
       );
@@ -483,14 +488,16 @@ export interface DebtDetailViewProps {
 export const DebtDetailView: React.FC<DebtDetailViewProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use stores
-  const debtStore = useDebtStore();
-  const configStore = useConfigStore();
-  const uiStore = useUIStore();
+  // Use stores with selectors for performance
+  const getById = useDebtStore(state => state.getById);
+  const markAsPaid = useDebtStore(state => state.markAsPaid);
+  const makePartialPayment = useDebtStore(state => state.makePartialPayment);
+  const storeCurrencyCode = useConfigStore(state => state.currencyCode);
+  const showSuccessModal = useUIStore(state => state.showSuccessModal);
   
   // Resolve debt from props or store
-  const debt = props.debt ?? (props.debtId ? debtStore.getById(props.debtId) : null);
-  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  const debt = props.debt ?? (props.debtId ? getById(props.debtId) : null);
+  const currencyCode = props.currencyCode ?? storeCurrencyCode;
   
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -545,9 +552,9 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = (props) => {
     if (props.onMarkAsPaid) {
       props.onMarkAsPaid();
     } else {
-      const result = debtStore.markAsPaid(debt.id);
+      const result = markAsPaid(debt.id);
       if (result) {
-        uiStore.showSuccessModal('¡Deuda Pagada!', `La deuda con ${debt.counterparty} ha sido marcada como pagada`);
+        showSuccessModal('¡Deuda Pagada!', `La deuda con ${debt.counterparty} ha sido marcada como pagada`);
         navigate(paths.libreta());
       }
     }
@@ -568,9 +575,9 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = (props) => {
     if (props.onPartialPayment) {
       props.onPartialPayment(amount);
     } else {
-      const result = debtStore.makePartialPayment(debt.id, amount);
+      const result = makePartialPayment(debt.id, amount);
       if (result) {
-        uiStore.showSuccessModal('¡Abono Registrado!', `Abono de ${formatCurrency(amount, currencyCode)} registrado`);
+        showSuccessModal('¡Abono Registrado!', `Abono de ${formatCurrency(amount, currencyCode)} registrado`);
         if (result.debt.status === 'paid') {
           navigate(paths.libreta());
         }

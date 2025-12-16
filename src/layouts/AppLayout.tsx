@@ -8,7 +8,7 @@
 import React, { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bars3Icon, BellIcon, ErrorNotification, SuccessModal, MobileMenu } from '../UIComponents';
-import { useConfigStore, useUIStore, initializeAllStores } from '../stores';
+import { useConfigStore, useUIStore } from '../stores';
 import { paths } from '../routes';
 import { BottomNav } from '../components/BottomNav';
 
@@ -34,26 +34,19 @@ const AppLayout: React.FC = () => {
   // Reset scroll on route change
   useScrollReset();
   
-  // Config store
-  const { setDarkMode } = useConfigStore();
+  // Config store - using selectors for performance
+  const setDarkMode = useConfigStore(state => state.setDarkMode);
   
-  // UI store
-  const { 
-    isMenuOpen, 
-    setMenuOpen,
-    successModal,
-    hideSuccessModal
-  } = useUIStore();
+  // UI store - using selectors for performance
+  const isMenuOpen = useUIStore(state => state.isMenuOpen);
+  const setMenuOpen = useUIStore(state => state.setMenuOpen);
+  const successModal = useUIStore(state => state.successModal);
+  const hideSuccessModal = useUIStore(state => state.hideSuccessModal);
   
-  // Initialize stores on mount
+  // Sync theme from DOM on mount (stores are initialized in main.tsx)
   useEffect(() => {
-    const cleanup = initializeAllStores();
-    
-    // Initialize theme from DOM
     const isDark = document.documentElement.classList.contains('dark');
     setDarkMode(isDark);
-    
-    return cleanup;
   }, [setDarkMode]);
   
   // Type for MobileMenu compatibility

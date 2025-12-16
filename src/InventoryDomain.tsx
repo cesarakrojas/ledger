@@ -75,12 +75,14 @@ export interface InventoryViewProps {
 export const InventoryView: React.FC<InventoryViewProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use Zustand stores
-  const { products, lowStockCount, loadProducts } = useInventoryStore();
-  const configStore = useConfigStore();
+  // Use Zustand stores with selectors for performance
+  const products = useInventoryStore(state => state.products);
+  const lowStockCount = useInventoryStore(state => state.lowStockCount);
+  const loadProducts = useInventoryStore(state => state.loadProducts);
+  const storeCurrencyCode = useConfigStore(state => state.currencyCode);
   
   // Resolve currencyCode from props or store
-  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  const currencyCode = props.currencyCode ?? storeCurrencyCode;
   
   // Load products on mount
   useEffect(() => {
@@ -215,13 +217,16 @@ export interface ProductFormProps {
 export const ProductForm: React.FC<ProductFormProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use stores
-  const inventoryStore = useInventoryStore();
-  const uiStore = useUIStore();
+  // Use stores with selectors for performance
+  const products = useInventoryStore(state => state.products);
+  const createProduct = useInventoryStore(state => state.createProduct);
+  const updateProduct = useInventoryStore(state => state.updateProduct);
+  const deleteProduct = useInventoryStore(state => state.deleteProduct);
+  const showSuccessModal = useUIStore(state => state.showSuccessModal);
   
   // Resolve product from props or store
   const product = props.product ?? 
-    (props.productId ? inventoryStore.products.find(p => p.id === props.productId) : null) ?? null;
+    (props.productId ? products.find(p => p.id === props.productId) : null) ?? null;
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -259,9 +264,9 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
 
   const handleDelete = () => {
     if (product && confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      const success = inventoryStore.deleteProduct(product.id);
+      const success = deleteProduct(product.id);
       if (success) {
-        uiStore.showSuccessModal('Producto Eliminado', `${product.name} ha sido eliminado`);
+        showSuccessModal('Producto Eliminado', `${product.name} ha sido eliminado`);
         if (props.onDelete) {
           props.onDelete();
         } else {
@@ -293,7 +298,7 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
     try {
       let result;
       if (product) {
-        result = inventoryStore.updateProduct(product.id, {
+        result = updateProduct(product.id, {
           name,
           description: description || undefined,
           price: parseFloat(price),
@@ -302,7 +307,7 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
           quantity: parseInt(quantity)
         });
       } else {
-        result = inventoryStore.createProduct(
+        result = createProduct(
           name,
           parseFloat(price),
           parseFloat(cost),
@@ -317,7 +322,7 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
         return;
       }
       
-      uiStore.showSuccessModal(
+      showSuccessModal(
         product ? 'Producto Actualizado' : 'Producto Creado',
         `${name} ha sido ${product ? 'actualizado' : 'creado'}`
       );
@@ -556,15 +561,16 @@ export interface ProductDetailPageProps {
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use Zustand stores
-  const { products, updateProduct, loadProducts } = useInventoryStore();
-  const configStore = useConfigStore();
-  const uiStore = useUIStore();
+  // Use Zustand stores with selectors for performance
+  const products = useInventoryStore(state => state.products);
+  const updateProduct = useInventoryStore(state => state.updateProduct);
+  const storeCurrencyCode = useConfigStore(state => state.currencyCode);
+  const showSuccessModal = useUIStore(state => state.showSuccessModal);
   
   // Resolve product - from props or by looking up ID in store
   const product = props.product ?? 
     (props.productId ? products.find(p => p.id === props.productId) : undefined);
-  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  const currencyCode = props.currencyCode ?? storeCurrencyCode;
   
   const handleClose = () => {
     if (props.onClose) {
@@ -590,10 +596,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       if (props.onSuccess) {
         props.onSuccess('¡Stock Actualizado!', `El inventario de ${result.name} ha sido actualizado`);
       } else {
-        uiStore.showSuccessModal('¡Stock Actualizado!', `El inventario de ${result.name} ha sido actualizado`);
+        showSuccessModal('¡Stock Actualizado!', `El inventario de ${result.name} ha sido actualizado`);
       }
     }
-  }, [updateProduct, props.onSuccess, uiStore]);
+  }, [updateProduct, props.onSuccess, showSuccessModal]);
 
   if (!product) {
     return (

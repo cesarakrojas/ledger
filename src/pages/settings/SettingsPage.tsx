@@ -11,8 +11,11 @@ import { paths } from '../../routes';
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   
-  // Get data from stores
-  const { isDarkMode, toggleTheme, countryIso, paymentMethods } = useConfigStore();
+  // Get data from stores with selectors for performance
+  const isDarkMode = useConfigStore(state => state.isDarkMode);
+  const toggleTheme = useConfigStore(state => state.toggleTheme);
+  const countryIso = useConfigStore(state => state.countryIso);
+  const paymentMethods = useConfigStore(state => state.paymentMethods);
   
   return (
     <SettingsView

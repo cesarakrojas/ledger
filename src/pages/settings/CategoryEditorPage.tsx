@@ -13,28 +13,20 @@ import type { CategoryConfig } from '../../SharedDefs';
 const CategoryEditorPage: React.FC = () => {
   const navigate = useNavigate();
   
-  // Get data from stores
-  const { 
-    categoryConfig, 
-    setCategoryConfig 
-  } = useConfigStore();
+  // Get data from stores with selectors for performance
+  const categoryConfig = useConfigStore(state => state.categoryConfig);
+  const setCategoryConfig = useConfigStore(state => state.setCategoryConfig);
   
-  const { 
-    loadTransactions, 
-    migrateCategoryName: migrateTransactionCategory 
-  } = useTransactionStore();
+  const loadTransactions = useTransactionStore(state => state.loadTransactions);
+  const migrateTransactionCategory = useTransactionStore(state => state.migrateCategoryName);
   
-  const { 
-    loadDebts, 
-    migrateCategoryName: migrateDebtCategory 
-  } = useDebtStore();
+  const loadDebts = useDebtStore(state => state.loadDebts);
+  const migrateDebtCategory = useDebtStore(state => state.migrateCategoryName);
   
-  const { 
-    loadProducts, 
-    migrateCategoryName: migrateProductCategory 
-  } = useInventoryStore();
+  const loadProducts = useInventoryStore(state => state.loadProducts);
+  const migrateProductCategory = useInventoryStore(state => state.migrateCategoryName);
   
-  const { showSuccessModal } = useUIStore();
+  const showSuccessModal = useUIStore(state => state.showSuccessModal);
   
   const handleClose = () => {
     navigate(paths.settings());

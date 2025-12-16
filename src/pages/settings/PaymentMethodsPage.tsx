@@ -12,8 +12,9 @@ import { paths } from '../../routes';
 const PaymentMethodsPage: React.FC = () => {
   const navigate = useNavigate();
   
-  // Get data from stores
-  const { paymentMethods, setPaymentMethods } = useConfigStore();
+  // Get data from stores with selectors for performance
+  const paymentMethods = useConfigStore(state => state.paymentMethods);
+  const setPaymentMethods = useConfigStore(state => state.setPaymentMethods);
   
   const handleClose = () => {
     navigate(paths.settings());

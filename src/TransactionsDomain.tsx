@@ -103,17 +103,21 @@ export interface HomeViewProps {
 export const HomeView: React.FC<HomeViewProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use stores directly if props not provided
-  const transactionStore = useTransactionStore();
-  const configStore = useConfigStore();
+  // Use stores with selectors for performance - only re-render when specific values change
+  const todayTransactions = useTransactionStore(state => state.todayTransactions);
+  const storeTotalInflows = useTransactionStore(state => state.totalInflows);
+  const storeTotalOutflows = useTransactionStore(state => state.totalOutflows);
+  const storeInflowCount = useTransactionStore(state => state.inflowCount);
+  const storeOutflowCount = useTransactionStore(state => state.outflowCount);
+  const currencyCodeFromStore = useConfigStore(state => state.currencyCode);
   
   // Resolve values - prefer props, fallback to stores
-  const transactions = props.transactions ?? transactionStore.todayTransactions;
-  const currencyCode = props.currencyCode ?? configStore.currencyCode;
-  const totalInflows = props.totalInflows ?? transactionStore.totalInflows;
-  const totalOutflows = props.totalOutflows ?? transactionStore.totalOutflows;
-  const inflowCount = props.inflowCount ?? transactionStore.inflowCount;
-  const outflowCount = props.outflowCount ?? transactionStore.outflowCount;
+  const transactions = props.transactions ?? todayTransactions;
+  const currencyCode = props.currencyCode ?? currencyCodeFromStore;
+  const totalInflows = props.totalInflows ?? storeTotalInflows;
+  const totalOutflows = props.totalOutflows ?? storeTotalOutflows;
+  const inflowCount = props.inflowCount ?? storeInflowCount;
+  const outflowCount = props.outflowCount ?? storeOutflowCount;
   
   // Navigation handlers - use props or router
   const handleTransactionClick = (transactionId: string) => {
@@ -234,15 +238,17 @@ export interface NewInflowFormProps {
 export const NewInflowForm: React.FC<NewInflowFormProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use stores directly if props not provided
-  const transactionStore = useTransactionStore();
-  const configStore = useConfigStore();
-  const uiStore = useUIStore();
+  // Use stores with selectors for performance
+  const addTransaction = useTransactionStore(state => state.addTransaction);
+  const storeCategoryConfig = useConfigStore(state => state.categoryConfig);
+  const storeCurrencyCode = useConfigStore(state => state.currencyCode);
+  const storePaymentMethods = useConfigStore(state => state.paymentMethods);
+  const showSuccessModal = useUIStore(state => state.showSuccessModal);
   
   // Resolve values from stores
-  const categoryConfig = props.categoryConfig ?? configStore.categoryConfig;
-  const currencyCode = props.currencyCode ?? configStore.currencyCode;
-  const paymentMethods = props.paymentMethods ?? configStore.paymentMethods;
+  const categoryConfig = props.categoryConfig ?? storeCategoryConfig;
+  const currencyCode = props.currencyCode ?? storeCurrencyCode;
+  const paymentMethods = props.paymentMethods ?? storePaymentMethods;
   
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -273,7 +279,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = (props) => {
         paymentMethod: paymentMethod || undefined
       });
     } else {
-      transactionStore.addTransaction(
+      addTransaction(
         'inflow',
         finalDescription,
         amountValue,
@@ -291,7 +297,7 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = (props) => {
     if (props.onSuccess) {
       props.onSuccess('¡Ingreso Registrado!', `Ingreso de ${formatCurrency(amountValue, currencyCode)} registrado`);
     } else {
-      uiStore.showSuccessModal('¡Ingreso Registrado!', `Ingreso de ${formatCurrency(amountValue, currencyCode)} registrado`);
+      showSuccessModal('¡Ingreso Registrado!', `Ingreso de ${formatCurrency(amountValue, currencyCode)} registrado`);
     }
     
     // Navigate back
@@ -384,15 +390,17 @@ export interface NewExpenseFormProps {
 export const NewExpenseForm: React.FC<NewExpenseFormProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use stores directly if props not provided
-  const transactionStore = useTransactionStore();
-  const configStore = useConfigStore();
-  const uiStore = useUIStore();
+  // Use stores with selectors for performance
+  const addTransaction = useTransactionStore(state => state.addTransaction);
+  const storeCategoryConfig = useConfigStore(state => state.categoryConfig);
+  const storeCurrencyCode = useConfigStore(state => state.currencyCode);
+  const storePaymentMethods = useConfigStore(state => state.paymentMethods);
+  const showSuccessModal = useUIStore(state => state.showSuccessModal);
   
   // Resolve values from stores
-  const categoryConfig = props.categoryConfig ?? configStore.categoryConfig;
-  const currencyCode = props.currencyCode ?? configStore.currencyCode;
-  const paymentMethods = props.paymentMethods ?? configStore.paymentMethods;
+  const categoryConfig = props.categoryConfig ?? storeCategoryConfig;
+  const currencyCode = props.currencyCode ?? storeCurrencyCode;
+  const paymentMethods = props.paymentMethods ?? storePaymentMethods;
   
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -428,7 +436,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = (props) => {
         paymentMethod: paymentMethod || undefined
       });
     } else {
-      transactionStore.addTransaction(
+      addTransaction(
         'outflow',
         finalDescription,
         amountValue,
@@ -446,7 +454,7 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = (props) => {
     if (props.onSuccess) {
       props.onSuccess('¡Gasto Registrado!', `Gasto de ${formatCurrency(amountValue, currencyCode)} registrado`);
     } else {
-      uiStore.showSuccessModal('¡Gasto Registrado!', `Gasto de ${formatCurrency(amountValue, currencyCode)} registrado`);
+      showSuccessModal('¡Gasto Registrado!', `Gasto de ${formatCurrency(amountValue, currencyCode)} registrado`);
     }
 
     // Navigate back
@@ -770,14 +778,14 @@ export interface TransactionDetailPageProps {
 export const TransactionDetailPage: React.FC<TransactionDetailPageProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use stores directly
-  const transactionStore = useTransactionStore();
-  const configStore = useConfigStore();
+  // Use stores with selectors for performance
+  const transactions = useTransactionStore(state => state.transactions);
+  const storeCurrencyCode = useConfigStore(state => state.currencyCode);
   
   // Resolve transaction - from props or by looking up ID in store
   const transaction = props.transaction ?? 
-    (props.transactionId ? transactionStore.transactions.find(t => t.id === props.transactionId) : undefined);
-  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+    (props.transactionId ? transactions.find(t => t.id === props.transactionId) : undefined);
+  const currencyCode = props.currencyCode ?? storeCurrencyCode;
   
   const handleClose = () => {
     if (props.onClose) {

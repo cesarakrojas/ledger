@@ -12,8 +12,9 @@ import { paths } from '../../routes';
 const CurrencyEditorPage: React.FC = () => {
   const navigate = useNavigate();
   
-  // Get data from stores
-  const { countryIso, setCountryIso } = useConfigStore();
+  // Get data from stores with selectors for performance
+  const countryIso = useConfigStore(state => state.countryIso);
+  const setCountryIso = useConfigStore(state => state.setCountryIso);
   
   const handleClose = () => {
     navigate(paths.settings());
