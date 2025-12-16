@@ -302,7 +302,7 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
           quantity: parseInt(quantity)
         });
       } else {
-        result = inventoryStore.addProduct(
+        result = inventoryStore.createProduct(
           name,
           parseFloat(price),
           parseFloat(cost),

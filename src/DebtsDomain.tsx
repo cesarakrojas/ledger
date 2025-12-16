@@ -326,21 +326,6 @@ export const DebtForm: React.FC<DebtFormProps> = (props) => {
     setShowDropdown(false);
   };
 
-  useEffect(() => {
-    if (mode === 'edit' && debtId) {
-      const debt = DebtService.getById(debtId);
-      if (debt) {
-        setType(debt.type);
-        setCounterparty(debt.counterparty);
-        setAmount(debt.amount.toString());
-        setDescription(debt.description);
-        setDueDate(debt.dueDate.split('T')[0]);
-        setCategory(debt.category || '');
-        setNotes(debt.notes || '');
-      }
-    }
-  }, [mode, debtId]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -372,7 +357,7 @@ export const DebtForm: React.FC<DebtFormProps> = (props) => {
 
       let result;
       if (mode === 'create') {
-        result = debtStore.addDebt(type, counterparty, amountNum, description, dueDate, category || undefined, notes || undefined);
+        result = debtStore.createDebt(type, counterparty, amountNum, description, dueDate, category || undefined, notes || undefined);
       } else if (props.debtId) {
         result = debtStore.updateDebt(props.debtId, { type, counterparty, amount: amountNum, description, dueDate, category: category || undefined, notes: notes || undefined });
       }
