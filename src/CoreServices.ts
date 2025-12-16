@@ -1,10 +1,8 @@
 /**
  * CoreServices.ts - The Backend
- * 
- * Centralized data persistence and business logic for the entire application.
+ * * Centralized data persistence and business logic for the entire application.
  * All CRUD operations and data management are handled here.
- * 
- * This file imports from SharedDefs.ts only.
+ * * This file imports from SharedDefs.ts only.
  */
 
 import {
@@ -191,26 +189,29 @@ export const InventoryService = {
     return updatedCount;
   },
 
-  // Create a new product with error handling
+  // Create a new product with cost
   create: (
     name: string,
     price: number,
+    cost: number, // <--- NEW PARAM
     quantity: number = 0,
     description?: string,
     category?: string
   ): Product | null => {
     try {
-      // Validation
       if (!name || name.trim().length === 0) {
         reportError(createError('validation', 'El nombre del producto es requerido'));
         return null;
       }
-      
       if (price < 0) {
         reportError(createError('validation', 'El precio debe ser mayor o igual a cero'));
         return null;
       }
-      
+      // Validation for cost
+      if (cost < 0) {
+        reportError(createError('validation', 'El costo debe ser mayor o igual a cero'));
+        return null;
+      }
       if (quantity < 0) {
         reportError(createError('validation', 'La cantidad debe ser mayor o igual a cero'));
         return null;
@@ -223,6 +224,7 @@ export const InventoryService = {
         name: name.trim(),
         description: description?.trim(),
         price,
+        cost, // <--- SAVE COST
         quantity: Math.max(0, quantity),
         category: category?.trim(),
         createdAt: new Date().toISOString(),
@@ -232,10 +234,7 @@ export const InventoryService = {
       products.push(newProduct);
       const saved = productStorage.save(products);
       
-      if (!saved) {
-        return null;
-      }
-      
+      if (!saved) return null;
       return newProduct;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -244,13 +243,14 @@ export const InventoryService = {
     }
   },
 
-  // Update an existing product with error handling
+  // Update an existing product
   update: (
     productId: string,
     updates: {
       name?: string;
       description?: string;
       price?: number;
+      cost?: number; // <--- NEW OPTIONAL
       category?: string;
       quantity?: number;
     }
@@ -266,12 +266,20 @@ export const InventoryService = {
     
       const currentProduct = products[productIndex];
       
+      // Validation for cost update
+      if (updates.cost !== undefined && updates.cost < 0) {
+          reportError(createError('validation', 'El costo debe ser mayor o igual a cero'));
+          return null;
+      }
+
       const updatedProduct: Product = {
         ...currentProduct,
         ...updates,
         name: updates.name?.trim() || currentProduct.name,
         description: updates.description?.trim(),
         category: updates.category?.trim(),
+        // Handle cost update (fallback to existing or 0 for legacy data)
+        cost: updates.cost !== undefined ? updates.cost : (currentProduct.cost || 0),
         quantity: updates.quantity !== undefined ? Math.max(0, updates.quantity) : currentProduct.quantity,
         updatedAt: new Date().toISOString()
       };
@@ -279,10 +287,7 @@ export const InventoryService = {
       products[productIndex] = updatedProduct;
       const saved = productStorage.save(products);
       
-      if (!saved) {
-        return null;
-      }
-      
+      if (!saved) return null;
       return updatedProduct;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
