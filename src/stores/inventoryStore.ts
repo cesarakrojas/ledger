@@ -6,9 +6,9 @@
  */
 
 import { create } from 'zustand';
-import { InventoryService } from '../CoreServices';
-import type { Product, InventoryFilters } from '../SharedDefs';
-import { STORAGE_KEYS } from '../SharedDefs';
+import { InventoryService } from '../services';
+import type { Product, InventoryFilters } from '../shared';
+import { STORAGE_KEYS } from '../shared';
 
 // ============================================
 // Store Types

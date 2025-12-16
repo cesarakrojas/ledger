@@ -3,8 +3,8 @@
  */
 
 import React from 'react';
-import { CARD_EMPTY_STATE } from '../SharedDefs';
-import { QuestionMarkIcon } from '../UIComponents';
+import { CARD_EMPTY_STATE } from '../shared';
+import { QuestionMarkIcon } from '../components';
 
 const ComingSoonPage: React.FC = () => {
   return (

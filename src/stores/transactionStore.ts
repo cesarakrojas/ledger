@@ -6,9 +6,9 @@
  */
 
 import { create } from 'zustand';
-import { TransactionService } from '../CoreServices';
-import type { Transaction } from '../SharedDefs';
-import { calculateTotalInflows, calculateTotalOutflows } from '../SharedDefs';
+import { TransactionService } from '../services';
+import type { Transaction } from '../shared';
+import { calculateTotalInflows, calculateTotalOutflows } from '../shared';
 
 // ============================================
 // Helper Functions

@@ -7,8 +7,8 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { CategoryConfig } from '../SharedDefs';
-import { STORAGE_KEYS, DEFAULT_COUNTRY_ISO, getCurrencyCodeByIso } from '../SharedDefs';
+import type { CategoryConfig } from '../shared';
+import { STORAGE_KEYS, DEFAULT_COUNTRY_ISO, getCurrencyCodeByIso } from '../shared';
 
 // ============================================
 // Store Types

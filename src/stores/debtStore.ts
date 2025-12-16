@@ -6,9 +6,9 @@
  */
 
 import { create } from 'zustand';
-import { DebtService } from '../CoreServices';
-import type { DebtEntry, Transaction } from '../SharedDefs';
-import { STORAGE_KEYS } from '../SharedDefs';
+import { DebtService } from '../services';
+import type { DebtEntry, Transaction } from '../shared';
+import { STORAGE_KEYS } from '../shared';
 import { useTransactionStore } from './transactionStore';
 
 // ============================================

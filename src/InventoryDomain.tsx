@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Product } from './SharedDefs';
+import type { Product } from './shared';
 import {
   CARD_STYLES,
   LIST_ITEM_INTERACTIVE,
@@ -32,7 +32,7 @@ import {
   TEXT_AMOUNT_INFLOW,
   formatCurrency,
   formatDate
-} from './SharedDefs';
+} from './shared';
 import {
   PlusIcon,
   InventoryIcon,
@@ -41,8 +41,8 @@ import {
   CloseIcon,
   PencilIcon,
   XMarkIcon
-} from './UIComponents';
-import { InventoryService } from './CoreServices';
+} from './components';
+import { InventoryService } from './services';
 import { useInventoryStore, useConfigStore, useUIStore } from './stores';
 import { paths } from './routes';
 

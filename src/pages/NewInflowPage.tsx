@@ -6,7 +6,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NewInflowForm } from '../TransactionsDomain';
-import { FormViewWrapper } from '../UIComponents';
+import { FormViewWrapper } from '../components';
 import { paths } from '../routes';
 
 const NewInflowPage: React.FC = () => {

@@ -6,7 +6,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NewExpenseForm } from '../TransactionsDomain';
-import { FormViewWrapper } from '../UIComponents';
+import { FormViewWrapper } from '../components';
 import { paths } from '../routes';
 
 const NewExpensePage: React.FC = () => {

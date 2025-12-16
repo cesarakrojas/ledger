@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CARD_EMPTY_STATE } from '../SharedDefs';
+import { CARD_EMPTY_STATE } from '../shared';
 import { paths } from '../routes';
 
 const NotFoundPage: React.FC = () => {

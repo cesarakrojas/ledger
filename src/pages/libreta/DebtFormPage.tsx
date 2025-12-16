@@ -6,7 +6,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DebtForm } from '../../DebtsDomain';
-import { FormViewWrapper } from '../../UIComponents';
+import { FormViewWrapper } from '../../components';
 import { paths } from '../../routes';
 
 const DebtFormPage: React.FC = () => {

@@ -17,7 +17,7 @@ import {
   TOGGLE_BTN_INACTIVE,
   TOGGLE_BTN_ACTIVE_EMERALD,
   TOGGLE_BTN_ACTIVE_RED
-} from './SharedDefs';
+} from './shared';
 import {
   SunIcon,
   MoonIcon,
@@ -26,7 +26,7 @@ import {
   PlusIcon,
   TrashIcon,
   PencilIcon
-} from './UIComponents';
+} from './components';
 
 // =============================================================================
 // CategoryRename type export

@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Contact } from './SharedDefs';
+import type { Contact } from './shared';
 import {
   CARD_STYLES,
   LIST_ITEM_INTERACTIVE,
@@ -33,7 +33,7 @@ import {
   TOGGLE_BTN_ACTIVE_EMERALD,
   TOGGLE_BTN_ACTIVE_BLUE,
   formatDate
-} from './SharedDefs';
+} from './shared';
 import {
   PlusIcon,
   UserIcon,
@@ -42,8 +42,8 @@ import {
   CloseIcon,
   PencilIcon,
   XMarkIcon
-} from './UIComponents';
-import { ContactService } from './CoreServices';
+} from './components';
+import { ContactService } from './services';
 import { useContactStore } from './stores';
 import { paths } from './routes';
 

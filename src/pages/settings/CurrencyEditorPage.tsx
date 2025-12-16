@@ -5,7 +5,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CurrencyEditorView } from '../../SettingsDomain';
-import { FormViewWrapper } from '../../UIComponents';
+import { FormViewWrapper } from '../../components';
 import { useConfigStore } from '../../stores';
 import { paths } from '../../routes';
 

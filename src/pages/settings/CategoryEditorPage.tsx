@@ -5,10 +5,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CategoryEditorView } from '../../SettingsDomain';
-import { FormViewWrapper } from '../../UIComponents';
+import { FormViewWrapper } from '../../components';
 import { useConfigStore, useTransactionStore, useDebtStore, useInventoryStore, useUIStore } from '../../stores';
 import { paths } from '../../routes';
-import type { CategoryConfig } from '../../SharedDefs';
+import type { CategoryConfig } from '../../shared';
 
 const CategoryEditorPage: React.FC = () => {
   const navigate = useNavigate();

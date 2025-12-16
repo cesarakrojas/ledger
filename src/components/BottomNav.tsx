@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { CashIcon, BookOpenIcon, InventoryIcon, QuestionMarkIcon } from '../UIComponents';
+import { CashIcon, BookOpenIcon, InventoryIcon, QuestionMarkIcon } from './icons';
 import { ROUTES } from '../routes';
 
 // =============================================================================

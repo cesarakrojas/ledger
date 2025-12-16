@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { DebtEntry, Contact } from './SharedDefs';
+import type { DebtEntry, Contact } from './shared';
 import {
   CARD_STYLES,
   LIST_ITEM_INTERACTIVE,
@@ -38,7 +38,7 @@ import {
   TOGGLE_BTN_ACTIVE_RED,
   formatCurrency,
   formatDate
-} from './SharedDefs';
+} from './shared';
 import {
   PlusIcon,
   ArrowUpIcon,
@@ -48,8 +48,8 @@ import {
   CloseIcon,
   CheckCircleIcon,
   PencilIcon
-} from './UIComponents';
-import { ContactService } from './CoreServices';
+} from './components';
+import { ContactService } from './services';
 import { useDebtStore, useConfigStore, useUIStore } from './stores';
 import { paths } from './routes';
 

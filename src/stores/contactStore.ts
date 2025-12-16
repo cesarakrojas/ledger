@@ -6,9 +6,9 @@
  */
 
 import { create } from 'zustand';
-import { ContactService } from '../CoreServices';
-import type { Contact } from '../SharedDefs';
-import { STORAGE_KEYS } from '../SharedDefs';
+import { ContactService } from '../services';
+import type { Contact } from '../shared';
+import { STORAGE_KEYS } from '../shared';
 
 // ============================================
 // Store Types

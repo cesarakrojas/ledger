@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Transaction, CategoryConfig } from './SharedDefs';
+import type { Transaction, CategoryConfig } from './shared';
 import {
   CARD_STYLES,
   BTN_HEADER_INFLOW,
@@ -32,7 +32,7 @@ import {
   formatCurrency,
   formatDate,
   formatTime
-} from './SharedDefs';
+} from './shared';
 import {
   ArrowUpIcon,
   ArrowDownIcon,
@@ -41,7 +41,7 @@ import {
   PrinterIcon,
   ExclamationCircleIcon,
   TransactionItem
-} from './UIComponents';
+} from './components';
 import { useTransactionStore, useConfigStore, useUIStore } from './stores';
 import { paths } from './routes';
 
