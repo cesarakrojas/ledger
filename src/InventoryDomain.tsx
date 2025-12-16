@@ -212,6 +212,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [cost, setCost] = useState(''); // <--- NEW STATE
   const [category, setCategory] = useState('');
   const [quantity, setQuantity] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
@@ -221,12 +222,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       setName(product.name || '');
       setDescription(product.description || '');
       setPrice(product.price !== undefined && product.price !== null ? product.price.toString() : '');
+      // Initialize cost safely for legacy items
+      setCost(product.cost !== undefined && product.cost !== null ? product.cost.toString() : '0');
       setCategory(product.category || '');
       setQuantity(product.quantity !== undefined && product.quantity !== null ? product.quantity.toString() : '');
     } else {
       setName('');
       setDescription('');
       setPrice('');
+      setCost(''); // Reset
       setCategory('');
       setQuantity('');
     }
@@ -238,6 +242,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
 
     if (!name.trim() || !price || parseFloat(price) < 0) {
       setFormError('Por favor completa todos los campos requeridos.');
+      return;
+    }
+    
+    // Cost Validation
+    if (cost === '' || parseFloat(cost) < 0) {
+      setFormError('Por favor ingresa un costo válido.');
       return;
     }
 
@@ -253,6 +263,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
           name,
           description: description || undefined,
           price: parseFloat(price),
+          cost: parseFloat(cost), // Pass cost
           category: category || undefined,
           quantity: parseInt(quantity)
         });
@@ -260,6 +271,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
         result = InventoryService.create(
           name,
           parseFloat(price),
+          parseFloat(cost), // Pass cost
           parseInt(quantity),
           description || undefined,
           category || undefined
@@ -298,20 +310,27 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descripción del producto..." rows={3} className={`${INPUT_BASE_CLASSES} resize-none`} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* 2-Column Grid for Price & Cost */}
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={FORM_LABEL}>Precio <span className="text-red-500">*</span></label>
+            <label className={FORM_LABEL}>Precio Venta <span className="text-red-500">*</span></label>
             <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0.00" min="0" step="0.01" required className={INPUT_BASE_CLASSES} />
           </div>
+          <div>
+            <label className={FORM_LABEL}>Costo Unitario <span className="text-red-500">*</span></label>
+            <input type="number" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="0.00" min="0" step="0.01" required className={INPUT_BASE_CLASSES} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={FORM_LABEL}>Categoría</label>
             <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Ej: Ropa, Electrónica" className={INPUT_BASE_CLASSES} />
           </div>
-        </div>
-
-        <div>
-          <label className={FORM_LABEL}>Cantidad Disponible <span className="text-red-500">*</span></label>
-          <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" min="0" required className={INPUT_BASE_CLASSES} />
+          <div>
+            <label className={FORM_LABEL}>Cantidad Disponible <span className="text-red-500">*</span></label>
+            <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" min="0" required className={INPUT_BASE_CLASSES} />
+          </div>
         </div>
       </div>
 
@@ -356,6 +375,17 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   
   const currentStock = adjustedStock !== null ? adjustedStock : product.quantity;
   const hasStockChanges = adjustedStock !== null && adjustedStock !== product.quantity;
+  
+  // Metrics Calculation
+  // We use product.cost || 0 for safety/legacy data handling
+  const cost = product.cost || 0; 
+  const margin = product.price - cost;
+  // Determine if we are losing money
+  const isLoss = margin < 0; 
+  // Determine text color based on profitability
+  const profitColor = isLoss ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400';
+
+  const marginPercent = product.price > 0 ? ((margin / product.price) * 100).toFixed(1) : '0.0';
 
   const handleStockChange = (delta: number) => {
     const newValue = Math.max(0, currentStock + delta);
@@ -384,7 +414,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           <div className="px-6 py-6 text-center">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight mb-2">{product.name}</h1>
             <div className="flex items-center justify-center gap-3 mb-2">
-              <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              <span className="text-3xl font-extrabold text-slate-800 dark:text-white">
                 {formatCurrency(product.price, currencyCode)}
               </span>
             </div>
@@ -395,6 +425,24 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             }`}>
               {isLowStock ? '⚠️ Stock Bajo' : 'Stock Disponible'}
             </div>
+            
+            {/* NEW PROFITABILITY CARD */}
+            <div className="mt-6 grid grid-cols-3 gap-2 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600">
+              <div className="text-center">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Costo</p>
+                <p className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(cost, currencyCode)}</p>
+              </div>
+              <div className="text-center border-l border-slate-200 dark:border-slate-600">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Ganancia</p>
+                {/* Dynamically colored based on profit/loss */}
+                <p className={`font-bold ${profitColor}`}>{formatCurrency(margin, currencyCode)}</p>
+              </div>
+              <div className="text-center border-l border-slate-200 dark:border-slate-600">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Margen</p>
+                <p className={`font-semibold ${profitColor}`}>{marginPercent}%</p>
+              </div>
+            </div>
+
             <div className="mt-4 flex items-center justify-center gap-2">
               <button type="button" onClick={() => handleStockChange(-1)} disabled={currentStock === 0}
                 className="w-9 h-9 flex items-center justify-center bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 rounded-lg disabled:opacity-50 transition-colors text-lg font-bold text-slate-700 dark:text-white">
