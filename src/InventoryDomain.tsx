@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Product } from './SharedDefs';
 import {
   CARD_STYLES,
@@ -42,6 +43,8 @@ import {
   XMarkIcon
 } from './UIComponents';
 import { InventoryService } from './CoreServices';
+import { useInventoryStore, useConfigStore, useUIStore } from './stores';
+import { paths } from './routes';
 
 // =============================================================================
 // SearchIcon (local to this domain)
@@ -62,42 +65,42 @@ const SearchIcon = ({ className }: { className?: string }) => (
 // =============================================================================
 // InventoryView
 // =============================================================================
-interface InventoryViewProps {
+export interface InventoryViewProps {
   viewMode?: 'list' | 'create' | 'edit' | 'detail';
   editingProductId?: string | null;
-  currencyCode: string;
+  currencyCode?: string;
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', productId?: string) => void;
 }
 
-export const InventoryView: React.FC<InventoryViewProps> = ({ 
-  currencyCode,
-  onChangeView 
-}) => {
-  const [products, setProducts] = useState<Product[]>([]);
+export const InventoryView: React.FC<InventoryViewProps> = (props) => {
+  const navigate = useNavigate();
   
-  const loadProducts = useCallback(() => {
-    const loadedProducts = InventoryService.getAll();
-    setProducts(loadedProducts);
-  }, []);
-
+  // Use Zustand stores
+  const { products, lowStockCount, loadProducts } = useInventoryStore();
+  const configStore = useConfigStore();
+  
+  // Resolve currencyCode from props or store
+  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  
+  // Load products on mount
   useEffect(() => {
     loadProducts();
-    const unsubscribe = InventoryService.subscribe(() => {
-      loadProducts();
-    });
-    return unsubscribe;
   }, [loadProducts]);
 
   const handleCreateProduct = () => {
-    if (onChangeView) onChangeView('create');
+    if (props.onChangeView) {
+      props.onChangeView('create');
+    } else {
+      navigate(paths.inventoryNew());
+    }
   };
 
   const handleViewProduct = (product: Product) => {
-    if (onChangeView) onChangeView('detail', product.id);
-  };
-
-  const getLowStockCount = () => {
-    return products.filter(p => p.quantity <= 10).length;
+    if (props.onChangeView) {
+      props.onChangeView('detail', product.id);
+    } else {
+      navigate(paths.inventoryDetail(product.id));
+    }
   };
 
   return (
@@ -128,7 +131,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
           </div>
           <div className="bg-orange-100 dark:bg-orange-900/50 p-4 rounded-xl">
             <p className="text-sm font-medium text-orange-700 dark:text-orange-400">Stock Bajo</p>
-            <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{getLowStockCount()}</p>
+            <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{lowStockCount}</p>
           </div>
         </div>
 
@@ -201,18 +204,29 @@ export const InventoryView: React.FC<InventoryViewProps> = ({
 // =============================================================================
 // ProductForm
 // =============================================================================
-interface ProductFormProps {
-  product: Product | null;
-  onSave: () => void;
-  onCancel: () => void;
+export interface ProductFormProps {
+  product?: Product | null;
+  productId?: string | null;
+  onSave?: () => void;
+  onCancel?: () => void;
   onDelete?: () => void;
 }
 
-export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel, onDelete }) => {
+export const ProductForm: React.FC<ProductFormProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use stores
+  const inventoryStore = useInventoryStore();
+  const uiStore = useUIStore();
+  
+  // Resolve product from props or store
+  const product = props.product ?? 
+    (props.productId ? inventoryStore.products.find(p => p.id === props.productId) : null) ?? null;
+  
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [cost, setCost] = useState(''); // <--- NEW STATE
+  const [cost, setCost] = useState('');
   const [category, setCategory] = useState('');
   const [quantity, setQuantity] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
@@ -222,7 +236,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       setName(product.name || '');
       setDescription(product.description || '');
       setPrice(product.price !== undefined && product.price !== null ? product.price.toString() : '');
-      // Initialize cost safely for legacy items
       setCost(product.cost !== undefined && product.cost !== null ? product.cost.toString() : '0');
       setCategory(product.category || '');
       setQuantity(product.quantity !== undefined && product.quantity !== null ? product.quantity.toString() : '');
@@ -230,11 +243,33 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       setName('');
       setDescription('');
       setPrice('');
-      setCost(''); // Reset
+      setCost('');
       setCategory('');
       setQuantity('');
     }
   }, [product]);
+
+  const handleCancel = () => {
+    if (props.onCancel) {
+      props.onCancel();
+    } else {
+      navigate(paths.inventory());
+    }
+  };
+
+  const handleDelete = () => {
+    if (product && confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+      const success = inventoryStore.deleteProduct(product.id);
+      if (success) {
+        uiStore.showSuccessModal('Producto Eliminado', `${product.name} ha sido eliminado`);
+        if (props.onDelete) {
+          props.onDelete();
+        } else {
+          navigate(paths.inventory());
+        }
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,7 +280,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
       return;
     }
     
-    // Cost Validation
     if (cost === '' || parseFloat(cost) < 0) {
       setFormError('Por favor ingresa un costo válido.');
       return;
@@ -259,19 +293,19 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
     try {
       let result;
       if (product) {
-        result = InventoryService.update(product.id, {
+        result = inventoryStore.updateProduct(product.id, {
           name,
           description: description || undefined,
           price: parseFloat(price),
-          cost: parseFloat(cost), // Pass cost
+          cost: parseFloat(cost),
           category: category || undefined,
           quantity: parseInt(quantity)
         });
       } else {
-        result = InventoryService.create(
+        result = inventoryStore.addProduct(
           name,
           parseFloat(price),
-          parseFloat(cost), // Pass cost
+          parseFloat(cost),
           parseInt(quantity),
           description || undefined,
           category || undefined
@@ -283,7 +317,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
         return;
       }
       
-      onSave();
+      uiStore.showSuccessModal(
+        product ? 'Producto Actualizado' : 'Producto Creado',
+        `${name} ha sido ${product ? 'actualizado' : 'creado'}`
+      );
+      
+      if (props.onSave) {
+        props.onSave();
+      } else {
+        navigate(paths.inventory());
+      }
     } catch (error) {
       console.error('Error saving product:', error);
       setFormError('Error al guardar el producto.');
@@ -339,13 +382,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
           <button type="submit" className={BTN_FOOTER_PRIMARY}>
             {product ? 'Actualizar' : 'Crear Producto'}
           </button>
-          {product && onDelete ? (
-            <button type="button" onClick={onDelete} className={BTN_FOOTER_DANGER}>
+          {product ? (
+            <button type="button" onClick={handleDelete} className={BTN_FOOTER_DANGER}>
               <TrashIcon className="w-5 h-5" />
               <span>Eliminar</span>
             </button>
           ) : (
-            <button type="button" onClick={onCancel} className={BTN_FOOTER_SECONDARY}>Cancelar</button>
+            <button type="button" onClick={handleCancel} className={BTN_FOOTER_SECONDARY}>Cancelar</button>
           )}
         </div>
       </div>
@@ -501,46 +544,63 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 // ProductDetailPage
 // =============================================================================
 export interface ProductDetailPageProps {
-  product: Product | undefined;
-  currencyCode: string;
-  onClose: () => void;
-  onEdit: (productId: string) => void;
-  onProductsChange: () => void;
+  product?: Product;
+  productId?: string;
+  currencyCode?: string;
+  onClose?: () => void;
+  onEdit?: (productId: string) => void;
+  onProductsChange?: () => void;
   onSuccess?: (title: string, message: string) => void;
 }
 
-export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
-  product,
-  currencyCode,
-  onClose,
-  onEdit,
-  onProductsChange,
-  onSuccess,
-}) => {
+export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use Zustand stores
+  const { products, updateProduct, loadProducts } = useInventoryStore();
+  const configStore = useConfigStore();
+  const uiStore = useUIStore();
+  
+  // Resolve product - from props or by looking up ID in store
+  const product = props.product ?? 
+    (props.productId ? products.find(p => p.id === props.productId) : undefined);
+  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  
+  const handleClose = () => {
+    if (props.onClose) {
+      props.onClose();
+    } else {
+      navigate(paths.inventory());
+    }
+  };
+
   const handleEdit = useCallback(() => {
     if (product) {
-      onEdit(product.id);
+      if (props.onEdit) {
+        props.onEdit(product.id);
+      } else {
+        navigate(paths.inventoryEdit(product.id));
+      }
     }
-  }, [product, onEdit]);
+  }, [product, props.onEdit, navigate]);
 
   const handleUpdateStock = useCallback((productId: string, newStock: number) => {
-    const currentProduct = InventoryService.getById(productId);
-    if (!currentProduct) return;
-
-    InventoryService.update(productId, { quantity: newStock });
-
-    onProductsChange();
-    if (onSuccess) {
-      onSuccess('¡Stock Actualizado!', `El inventario de ${currentProduct.name} ha sido actualizado`);
+    const result = updateProduct(productId, { quantity: newStock });
+    if (result) {
+      if (props.onSuccess) {
+        props.onSuccess('¡Stock Actualizado!', `El inventario de ${result.name} ha sido actualizado`);
+      } else {
+        uiStore.showSuccessModal('¡Stock Actualizado!', `El inventario de ${result.name} ha sido actualizado`);
+      }
     }
-  }, [onProductsChange, onSuccess]);
+  }, [updateProduct, props.onSuccess, uiStore]);
 
   if (!product) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl text-slate-600 dark:text-slate-400">Producto no encontrado</p>
-          <button onClick={onClose} className={BTN_ACTION_PRIMARY + ' mt-4'}>Volver al Inventario</button>
+          <button onClick={handleClose} className={BTN_ACTION_PRIMARY + ' mt-4'}>Volver al Inventario</button>
         </div>
       </div>
     );
@@ -551,7 +611,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       <ProductDetailView
         product={product}
         currencyCode={currencyCode}
-        onClose={onClose}
+        onClose={handleClose}
         onEdit={handleEdit}
         onUpdateStock={handleUpdateStock}
       />

@@ -1,0 +1,98 @@
+/**
+ * CategoryEditorPage.tsx - Page for editing category settings
+ */
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CategoryEditorView } from '../../SettingsDomain';
+import { FormViewWrapper } from '../../UIComponents';
+import { useConfigStore, useTransactionStore, useDebtStore, useInventoryStore, useUIStore } from '../../stores';
+import { paths } from '../../routes';
+import type { CategoryConfig } from '../../SharedDefs';
+
+const CategoryEditorPage: React.FC = () => {
+  const navigate = useNavigate();
+  
+  // Get data from stores
+  const { 
+    categoryConfig, 
+    setCategoryConfig 
+  } = useConfigStore();
+  
+  const { 
+    loadTransactions, 
+    migrateCategoryName: migrateTransactionCategory 
+  } = useTransactionStore();
+  
+  const { 
+    loadDebts, 
+    migrateCategoryName: migrateDebtCategory 
+  } = useDebtStore();
+  
+  const { 
+    loadProducts, 
+    migrateCategoryName: migrateProductCategory 
+  } = useInventoryStore();
+  
+  const { showSuccessModal } = useUIStore();
+  
+  const handleClose = () => {
+    navigate(paths.settings());
+  };
+  
+  const handleSave = (
+    inflowCategories: string[], 
+    outflowCategories: string[], 
+    renames: Array<{ oldName: string; newName: string }>
+  ) => {
+    // Perform category migrations if any renames detected
+    let totalUpdated = 0;
+    
+    if (renames.length > 0) {
+      renames.forEach(({ oldName, newName }) => {
+        const transactionsUpdated = migrateTransactionCategory(oldName, newName);
+        const debtsUpdated = migrateDebtCategory(oldName, newName);
+        const productsUpdated = migrateProductCategory(oldName, newName);
+        
+        totalUpdated += transactionsUpdated + debtsUpdated + productsUpdated;
+      });
+    }
+    
+    // Save the new category configuration
+    const newConfig: CategoryConfig = {
+      ...categoryConfig,
+      inflowCategories,
+      outflowCategories
+    };
+    setCategoryConfig(newConfig);
+    
+    // Reload all data to reflect changes
+    loadTransactions();
+    loadDebts();
+    loadProducts();
+    
+    // Show success message if categories were migrated
+    if (totalUpdated > 0) {
+      showSuccessModal(
+        'Categorías Actualizadas',
+        `Categorías guardadas y ${totalUpdated} registro${totalUpdated > 1 ? 's actualizados' : ' actualizado'}`,
+        'inflow'
+      );
+    }
+    
+    navigate(paths.settings());
+  };
+  
+  return (
+    <FormViewWrapper title="Editar Categorías" onClose={handleClose}>
+      <CategoryEditorView
+        inflowCategories={categoryConfig.inflowCategories}
+        outflowCategories={categoryConfig.outflowCategories}
+        onSave={handleSave}
+        onCancel={handleClose}
+      />
+    </FormViewWrapper>
+  );
+};
+
+export default CategoryEditorPage;

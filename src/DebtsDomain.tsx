@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { DebtEntry, Contact } from './SharedDefs';
 import {
   CARD_STYLES,
@@ -49,46 +50,46 @@ import {
   PencilIcon
 } from './UIComponents';
 import { DebtService, ContactService } from './CoreServices';
+import { useDebtStore, useConfigStore, useUIStore } from './stores';
+import { paths } from './routes';
 
 // =============================================================================
 // LibretaView
 // =============================================================================
-interface LibretaViewProps {
+export interface LibretaViewProps {
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', debtId?: string) => void;
-  currencyCode: string;
+  currencyCode?: string;
 }
 
-export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currencyCode }) => {
-  const [debts, setDebts] = useState<DebtEntry[]>([]);
-  const [stats, setStats] = useState({
-    totalReceivablesPending: 0,
-    totalPayablesPending: 0,
-    netBalance: 0,
-    overdueReceivables: 0,
-    overduePayables: 0,
-    totalPendingDebts: 0
-  });
+export const LibretaView: React.FC<LibretaViewProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use Zustand stores
+  const { debts, stats, loadDebts } = useDebtStore();
+  const configStore = useConfigStore();
+  
+  // Resolve currencyCode from props or store
+  const currencyCode = props.currencyCode ?? configStore.currencyCode;
 
-  const loadDebts = useCallback(() => {
-    const loadedDebts = DebtService.getAll();
-    setDebts(loadedDebts);
-    setStats(DebtService.getStats());
-  }, []);
-
+  // Load debts on mount
   useEffect(() => {
     loadDebts();
-    const unsubscribe = DebtService.subscribe(() => {
-      loadDebts();
-    });
-    return unsubscribe;
   }, [loadDebts]);
 
   const handleCreateDebt = () => {
-    if (onChangeView) onChangeView('create');
+    if (props.onChangeView) {
+      props.onChangeView('create');
+    } else {
+      navigate(paths.libretaNew());
+    }
   };
 
   const handleViewDebt = (debtId: string) => {
-    if (onChangeView) onChangeView('detail', debtId);
+    if (props.onChangeView) {
+      props.onChangeView('detail', debtId);
+    } else {
+      navigate(paths.libretaDetail(debtId));
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -221,15 +222,25 @@ export const LibretaView: React.FC<LibretaViewProps> = ({ onChangeView, currency
 // =============================================================================
 // DebtForm
 // =============================================================================
-interface DebtFormProps {
-  mode: 'create' | 'edit';
+export interface DebtFormProps {
+  mode?: 'create' | 'edit';
   debtId?: string;
-  onSave: () => void;
-  onCancel: () => void;
+  onSave?: () => void;
+  onCancel?: () => void;
   onDelete?: () => void;
 }
 
-export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCancel, onDelete }) => {
+export const DebtForm: React.FC<DebtFormProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use stores
+  const debtStore = useDebtStore();
+  const uiStore = useUIStore();
+  
+  // Resolve mode and debt from props or defaults
+  const mode = props.mode ?? (props.debtId ? 'edit' : 'create');
+  const existingDebt = props.debtId ? debtStore.getById(props.debtId) : null;
+  
   const [type, setType] = useState<'receivable' | 'payable'>('receivable');
   const [counterparty, setCounterparty] = useState('');
   const [amount, setAmount] = useState('');
@@ -245,6 +256,19 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Load existing debt data
+  useEffect(() => {
+    if (existingDebt) {
+      setType(existingDebt.type);
+      setCounterparty(existingDebt.counterparty);
+      setAmount(existingDebt.originalAmount?.toString() ?? existingDebt.amount.toString());
+      setDescription(existingDebt.description);
+      setDueDate(existingDebt.dueDate ? existingDebt.dueDate.split('T')[0] : '');
+      setCategory(existingDebt.category ?? '');
+      setNotes(existingDebt.notes ?? '');
+    }
+  }, [existingDebt]);
+
   useEffect(() => {
     setContacts(ContactService.getAll());
   }, []);
@@ -258,6 +282,28 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
+  const handleCancel = () => {
+    if (props.onCancel) {
+      props.onCancel();
+    } else {
+      navigate(paths.libreta());
+    }
+  };
+  
+  const handleDelete = () => {
+    if (props.debtId && confirm('¿Estás seguro de que deseas eliminar esta deuda?')) {
+      const success = debtStore.deleteDebt(props.debtId);
+      if (success) {
+        uiStore.showSuccessModal('Deuda Eliminada', 'La deuda ha sido eliminada');
+        if (props.onDelete) {
+          props.onDelete();
+        } else {
+          navigate(paths.libreta());
+        }
+      }
+    }
+  };
 
   const filteredContacts = useMemo(() => {
     const contactType = type === 'receivable' ? 'client' : 'supplier';
@@ -326,9 +372,9 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 
       let result;
       if (mode === 'create') {
-        result = DebtService.create(type, counterparty, amountNum, description, dueDate, category || undefined, notes || undefined);
-      } else if (debtId) {
-        result = DebtService.update(debtId, { type, counterparty, amount: amountNum, description, dueDate, category: category || undefined, notes: notes || undefined });
+        result = debtStore.addDebt(type, counterparty, amountNum, description, dueDate, category || undefined, notes || undefined);
+      } else if (props.debtId) {
+        result = debtStore.updateDebt(props.debtId, { type, counterparty, amount: amountNum, description, dueDate, category: category || undefined, notes: notes || undefined });
       }
       
       if (!result) {
@@ -336,7 +382,16 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
         return;
       }
       
-      onSave();
+      uiStore.showSuccessModal(
+        mode === 'create' ? 'Deuda Creada' : 'Deuda Actualizada',
+        `La deuda ha sido ${mode === 'create' ? 'creada' : 'actualizada'}`
+      );
+      
+      if (props.onSave) {
+        props.onSave();
+      } else {
+        navigate(paths.libreta());
+      }
     } catch (error) {
       console.error('Error saving debt:', error);
       setFormError('Error al guardar la deuda');
@@ -413,13 +468,13 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
           <button type="submit" disabled={isSubmitting} className={BTN_FOOTER_PRIMARY}>
             {isSubmitting ? 'Guardando...' : mode === 'create' ? 'Crear Deuda' : 'Actualizar'}
           </button>
-          {mode === 'edit' && onDelete ? (
-            <button type="button" onClick={onDelete} disabled={isSubmitting} className={BTN_FOOTER_DANGER}>
+          {mode === 'edit' ? (
+            <button type="button" onClick={handleDelete} disabled={isSubmitting} className={BTN_FOOTER_DANGER}>
               <TrashIcon className="w-5 h-5" />
               <span>Eliminar</span>
             </button>
           ) : (
-            <button type="button" onClick={onCancel} disabled={isSubmitting} className={BTN_FOOTER_SECONDARY}>Cancelar</button>
+            <button type="button" onClick={handleCancel} disabled={isSubmitting} className={BTN_FOOTER_SECONDARY}>Cancelar</button>
           )}
         </div>
       </div>
@@ -430,30 +485,69 @@ export const DebtForm: React.FC<DebtFormProps> = ({ mode, debtId, onSave, onCanc
 // =============================================================================
 // DebtDetailView
 // =============================================================================
-interface DebtDetailViewProps {
-  debt: DebtEntry;
-  onClose: () => void;
-  onEdit: () => void;
-  onMarkAsPaid: () => void;
-  onPartialPayment: (amount: number) => void;
+export interface DebtDetailViewProps {
+  debt?: DebtEntry;
+  debtId?: string;
+  onClose?: () => void;
+  onEdit?: () => void;
+  onMarkAsPaid?: () => void;
+  onPartialPayment?: (amount: number) => void;
   currencyCode?: string;
 }
 
-export const DebtDetailView: React.FC<DebtDetailViewProps> = ({
-  debt,
-  onClose,
-  onEdit,
-  onMarkAsPaid,
-  onPartialPayment,
-  currencyCode
-}) => {
+export const DebtDetailView: React.FC<DebtDetailViewProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use stores
+  const debtStore = useDebtStore();
+  const configStore = useConfigStore();
+  const uiStore = useUIStore();
+  
+  // Resolve debt from props or store
+  const debt = props.debt ?? (props.debtId ? debtStore.getById(props.debtId) : null);
+  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
+  if (!debt) {
+    const handleBack = () => {
+      if (props.onClose) {
+        props.onClose();
+      } else {
+        navigate(paths.libreta());
+      }
+    };
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-slate-600 dark:text-slate-400">Deuda no encontrada</p>
+          <button onClick={handleBack} className={BTN_ACTION_PRIMARY + ' mt-4'}>Volver a Libreta</button>
+        </div>
+      </div>
+    );
+  }
+
   const isPaid = debt.status === 'paid';
   const isOverdue = debt.status === 'overdue';
   const isReceivable = debt.type === 'receivable';
+
+  const handleClose = () => {
+    if (props.onClose) {
+      props.onClose();
+    } else {
+      navigate(paths.libreta());
+    }
+  };
+
+  const handleEdit = () => {
+    if (props.onEdit) {
+      props.onEdit();
+    } else {
+      navigate(paths.libretaEdit(debt.id));
+    }
+  };
 
   const handleOpenPaymentModal = () => {
     setPaymentAmount('');
@@ -463,7 +557,15 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = ({
 
   const handlePayFull = () => {
     setShowPaymentModal(false);
-    onMarkAsPaid();
+    if (props.onMarkAsPaid) {
+      props.onMarkAsPaid();
+    } else {
+      const result = debtStore.markAsPaid(debt.id);
+      if (result) {
+        uiStore.showSuccessModal('¡Deuda Pagada!', `La deuda con ${debt.counterparty} ha sido marcada como pagada`);
+        navigate(paths.libreta());
+      }
+    }
   };
 
   const handlePartialPayment = () => {
@@ -477,7 +579,18 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = ({
       return;
     }
     setShowPaymentModal(false);
-    onPartialPayment(amount);
+    
+    if (props.onPartialPayment) {
+      props.onPartialPayment(amount);
+    } else {
+      const result = debtStore.makePartialPayment(debt.id, amount);
+      if (result) {
+        uiStore.showSuccessModal('¡Abono Registrado!', `Abono de ${formatCurrency(amount, currencyCode)} registrado`);
+        if (result.debt.status === 'paid') {
+          navigate(paths.libreta());
+        }
+      }
+    }
   };
 
   const getPillStatusClasses = () => {
@@ -494,7 +607,7 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = ({
     <div className={DETAIL_VIEW_CONTAINER}>
       <div className={DETAIL_VIEW_HEADER}>
         <h2 className={TEXT_DETAIL_HEADER_TITLE}>Deuda</h2>
-        <button onClick={onClose} className={ICON_BTN_CLOSE} aria-label="Cerrar">
+        <button onClick={handleClose} className={ICON_BTN_CLOSE} aria-label="Cerrar">
           <CloseIcon className="w-5 h-5" />
         </button>
       </div>
@@ -588,7 +701,7 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = ({
             <CheckCircleIcon className="w-5 h-5" />
             <span>{isPaid ? 'Pagado' : 'Abonar'}</span>
           </button>
-          <button onClick={onEdit} className={BTN_FOOTER_SECONDARY}>
+          <button onClick={handleEdit} className={BTN_FOOTER_SECONDARY}>
             <PencilIcon className="w-5 h-5" />
             <span>Editar</span>
           </button>

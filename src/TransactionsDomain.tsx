@@ -5,6 +5,7 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Transaction, CategoryConfig } from './SharedDefs';
 import {
   CARD_STYLES,
@@ -41,6 +42,8 @@ import {
   ExclamationCircleIcon,
   TransactionItem
 } from './UIComponents';
+import { useTransactionStore, useConfigStore, useUIStore } from './stores';
+import { paths } from './routes';
 
 // =============================================================================
 // NotFoundView
@@ -84,29 +87,59 @@ const SearchIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+// Props are optional - component can use stores directly
 export interface HomeViewProps {
-  transactions: Transaction[];
-  currencyCode: string;
-  totalInflows: number;
-  totalOutflows: number;
-  inflowCount: number;
-  outflowCount: number;
-  onTransactionClick: (transactionId: string) => void;
-  onNewInflow: () => void;
-  onNewExpense: () => void;
+  transactions?: Transaction[];
+  currencyCode?: string;
+  totalInflows?: number;
+  totalOutflows?: number;
+  inflowCount?: number;
+  outflowCount?: number;
+  onTransactionClick?: (transactionId: string) => void;
+  onNewInflow?: () => void;
+  onNewExpense?: () => void;
 }
 
-export const HomeView: React.FC<HomeViewProps> = ({
-  transactions,
-  currencyCode,
-  totalInflows,
-  totalOutflows,
-  inflowCount,
-  outflowCount,
-  onTransactionClick,
-  onNewInflow,
-  onNewExpense,
-}) => {
+export const HomeView: React.FC<HomeViewProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use stores directly if props not provided
+  const transactionStore = useTransactionStore();
+  const configStore = useConfigStore();
+  
+  // Resolve values - prefer props, fallback to stores
+  const transactions = props.transactions ?? transactionStore.todayTransactions;
+  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  const totalInflows = props.totalInflows ?? transactionStore.totalInflows;
+  const totalOutflows = props.totalOutflows ?? transactionStore.totalOutflows;
+  const inflowCount = props.inflowCount ?? transactionStore.inflowCount;
+  const outflowCount = props.outflowCount ?? transactionStore.outflowCount;
+  
+  // Navigation handlers - use props or router
+  const handleTransactionClick = (transactionId: string) => {
+    if (props.onTransactionClick) {
+      props.onTransactionClick(transactionId);
+    } else {
+      navigate(paths.transactionDetail(transactionId));
+    }
+  };
+  
+  const handleNewInflow = () => {
+    if (props.onNewInflow) {
+      props.onNewInflow();
+    } else {
+      navigate(paths.newInflow());
+    }
+  };
+  
+  const handleNewExpense = () => {
+    if (props.onNewExpense) {
+      props.onNewExpense();
+    } else {
+      navigate(paths.newExpense());
+    }
+  };
+
   return (
     <div className="w-full space-y-6">
       <div className={CARD_STYLES}>
@@ -134,10 +167,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           {/* Action Buttons (Ingreso/Gasto) */}
           <div className="w-full sm:w-auto grid grid-cols-2 gap-2">
-            <button onClick={onNewInflow} className={BTN_HEADER_INFLOW}>
+            <button onClick={handleNewInflow} className={BTN_HEADER_INFLOW}>
               <ArrowUpIcon className="w-5 h-5"/> Ingreso
             </button>
-            <button onClick={onNewExpense} className={BTN_HEADER_OUTFLOW}>
+            <button onClick={handleNewExpense} className={BTN_HEADER_OUTFLOW}>
               <ArrowDownIcon className="w-5 h-5"/> Gasto
             </button>
           </div>
@@ -175,7 +208,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   key={t.id} 
                   transaction={t}
                   currencyCode={currencyCode}
-                  onClick={() => onTransactionClick(t.id)}
+                  onClick={() => handleTransactionClick(t.id)}
                 />
               ))}
             </ul>
@@ -189,16 +222,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
 // =============================================================================
 // NewInflowForm
 // =============================================================================
-interface NewInflowFormProps {
-  onAddTransaction: (transaction: { description: string; amount: number; type: 'inflow'; category?: string; paymentMethod?: string }) => void;
-  categoryConfig: CategoryConfig;
-  currencyCode: string;
+export interface NewInflowFormProps {
+  onAddTransaction?: (transaction: { description: string; amount: number; type: 'inflow'; category?: string; paymentMethod?: string }) => void;
+  categoryConfig?: CategoryConfig;
+  currencyCode?: string;
   paymentMethods?: string[];
   onClose?: () => void;
   onSuccess?: (title: string, message: string) => void;
 }
 
-export const NewInflowForm: React.FC<NewInflowFormProps> = ({ onAddTransaction, categoryConfig, currencyCode, paymentMethods = ['Efectivo', 'Tarjeta', 'Transferencia'], onClose, onSuccess }) => {
+export const NewInflowForm: React.FC<NewInflowFormProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use stores directly if props not provided
+  const transactionStore = useTransactionStore();
+  const configStore = useConfigStore();
+  const uiStore = useUIStore();
+  
+  // Resolve values from stores
+  const categoryConfig = props.categoryConfig ?? configStore.categoryConfig;
+  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  const paymentMethods = props.paymentMethods ?? configStore.paymentMethods;
+  
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
@@ -218,23 +263,43 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ onAddTransaction, 
 
     const finalDescription = description.trim() || 'Ingreso';
 
-    onAddTransaction({
-      description: finalDescription,
-      amount: amountValue,
-      type: 'inflow',
-      category: category || undefined,
-      paymentMethod: paymentMethod || undefined
-    });
+    // Use prop callback or store directly
+    if (props.onAddTransaction) {
+      props.onAddTransaction({
+        description: finalDescription,
+        amount: amountValue,
+        type: 'inflow',
+        category: category || undefined,
+        paymentMethod: paymentMethod || undefined
+      });
+    } else {
+      transactionStore.addTransaction(
+        'inflow',
+        finalDescription,
+        amountValue,
+        category || undefined,
+        paymentMethod || undefined
+      );
+    }
 
     setDescription('');
     setAmount('');
     setCategory('');
     setPaymentMethod('');
 
-    if (onSuccess) {
-      onSuccess('¡Ingreso Registrado!', `Ingreso de ${formatCurrency(amountValue, currencyCode)} registrado`);
+    // Show success feedback
+    if (props.onSuccess) {
+      props.onSuccess('¡Ingreso Registrado!', `Ingreso de ${formatCurrency(amountValue, currencyCode)} registrado`);
+    } else {
+      uiStore.showSuccessModal('¡Ingreso Registrado!', `Ingreso de ${formatCurrency(amountValue, currencyCode)} registrado`);
     }
-    if (onClose) onClose();
+    
+    // Navigate back
+    if (props.onClose) {
+      props.onClose();
+    } else {
+      navigate(paths.home());
+    }
   };
 
   return (
@@ -301,29 +366,34 @@ export const NewInflowForm: React.FC<NewInflowFormProps> = ({ onAddTransaction, 
 // =============================================================================
 // NewExpenseForm
 // =============================================================================
-interface NewExpenseFormProps {
-  onAddTransaction: (transaction: { 
+export interface NewExpenseFormProps {
+  onAddTransaction?: (transaction: { 
     description: string; 
     amount: number; 
     type: 'outflow'; 
     category?: string; 
     paymentMethod?: string;
   }) => void;
-  categoryConfig: CategoryConfig;
-  currencyCode: string;
+  categoryConfig?: CategoryConfig;
+  currencyCode?: string;
   paymentMethods?: string[];
   onClose?: () => void;
   onSuccess?: (title: string, message: string) => void;
 }
 
-export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({ 
-  onAddTransaction, 
-  categoryConfig, 
-  currencyCode,
-  paymentMethods = ['Efectivo', 'Tarjeta', 'Transferencia'],
-  onClose,
-  onSuccess
-}) => {
+export const NewExpenseForm: React.FC<NewExpenseFormProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use stores directly if props not provided
+  const transactionStore = useTransactionStore();
+  const configStore = useConfigStore();
+  const uiStore = useUIStore();
+  
+  // Resolve values from stores
+  const categoryConfig = props.categoryConfig ?? configStore.categoryConfig;
+  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  const paymentMethods = props.paymentMethods ?? configStore.paymentMethods;
+  
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -346,24 +416,45 @@ export const NewExpenseForm: React.FC<NewExpenseFormProps> = ({
       return;
     }
 
-    onAddTransaction({ 
-      description: description.trim(), 
-      amount: amountValue, 
-      type: 'outflow',
-      category: category || undefined,
-      paymentMethod: paymentMethod || undefined
-    });
+    const finalDescription = description.trim();
+
+    // Use prop callback or store directly
+    if (props.onAddTransaction) {
+      props.onAddTransaction({ 
+        description: finalDescription, 
+        amount: amountValue, 
+        type: 'outflow',
+        category: category || undefined,
+        paymentMethod: paymentMethod || undefined
+      });
+    } else {
+      transactionStore.addTransaction(
+        'outflow',
+        finalDescription,
+        amountValue,
+        category || undefined,
+        paymentMethod || undefined
+      );
+    }
 
     setDescription('');
     setAmount('');
     setCategory('');
     setPaymentMethod('');
 
-    if (onSuccess) {
-      onSuccess('¡Gasto Registrado!', `Gasto de ${formatCurrency(amountValue, currencyCode)} registrado`);
+    // Show success feedback
+    if (props.onSuccess) {
+      props.onSuccess('¡Gasto Registrado!', `Gasto de ${formatCurrency(amountValue, currencyCode)} registrado`);
+    } else {
+      uiStore.showSuccessModal('¡Gasto Registrado!', `Gasto de ${formatCurrency(amountValue, currencyCode)} registrado`);
     }
 
-    if (onClose) onClose();
+    // Navigate back
+    if (props.onClose) {
+      props.onClose();
+    } else {
+      navigate(paths.home());
+    }
   };
 
   return (
@@ -670,22 +761,38 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
 // TransactionDetailPage
 // =============================================================================
 export interface TransactionDetailPageProps {
-  transaction: Transaction | undefined;
-  currencyCode: string;
-  onClose: () => void;
+  transaction?: Transaction;
+  transactionId?: string;
+  currencyCode?: string;
+  onClose?: () => void;
 }
 
-export const TransactionDetailPage: React.FC<TransactionDetailPageProps> = ({
-  transaction,
-  currencyCode,
-  onClose,
-}) => {
+export const TransactionDetailPage: React.FC<TransactionDetailPageProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use stores directly
+  const transactionStore = useTransactionStore();
+  const configStore = useConfigStore();
+  
+  // Resolve transaction - from props or by looking up ID in store
+  const transaction = props.transaction ?? 
+    (props.transactionId ? transactionStore.transactions.find(t => t.id === props.transactionId) : undefined);
+  const currencyCode = props.currencyCode ?? configStore.currencyCode;
+  
+  const handleClose = () => {
+    if (props.onClose) {
+      props.onClose();
+    } else {
+      navigate(paths.home());
+    }
+  };
+
   if (!transaction) {
     return (
       <NotFoundView
         message="Transacción no encontrada"
         buttonLabel="Volver al Inicio"
-        onBack={onClose}
+        onBack={handleClose}
       />
     );
   }
@@ -698,7 +805,7 @@ export const TransactionDetailPage: React.FC<TransactionDetailPageProps> = ({
     <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
       <TransactionDetailView
         transaction={transaction}
-        onClose={onClose}
+        onClose={handleClose}
         onEdit={handleEdit}
         currencyCode={currencyCode}
       />

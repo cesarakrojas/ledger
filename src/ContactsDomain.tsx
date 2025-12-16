@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Contact } from './SharedDefs';
 import {
   CARD_STYLES,
@@ -31,7 +32,6 @@ import {
   TOGGLE_BTN_INACTIVE,
   TOGGLE_BTN_ACTIVE_EMERALD,
   TOGGLE_BTN_ACTIVE_BLUE,
-  useDebouncedValue,
   formatDate
 } from './SharedDefs';
 import {
@@ -44,6 +44,8 @@ import {
   XMarkIcon
 } from './UIComponents';
 import { ContactService } from './CoreServices';
+import { useContactStore, useUIStore } from './stores';
+import { paths } from './routes';
 
 // =============================================================================
 // ContactFilters (memoized)
@@ -130,47 +132,49 @@ ContactItem.displayName = 'ContactItem';
 // =============================================================================
 // ClientsView
 // =============================================================================
-interface ClientsViewProps {
+export interface ClientsViewProps {
   onChangeView?: (mode: 'list' | 'create' | 'edit' | 'detail', contactId?: string) => void;
 }
 
-export const ClientsView: React.FC<ClientsViewProps> = ({ onChangeView }) => {
-  const [contacts, setContacts] = useState<Contact[]>([]);
+export const ClientsView: React.FC<ClientsViewProps> = (props) => {
+  const navigate = useNavigate();
+  
+  // Use Zustand store
+  const { contacts, clients, suppliers, loadContacts, setFilters } = useContactStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
 
-  const debouncedSearchTerm = useDebouncedValue(searchTerm, 200);
-
-  const loadContacts = useCallback(() => {
-    const allContacts = ContactService.getAll({
-      searchTerm: debouncedSearchTerm || undefined,
+  // Load contacts on mount and when filters change
+  useEffect(() => {
+    loadContacts({
+      searchTerm: searchTerm || undefined,
       type: selectedType as 'client' | 'supplier' | undefined
     });
-    setContacts(allContacts);
-  }, [debouncedSearchTerm, selectedType]);
-
-  useEffect(() => {
-    loadContacts();
-  }, [loadContacts]);
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      loadContacts();
-    };
-    window.addEventListener('contactsUpdated', handleStorageChange);
-    return () => window.removeEventListener('contactsUpdated', handleStorageChange);
-  }, [loadContacts]);
+  }, [loadContacts, searchTerm, selectedType]);
 
   const handleContactClick = useCallback((contactId: string) => {
-    onChangeView?.('detail', contactId);
-  }, [onChangeView]);
+    if (props.onChangeView) {
+      props.onChangeView('detail', contactId);
+    } else {
+      navigate(paths.contactsDetail(contactId));
+    }
+  }, [props.onChangeView, navigate]);
 
   const handleCreateClick = useCallback(() => {
-    onChangeView?.('create');
-  }, [onChangeView]);
+    if (props.onChangeView) {
+      props.onChangeView('create');
+    } else {
+      navigate(paths.contactsNew());
+    }
+  }, [props.onChangeView, navigate]);
 
-  const clients = contacts.filter(c => c.type === 'client');
-  const suppliers = contacts.filter(c => c.type === 'supplier');
+  // Use store's clients and suppliers which are already filtered
+  const displayedClients = selectedType === 'supplier' ? [] : clients.filter(c => 
+    !searchTerm || c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const displayedSuppliers = selectedType === 'client' ? [] : suppliers.filter(c => 
+    !searchTerm || c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="w-full space-y-6">
@@ -214,27 +218,27 @@ export const ClientsView: React.FC<ClientsViewProps> = ({ onChangeView }) => {
           <div>
             {!selectedType ? (
               <>
-                {clients.length > 0 && (
+                {displayedClients.length > 0 && (
                   <div>
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                      Clientes ({clients.length})
+                      Clientes ({displayedClients.length})
                     </h3>
                     <div className="space-y-2">
-                      {clients.map(contact => (
+                      {displayedClients.map(contact => (
                         <ContactItem key={contact.id} contact={contact} onClick={() => handleContactClick(contact.id)} />
                       ))}
                     </div>
                   </div>
                 )}
-                {suppliers.length > 0 && (
+                {displayedSuppliers.length > 0 && (
                   <>
                     <div className={DIVIDER}></div>
                     <div>
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                        Proveedores ({suppliers.length})
+                        Proveedores ({displayedSuppliers.length})
                       </h3>
                       <div className="space-y-2">
-                        {suppliers.map(contact => (
+                        {displayedSuppliers.map(contact => (
                           <ContactItem key={contact.id} contact={contact} onClick={() => handleContactClick(contact.id)} />
                         ))}
                       </div>
