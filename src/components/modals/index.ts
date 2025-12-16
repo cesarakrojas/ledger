@@ -3,3 +3,4 @@
  */
 
 export { SuccessModal } from './SuccessModal';
+export { ConfirmationModal, type ConfirmationModalProps } from './ConfirmationModal';

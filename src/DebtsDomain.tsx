@@ -45,9 +45,14 @@ import {
   ArrowDownIcon,
   ExclamationCircleIcon,
   TrashIcon,
-  CloseIcon,
+  XMarkIcon,
   CheckCircleIcon,
-  PencilIcon
+  PencilIcon,
+  DetailRow,
+  AlertCircleSmallIcon,
+  DocumentTextIcon,
+  CalendarSmallIcon,
+  ConfirmationModal
 } from './components';
 import { ContactService } from './services';
 import { useDebtStore, useConfigStore, useUIStore } from './stores';
@@ -134,9 +139,7 @@ export const LibretaView: React.FC<LibretaViewProps> = (props) => {
             </p>
             {stats.overdueReceivables > 0 && (
               <p className={`text-xs font-medium ${TEXT_AMOUNT_OUTFLOW} mt-2 flex items-center gap-1`}>
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <AlertCircleSmallIcon className="w-3 h-3" />
                 {stats.overdueReceivables} vencido{stats.overdueReceivables > 1 ? 's' : ''}
               </p>
             )}
@@ -148,9 +151,7 @@ export const LibretaView: React.FC<LibretaViewProps> = (props) => {
             </p>
             {stats.overduePayables > 0 && (
               <p className="text-xs font-medium text-red-600 dark:text-red-400 mt-2 flex items-center gap-1">
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <AlertCircleSmallIcon className="w-3 h-3" />
                 {stats.overduePayables} vencido{stats.overduePayables > 1 ? 's' : ''}
               </p>
             )}
@@ -162,9 +163,7 @@ export const LibretaView: React.FC<LibretaViewProps> = (props) => {
         {debts.length === 0 ? (
           <div>
             <div className="text-slate-400 dark:text-slate-500 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+              <DocumentTextIcon className="w-16 h-16 mx-auto" />
             </div>
             <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No hay deudas registradas</h3>
             <button onClick={handleCreateDebt} className="mt-4 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
@@ -193,9 +192,7 @@ export const LibretaView: React.FC<LibretaViewProps> = (props) => {
                           </span>
                         )}
                         <div className="flex items-center text-xs text-slate-400 dark:text-slate-500 font-medium">
-                          <svg className="h-3.5 w-3.5 mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
+                          <CalendarSmallIcon className="h-3.5 w-3.5 mr-1.5 -mt-0.5" />
                           <span className="whitespace-nowrap">
                             {new Date(debt.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </span>
@@ -255,6 +252,7 @@ export const DebtForm: React.FC<DebtFormProps> = (props) => {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -297,10 +295,15 @@ export const DebtForm: React.FC<DebtFormProps> = (props) => {
   };
   
   const handleDelete = () => {
-    if (props.debtId && confirm('¿Estás seguro de que deseas eliminar esta deuda?')) {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (props.debtId) {
       const success = deleteDebt(props.debtId);
       if (success) {
         showSuccessModal('Deuda Eliminada', 'La deuda ha sido eliminada');
+        setShowDeleteConfirm(false);
         if (props.onDelete) {
           props.onDelete();
         } else {
@@ -468,6 +471,17 @@ export const DebtForm: React.FC<DebtFormProps> = (props) => {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Eliminar Deuda"
+        message="¿Estás seguro de que deseas eliminar esta deuda? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+      />
     </form>
   );
 };
@@ -600,7 +614,7 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = (props) => {
       <div className={DETAIL_VIEW_HEADER}>
         <h2 className={TEXT_DETAIL_HEADER_TITLE}>Deuda</h2>
         <button onClick={handleClose} className={ICON_BTN_CLOSE} aria-label="Cerrar">
-          <CloseIcon className="w-5 h-5" />
+          <XMarkIcon className="w-5 h-5" />
         </button>
       </div>
 
@@ -709,7 +723,7 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = (props) => {
                 {isReceivable ? 'Registrar Cobro' : 'Registrar Pago'}
               </h3>
               <button onClick={() => setShowPaymentModal(false)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                <CloseIcon className="w-5 h-5" />
+                <XMarkIcon className="w-5 h-5" />
               </button>
             </div>
             <div className="p-5 space-y-4">
@@ -743,11 +757,3 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = (props) => {
     </div>
   );
 };
-
-// Helper Component
-const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="flex justify-between items-center py-4 border-b border-slate-100 dark:border-slate-700 last:border-0">
-    <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>
-    <span className="text-sm font-medium text-slate-900 dark:text-slate-100 text-right max-w-[60%] truncate">{value}</span>
-  </div>
-);

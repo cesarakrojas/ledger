@@ -93,34 +93,73 @@ export const useContactStore = create<ContactState>((set, get) => ({
   },
   
   /**
-   * Create a new contact and refresh the store
+   * Create a new contact with optimistic update
    */
   createContact: (contactData) => {
     const result = ContactService.create(contactData);
     if (result) {
-      get().loadContacts(get().currentFilters);
+      // Optimistic update: add new contact to state
+      set(state => ({
+        contacts: [...state.contacts, result],
+        clients: result.type === 'client' 
+          ? [...state.clients, result] 
+          : state.clients,
+        suppliers: result.type === 'supplier' 
+          ? [...state.suppliers, result] 
+          : state.suppliers,
+        totalContacts: state.totalContacts + 1,
+      }));
     }
     return result;
   },
   
   /**
-   * Update an existing contact
+   * Update an existing contact with optimistic update
    */
   updateContact: (contactId, updates) => {
+    const oldContact = get().contacts.find(c => c.id === contactId);
     const result = ContactService.update(contactId, updates);
-    if (result) {
-      get().loadContacts(get().currentFilters);
+    if (result && oldContact) {
+      // Optimistic update: replace contact in state
+      set(state => {
+        const typeChanged = updates.type && updates.type !== oldContact.type;
+        
+        return {
+          contacts: state.contacts.map(c => c.id === contactId ? result : c),
+          clients: typeChanged
+            ? (result.type === 'client' 
+                ? [...state.clients.filter(c => c.id !== contactId), result]
+                : state.clients.filter(c => c.id !== contactId))
+            : state.clients.map(c => c.id === contactId ? result : c),
+          suppliers: typeChanged
+            ? (result.type === 'supplier'
+                ? [...state.suppliers.filter(c => c.id !== contactId), result]
+                : state.suppliers.filter(c => c.id !== contactId))
+            : state.suppliers.map(c => c.id === contactId ? result : c),
+        };
+      });
     }
     return result;
   },
   
   /**
-   * Delete a contact
+   * Delete a contact with optimistic update
    */
   deleteContact: (contactId) => {
+    const contact = get().contacts.find(c => c.id === contactId);
     const result = ContactService.delete(contactId);
-    if (result) {
-      get().loadContacts(get().currentFilters);
+    if (result && contact) {
+      // Optimistic update: remove contact from state
+      set(state => ({
+        contacts: state.contacts.filter(c => c.id !== contactId),
+        clients: contact.type === 'client' 
+          ? state.clients.filter(c => c.id !== contactId) 
+          : state.clients,
+        suppliers: contact.type === 'supplier' 
+          ? state.suppliers.filter(c => c.id !== contactId) 
+          : state.suppliers,
+        totalContacts: state.totalContacts - 1,
+      }));
     }
     return result;
   },

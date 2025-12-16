@@ -6,8 +6,8 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { CashIcon, BookOpenIcon, InventoryIcon, QuestionMarkIcon } from './icons';
-import { ROUTES } from '../routes';
+import { CashIcon, BookOpenIcon, InventoryIcon, QuestionMarkIcon } from '../icons';
+import { ROUTES } from '../../routes';
 
 // =============================================================================
 // BottomNav Component

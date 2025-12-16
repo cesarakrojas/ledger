@@ -3,3 +3,4 @@
  */
 
 export { MobileMenu, type MobileMenuProps } from './MobileMenu';
+export { BottomNav } from './BottomNav';

@@ -9,7 +9,17 @@ import { create } from 'zustand';
 import { DebtService } from '../services';
 import type { DebtEntry, Transaction } from '../shared';
 import { STORAGE_KEYS } from '../shared';
-import { useTransactionStore } from './transactionStore';
+
+// Custom event for cross-store communication (decoupled from transactionStore)
+const TRANSACTIONS_CHANGED_EVENT = 'app:transactions-changed';
+
+/**
+ * Dispatch event to notify other stores that transactions have changed.
+ * This decouples debtStore from transactionStore.
+ */
+const notifyTransactionsChanged = () => {
+  window.dispatchEvent(new CustomEvent(TRANSACTIONS_CHANGED_EVENT));
+};
 
 // ============================================
 // Store Types
@@ -86,60 +96,121 @@ export const useDebtStore = create<DebtState>((set, get) => ({
   },
   
   /**
-   * Create a new debt and refresh the store
+   * Create a new debt with optimistic update
    */
   createDebt: (type, counterparty, amount, description, dueDate, category, notes) => {
     const result = DebtService.create(type, counterparty, amount, description, dueDate, category, notes);
     if (result) {
-      get().loadDebts();
+      // Optimistic update: add new debt to state and recalc stats
+      const isOverdue = new Date(dueDate) < new Date();
+      set(state => ({
+        debts: [...state.debts, result],
+        stats: {
+          ...state.stats,
+          totalReceivablesPending: state.stats.totalReceivablesPending + (type === 'receivable' ? amount : 0),
+          totalPayablesPending: state.stats.totalPayablesPending + (type === 'payable' ? amount : 0),
+          netBalance: state.stats.netBalance + (type === 'receivable' ? amount : -amount),
+          overdueReceivables: state.stats.overdueReceivables + (type === 'receivable' && isOverdue ? 1 : 0),
+          overduePayables: state.stats.overduePayables + (type === 'payable' && isOverdue ? 1 : 0),
+          totalPendingDebts: state.stats.totalPendingDebts + 1,
+        },
+      }));
     }
     return result;
   },
   
   /**
-   * Update an existing debt
+   * Update an existing debt - reload stats since they may change
    */
   updateDebt: (debtId, updates) => {
     const result = DebtService.update(debtId, updates);
     if (result) {
-      get().loadDebts();
+      // For updates, reload stats since amount/type/dueDate changes affect stats
+      const stats = DebtService.getStats();
+      set(state => ({
+        debts: state.debts.map(d => d.id === debtId ? result : d),
+        stats,
+      }));
     }
     return result;
   },
   
   /**
-   * Delete a debt
+   * Delete a debt with optimistic update
    */
   deleteDebt: (debtId) => {
+    const debt = get().debts.find(d => d.id === debtId);
     const result = DebtService.delete(debtId);
-    if (result) {
-      get().loadDebts();
+    if (result && debt && debt.status === 'pending') {
+      // Optimistic update: remove debt from state and recalc stats
+      const isOverdue = new Date(debt.dueDate) < new Date();
+      set(state => ({
+        debts: state.debts.filter(d => d.id !== debtId),
+        stats: {
+          ...state.stats,
+          totalReceivablesPending: state.stats.totalReceivablesPending - (debt.type === 'receivable' ? debt.amount : 0),
+          totalPayablesPending: state.stats.totalPayablesPending - (debt.type === 'payable' ? debt.amount : 0),
+          netBalance: state.stats.netBalance - (debt.type === 'receivable' ? debt.amount : -debt.amount),
+          overdueReceivables: state.stats.overdueReceivables - (debt.type === 'receivable' && isOverdue ? 1 : 0),
+          overduePayables: state.stats.overduePayables - (debt.type === 'payable' && isOverdue ? 1 : 0),
+          totalPendingDebts: state.stats.totalPendingDebts - 1,
+        },
+      }));
+    } else if (result) {
+      // Paid debt - just remove from list
+      set(state => ({
+        debts: state.debts.filter(d => d.id !== debtId),
+      }));
     }
     return result;
   },
   
   /**
-   * Mark a debt as fully paid (creates a transaction)
+   * Mark a debt as fully paid with optimistic update (creates a transaction)
    */
   markAsPaid: (debtId) => {
+    const debt = get().debts.find(d => d.id === debtId);
     const result = DebtService.markAsPaid(debtId);
-    if (result) {
-      get().loadDebts();
-      // Also refresh transactions since a new one was created
-      useTransactionStore.getState().loadTransactions();
+    if (result && debt) {
+      // Optimistic update: update debt status and recalc stats
+      const isOverdue = new Date(debt.dueDate) < new Date();
+      set(state => ({
+        debts: state.debts.map(d => d.id === debtId ? result.debt : d),
+        stats: {
+          ...state.stats,
+          totalReceivablesPending: state.stats.totalReceivablesPending - (debt.type === 'receivable' ? debt.amount : 0),
+          totalPayablesPending: state.stats.totalPayablesPending - (debt.type === 'payable' ? debt.amount : 0),
+          netBalance: state.stats.netBalance - (debt.type === 'receivable' ? debt.amount : -debt.amount),
+          overdueReceivables: state.stats.overdueReceivables - (debt.type === 'receivable' && isOverdue ? 1 : 0),
+          overduePayables: state.stats.overduePayables - (debt.type === 'payable' && isOverdue ? 1 : 0),
+          totalPendingDebts: state.stats.totalPendingDebts - 1,
+        },
+      }));
+      // Notify other stores that transactions changed (decoupled via events)
+      notifyTransactionsChanged();
     }
     return result;
   },
   
   /**
-   * Make a partial payment on a debt (creates a transaction)
+   * Make a partial payment on a debt with optimistic update (creates a transaction)
    */
   makePartialPayment: (debtId, amount) => {
+    const debt = get().debts.find(d => d.id === debtId);
     const result = DebtService.makePartialPayment(debtId, amount);
-    if (result) {
-      get().loadDebts();
-      // Also refresh transactions since a new one was created
-      useTransactionStore.getState().loadTransactions();
+    if (result && debt) {
+      // Optimistic update: update debt and recalc stats (reduce pending amount)
+      set(state => ({
+        debts: state.debts.map(d => d.id === debtId ? result.debt : d),
+        stats: {
+          ...state.stats,
+          totalReceivablesPending: state.stats.totalReceivablesPending - (debt.type === 'receivable' ? amount : 0),
+          totalPayablesPending: state.stats.totalPayablesPending - (debt.type === 'payable' ? amount : 0),
+          netBalance: state.stats.netBalance - (debt.type === 'receivable' ? amount : -amount),
+        },
+      }));
+      // Notify other stores that transactions changed (decoupled via events)
+      notifyTransactionsChanged();
     }
     return result;
   },

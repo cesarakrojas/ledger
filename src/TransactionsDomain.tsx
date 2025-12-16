@@ -36,13 +36,24 @@ import {
 import {
   ArrowUpIcon,
   ArrowDownIcon,
-  CloseIcon,
+  XMarkIcon,
   PencilIcon,
   PrinterIcon,
   ExclamationCircleIcon,
-  TransactionItem
+  SearchIcon,
+  TransactionItem,
+  DetailRow
 } from './components';
-import { useTransactionStore, useConfigStore, useUIStore } from './stores';
+import { 
+  useTransactionStore, 
+  useConfigStore, 
+  useUIStore,
+  selectTodayTransactions,
+  selectTotalInflows,
+  selectTotalOutflows,
+  selectInflowCount,
+  selectOutflowCount,
+} from './stores';
 import { paths } from './routes';
 
 // =============================================================================
@@ -71,22 +82,6 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({
   );
 };
 
-// =============================================================================
-// HomeView - Local SearchIcon
-// =============================================================================
-const SearchIcon = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    fill="none" 
-    viewBox="0 0 24 24" 
-    strokeWidth={2} 
-    stroke="currentColor" 
-    className={className}
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-  </svg>
-);
-
 // Props are optional - component can use stores directly
 export interface HomeViewProps {
   transactions?: Transaction[];
@@ -103,12 +98,12 @@ export interface HomeViewProps {
 export const HomeView: React.FC<HomeViewProps> = (props) => {
   const navigate = useNavigate();
   
-  // Use stores with selectors for performance - only re-render when specific values change
-  const todayTransactions = useTransactionStore(state => state.todayTransactions);
-  const storeTotalInflows = useTransactionStore(state => state.totalInflows);
-  const storeTotalOutflows = useTransactionStore(state => state.totalOutflows);
-  const storeInflowCount = useTransactionStore(state => state.inflowCount);
-  const storeOutflowCount = useTransactionStore(state => state.outflowCount);
+  // Use memoized computed selectors for performance - only recalculate when transactions change
+  const todayTransactions = useTransactionStore(selectTodayTransactions);
+  const storeTotalInflows = useTransactionStore(selectTotalInflows);
+  const storeTotalOutflows = useTransactionStore(selectTotalOutflows);
+  const storeInflowCount = useTransactionStore(selectInflowCount);
+  const storeOutflowCount = useTransactionStore(selectOutflowCount);
   const currencyCodeFromStore = useConfigStore(state => state.currencyCode);
   
   // Resolve values - prefer props, fallback to stores
@@ -536,23 +531,6 @@ interface TransactionDetailViewProps {
   currencyCode?: string;
 }
 
-const DetailRow: React.FC<{ label: string; value: string; monospace?: boolean }> = ({
-  label,
-  value,
-  monospace
-}) => (
-  <div className="flex justify-between items-center py-4 border-b border-slate-100 dark:border-slate-700 last:border-0">
-    <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>
-    <span
-      className={`text-sm font-medium text-slate-900 dark:text-slate-100 ${
-        monospace ? 'font-mono text-xs' : ''
-      } text-right max-w-[60%] truncate`}
-    >
-      {value}
-    </span>
-  </div>
-);
-
 export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
   transaction,
   onClose,
@@ -698,7 +676,7 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
         <h2 className={TEXT_DETAIL_HEADER_TITLE}>Detalles</h2>
 
         <button onClick={onClose} aria-label="Cerrar" className={ICON_BTN_CLOSE}>
-          <CloseIcon className="w-5 h-5" />
+          <XMarkIcon className="w-5 h-5" />
         </button>
       </div>
 

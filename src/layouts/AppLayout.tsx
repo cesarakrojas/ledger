@@ -7,10 +7,9 @@
 
 import React, { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bars3Icon, BellIcon, ErrorNotification, SuccessModal, MobileMenu } from '../components';
+import { Bars3Icon, BellIcon, ErrorNotification, SuccessModal, MobileMenu, BottomNav } from '../components';
 import { useConfigStore, useUIStore } from '../stores';
 import { paths } from '../routes';
-import { BottomNav } from '../components/BottomNav';
 
 // Reset scroll position on route change
 const useScrollReset = () => {

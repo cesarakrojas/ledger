@@ -3,6 +3,8 @@
  * 
  * Manages all transaction-related state and actions.
  * Replaces the transaction state from App.tsx.
+ * 
+ * Uses computed selectors for derived state to avoid redundant calculations.
  */
 
 import { create } from 'zustand';
@@ -29,20 +31,54 @@ const filterTodayTransactions = (transactions: Transaction[]): Transaction[] => 
 };
 
 // ============================================
-// Store Types
+// Memoization Cache for Computed Selectors
 // ============================================
 
-interface TransactionState {
-  // Data
-  transactions: Transaction[];
-  isLoading: boolean;
-  
-  // Derived state (computed from transactions)
+// Simple memoization for derived values - only recomputes when transactions change
+let memoCache: {
+  transactions: Transaction[] | null;
   todayTransactions: Transaction[];
   totalInflows: number;
   totalOutflows: number;
   inflowCount: number;
   outflowCount: number;
+} = {
+  transactions: null,
+  todayTransactions: [],
+  totalInflows: 0,
+  totalOutflows: 0,
+  inflowCount: 0,
+  outflowCount: 0,
+};
+
+const computeDerivedState = (transactions: Transaction[]) => {
+  // Only recompute if transactions array reference changed
+  if (memoCache.transactions === transactions) {
+    return memoCache;
+  }
+  
+  const today = filterTodayTransactions(transactions);
+  
+  memoCache = {
+    transactions,
+    todayTransactions: today,
+    totalInflows: calculateTotalInflows(today),
+    totalOutflows: calculateTotalOutflows(today),
+    inflowCount: today.filter(t => t.type === 'inflow').length,
+    outflowCount: today.filter(t => t.type === 'outflow').length,
+  };
+  
+  return memoCache;
+};
+
+// ============================================
+// Store Types
+// ============================================
+
+interface TransactionState {
+  // Core data (only source of truth)
+  transactions: Transaction[];
+  isLoading: boolean;
   
   // Actions
   loadTransactions: () => void;
@@ -64,41 +100,32 @@ interface TransactionState {
 // ============================================
 
 export const useTransactionStore = create<TransactionState>((set, get) => ({
-  // Initial state
+  // Initial state - only core data, no derived state
   transactions: [],
-  todayTransactions: [],
-  totalInflows: 0,
-  totalOutflows: 0,
-  inflowCount: 0,
-  outflowCount: 0,
   isLoading: true,
   
   /**
-   * Load all transactions from storage and compute derived state
+   * Load all transactions from storage
    */
   loadTransactions: () => {
     const txs = TransactionService.getWithFilters({});
-    const today = filterTodayTransactions(txs);
-    
     set({
       transactions: txs,
-      todayTransactions: today,
-      totalInflows: calculateTotalInflows(today),
-      totalOutflows: calculateTotalOutflows(today),
-      inflowCount: today.filter(t => t.type === 'inflow').length,
-      outflowCount: today.filter(t => t.type === 'outflow').length,
       isLoading: false,
     });
   },
   
   /**
-   * Add a new transaction and refresh the store
+   * Add a new transaction with optimistic update
+   * Immediately updates state with the new transaction instead of full reload
    */
   addTransaction: (type, description, amount, category, paymentMethod) => {
     const result = TransactionService.add(type, description, amount, category, paymentMethod);
     if (result) {
-      // Reload to sync all derived state
-      get().loadTransactions();
+      // Optimistic update: prepend new transaction to existing list
+      set(state => ({
+        transactions: [result, ...state.transactions],
+      }));
     }
     return result;
   },
@@ -121,8 +148,45 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 }));
 
 // ============================================
+// Computed Selectors (Memoized)
+// ============================================
+
+/**
+ * Selector to get today's transactions (computed, memoized)
+ */
+export const selectTodayTransactions = (state: TransactionState) => 
+  computeDerivedState(state.transactions).todayTransactions;
+
+/**
+ * Selector to get total inflows for today (computed, memoized)
+ */
+export const selectTotalInflows = (state: TransactionState) => 
+  computeDerivedState(state.transactions).totalInflows;
+
+/**
+ * Selector to get total outflows for today (computed, memoized)
+ */
+export const selectTotalOutflows = (state: TransactionState) => 
+  computeDerivedState(state.transactions).totalOutflows;
+
+/**
+ * Selector to get inflow count for today (computed, memoized)
+ */
+export const selectInflowCount = (state: TransactionState) => 
+  computeDerivedState(state.transactions).inflowCount;
+
+/**
+ * Selector to get outflow count for today (computed, memoized)
+ */
+export const selectOutflowCount = (state: TransactionState) => 
+  computeDerivedState(state.transactions).outflowCount;
+
+// ============================================
 // Store Initialization Hook
 // ============================================
+
+// Custom event name for cross-store communication
+const TRANSACTIONS_CHANGED_EVENT = 'app:transactions-changed';
 
 /**
  * Initialize the transaction store on app startup.
@@ -138,9 +202,16 @@ export const initializeTransactionStore = () => {
     }
   };
   
+  // Listen for cross-store transaction change events (e.g., from debtStore)
+  const handleTransactionsChanged = () => {
+    useTransactionStore.getState().loadTransactions();
+  };
+  
   window.addEventListener('storage', handleStorageChange);
+  window.addEventListener(TRANSACTIONS_CHANGED_EVENT, handleTransactionsChanged);
   
   return () => {
     window.removeEventListener('storage', handleStorageChange);
+    window.removeEventListener(TRANSACTIONS_CHANGED_EVENT, handleTransactionsChanged);
   };
 };

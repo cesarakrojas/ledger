@@ -82,40 +82,73 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   },
   
   /**
-   * Create a new product and refresh the store
+   * Create a new product with optimistic update
    */
   createProduct: (name, price, cost, quantity = 0, description, category) => {
     const result = InventoryService.create(name, price, cost, quantity, description, category);
     if (result) {
-      get().loadProducts();
+      // Optimistic update: add new product to state
+      set(state => ({
+        products: [...state.products, result],
+        totalProducts: state.totalProducts + 1,
+        lowStockCount: result.quantity <= 10 
+          ? state.lowStockCount + 1 
+          : state.lowStockCount,
+        categories: category && !state.categories.includes(category)
+          ? [...state.categories, category]
+          : state.categories,
+      }));
     }
     return result;
   },
   
   /**
-   * Update an existing product
+   * Update an existing product with optimistic update
    */
   updateProduct: (productId, updates) => {
     const result = InventoryService.update(productId, updates);
     if (result) {
-      get().loadProducts();
+      // Optimistic update: replace product in state
+      set(state => {
+        const oldProduct = state.products.find(p => p.id === productId);
+        const wasLowStock = oldProduct && oldProduct.quantity <= 10;
+        const isLowStock = result.quantity <= 10;
+        
+        return {
+          products: state.products.map(p => p.id === productId ? result : p),
+          lowStockCount: state.lowStockCount 
+            + (isLowStock && !wasLowStock ? 1 : 0)
+            + (!isLowStock && wasLowStock ? -1 : 0),
+          categories: updates.category && !state.categories.includes(updates.category)
+            ? [...state.categories, updates.category]
+            : state.categories,
+        };
+      });
     }
     return result;
   },
   
   /**
-   * Delete a product
+   * Delete a product with optimistic update
    */
   deleteProduct: (productId) => {
+    const product = get().products.find(p => p.id === productId);
     const result = InventoryService.delete(productId);
-    if (result) {
-      get().loadProducts();
+    if (result && product) {
+      // Optimistic update: remove product from state
+      set(state => ({
+        products: state.products.filter(p => p.id !== productId),
+        totalProducts: state.totalProducts - 1,
+        lowStockCount: product.quantity <= 10 
+          ? state.lowStockCount - 1 
+          : state.lowStockCount,
+      }));
     }
     return result;
   },
   
   /**
-   * Adjust stock quantity for a product (add or subtract)
+   * Adjust stock quantity for a product with optimistic update
    */
   adjustStock: (productId, quantityDelta) => {
     const product = InventoryService.getById(productId);
@@ -124,7 +157,16 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     const newQuantity = Math.max(0, product.quantity + quantityDelta);
     const result = InventoryService.update(productId, { quantity: newQuantity });
     if (result) {
-      get().loadProducts();
+      // Optimistic update: update product in state
+      const wasLowStock = product.quantity <= 10;
+      const isLowStock = newQuantity <= 10;
+      
+      set(state => ({
+        products: state.products.map(p => p.id === productId ? result : p),
+        lowStockCount: state.lowStockCount 
+          + (isLowStock && !wasLowStock ? 1 : 0)
+          + (!isLowStock && wasLowStock ? -1 : 0),
+      }));
     }
     return result;
   },

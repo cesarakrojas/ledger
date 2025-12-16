@@ -3,3 +3,4 @@
  */
 
 export { TransactionItem, type TransactionItemProps } from './TransactionItem';
+export { DetailRow, type DetailRowProps } from './DetailRow';

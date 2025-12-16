@@ -38,29 +38,15 @@ import {
   InventoryIcon,
   TrashIcon,
   ExclamationCircleIcon,
-  CloseIcon,
   PencilIcon,
-  XMarkIcon
+  XMarkIcon,
+  SearchIcon,
+  RefreshIcon,
+  ConfirmationModal
 } from './components';
 import { InventoryService } from './services';
 import { useInventoryStore, useConfigStore, useUIStore } from './stores';
 import { paths } from './routes';
-
-// =============================================================================
-// SearchIcon (local to this domain)
-// =============================================================================
-const SearchIcon = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    fill="none" 
-    viewBox="0 0 24 24" 
-    strokeWidth={2} 
-    stroke="currentColor" 
-    className={className}
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-  </svg>
-);
 
 // =============================================================================
 // InventoryView
@@ -235,6 +221,7 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
   const [category, setCategory] = useState('');
   const [quantity, setQuantity] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -263,10 +250,15 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
   };
 
   const handleDelete = () => {
-    if (product && confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (product) {
       const success = deleteProduct(product.id);
       if (success) {
         showSuccessModal('Producto Eliminado', `${product.name} ha sido eliminado`);
+        setShowDeleteConfirm(false);
         if (props.onDelete) {
           props.onDelete();
         } else {
@@ -397,6 +389,17 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Eliminar Producto"
+        message="¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+      />
     </form>
   );
 };
@@ -453,7 +456,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       <div className={DETAIL_VIEW_HEADER}>
         <h2 className={TEXT_DETAIL_HEADER_TITLE}>Producto</h2>
         <button onClick={onClose} className={ICON_BTN_CLOSE} aria-label="Cerrar">
-          <CloseIcon className="w-5 h-5" />
+          <XMarkIcon className="w-5 h-5" />
         </button>
       </div>
 
@@ -530,9 +533,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         <div className="grid grid-cols-2 gap-3">
           <button onClick={handleUpdateStock} disabled={!hasStockChanges}
             className={hasStockChanges ? BTN_FOOTER_PRIMARY : BTN_FOOTER_DISABLED}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            <RefreshIcon className="w-5 h-5" />
             <span>Actualizar</span>
           </button>
           <button onClick={onEdit} className={BTN_FOOTER_SECONDARY}>
@@ -636,6 +637,7 @@ export interface ProductFormPageProps {
 
 export const ProductFormPage: React.FC<ProductFormPageProps> = ({ mode, productId, onBack }) => {
   const [product, setProduct] = useState<Product | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (mode === 'edit' && productId) {
@@ -652,34 +654,49 @@ export const ProductFormPage: React.FC<ProductFormPageProps> = ({ mode, productI
   };
 
   const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
     if (!product) return;
-    
-    if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      const success = InventoryService.delete(product.id);
-      if (success) {
-        onBack();
-      }
+    const success = InventoryService.delete(product.id);
+    if (success) {
+      setShowDeleteConfirm(false);
+      onBack();
     }
   };
 
   return (
-    <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
-      <div className={`w-full ${CARD_FORM}`}>
-        <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
-          <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-          <button onClick={onBack} className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`} aria-label="Cerrar">
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-hidden px-6">
-          <ProductForm
-            product={product}
-            onSave={handleSave}
-            onCancel={onBack}
-            onDelete={mode === 'edit' ? handleDelete : undefined}
-          />
+    <>
+      <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
+        <div className={`w-full ${CARD_FORM}`}>
+          <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
+            <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Producto' : 'Nuevo Producto'}</h2>
+            <button onClick={onBack} className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`} aria-label="Cerrar">
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden px-6">
+            <ProductForm
+              product={product}
+              onSave={handleSave}
+              onCancel={onBack}
+              onDelete={mode === 'edit' ? handleDelete : undefined}
+            />
+          </div>
         </div>
       </div>
-    </div>
+      
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Eliminar Producto"
+        message="¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+      />
+    </>
   );
 };

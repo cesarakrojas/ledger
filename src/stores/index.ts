@@ -6,7 +6,15 @@
  */
 
 // Data stores
-import { useTransactionStore, initializeTransactionStore } from './transactionStore';
+import { 
+  useTransactionStore, 
+  initializeTransactionStore,
+  selectTodayTransactions,
+  selectTotalInflows,
+  selectTotalOutflows,
+  selectInflowCount,
+  selectOutflowCount,
+} from './transactionStore';
 import { useInventoryStore, initializeInventoryStore } from './inventoryStore';
 import { useDebtStore, initializeDebtStore } from './debtStore';
 import { useContactStore, initializeContactStore } from './contactStore';
@@ -19,6 +27,13 @@ import { useUIStore } from './uiStore';
 export { 
   useTransactionStore, 
   initializeTransactionStore,
+  // Computed selectors for transactions
+  selectTodayTransactions,
+  selectTotalInflows,
+  selectTotalOutflows,
+  selectInflowCount,
+  selectOutflowCount,
+  
   useInventoryStore, 
   initializeInventoryStore,
   useDebtStore, 

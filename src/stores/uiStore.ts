@@ -3,6 +3,9 @@
  * 
  * Manages transient UI state like modals, menus, and notifications.
  * Replaces the UI state from App.tsx.
+ * 
+ * Note: Confirmation dialogs are handled locally in components using
+ * the ConfirmationModal component with local state for better UX control.
  */
 
 import { create } from 'zustand';
@@ -28,17 +31,6 @@ interface UIState {
   successModal: SuccessModalState;
   showSuccessModal: (title: string, message: string, type?: 'inflow' | 'expense') => void;
   hideSuccessModal: () => void;
-  
-  // Generic confirmation dialog (for future use)
-  confirmDialog: {
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: (() => void) | null;
-    onCancel: (() => void) | null;
-  };
-  showConfirmDialog: (title: string, message: string, onConfirm: () => void, onCancel?: () => void) => void;
-  hideConfirmDialog: () => void;
 }
 
 // ============================================
@@ -79,39 +71,6 @@ export const useUIStore = create<UIState>((set) => ({
         title: '',
         message: '',
         type: 'inflow',
-      },
-    });
-  },
-  
-  // Confirm dialog state
-  confirmDialog: {
-    isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: null,
-    onCancel: null,
-  },
-  
-  showConfirmDialog: (title, message, onConfirm, onCancel) => {
-    set({
-      confirmDialog: {
-        isOpen: true,
-        title,
-        message,
-        onConfirm,
-        onCancel: onCancel || null,
-      },
-    });
-  },
-  
-  hideConfirmDialog: () => {
-    set({
-      confirmDialog: {
-        isOpen: false,
-        title: '',
-        message: '',
-        onConfirm: null,
-        onCancel: null,
       },
     });
   },

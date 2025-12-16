@@ -39,9 +39,10 @@ import {
   UserIcon,
   ExclamationCircleIcon,
   TrashIcon,
-  CloseIcon,
   PencilIcon,
-  XMarkIcon
+  XMarkIcon,
+  PhoneIcon,
+  ConfirmationModal
 } from './components';
 import { ContactService } from './services';
 import { useContactStore } from './stores';
@@ -415,7 +416,7 @@ export const ContactDetailView: React.FC<ContactDetailViewProps> = ({ contact, o
       <div className={DETAIL_VIEW_HEADER}>
         <h2 className={TEXT_DETAIL_HEADER_TITLE}>Contacto</h2>
         <button onClick={onClose} className={ICON_BTN_CLOSE} aria-label="Cerrar">
-          <CloseIcon className="w-5 h-5" />
+          <XMarkIcon className="w-5 h-5" />
         </button>
       </div>
 
@@ -471,16 +472,12 @@ export const ContactDetailView: React.FC<ContactDetailViewProps> = ({ contact, o
         <div className="grid grid-cols-2 gap-3">
           {contact.phone ? (
             <button onClick={handleCall} className={BTN_FOOTER_PRIMARY}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
+              <PhoneIcon className="w-5 h-5" />
               <span>Llamar</span>
             </button>
           ) : (
             <button disabled className={BTN_FOOTER_DISABLED}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
+              <PhoneIcon className="w-5 h-5" />
               <span>Llamar</span>
             </button>
           )}
@@ -539,6 +536,7 @@ export interface ContactFormPageProps {
 
 export const ContactFormPage: React.FC<ContactFormPageProps> = ({ mode, contactId, onBack }) => {
   const [contact, setContact] = useState<Contact | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (mode === 'edit' && contactId) {
@@ -554,33 +552,49 @@ export const ContactFormPage: React.FC<ContactFormPageProps> = ({ mode, contactI
   };
 
   const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
     if (!contact) return;
-    if (confirm('¿Estás seguro de que deseas eliminar este contacto?')) {
-      const success = ContactService.delete(contact.id);
-      if (success) {
-        onBack();
-      }
+    const success = ContactService.delete(contact.id);
+    if (success) {
+      setShowDeleteConfirm(false);
+      onBack();
     }
   };
 
   return (
-    <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
-      <div className={`w-full ${CARD_FORM}`}>
-        <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
-          <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Contacto' : 'Nuevo Contacto'}</h2>
-          <button onClick={onBack} className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`} aria-label="Cerrar">
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-hidden px-6">
-          <ContactForm
-            contact={contact}
-            onSave={handleSave}
-            onCancel={onBack}
-            onDelete={mode === 'edit' ? handleDelete : undefined}
-          />
+    <>
+      <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
+        <div className={`w-full ${CARD_FORM}`}>
+          <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
+            <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Contacto' : 'Nuevo Contacto'}</h2>
+            <button onClick={onBack} className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`} aria-label="Cerrar">
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden px-6">
+            <ContactForm
+              contact={contact}
+              onSave={handleSave}
+              onCancel={onBack}
+              onDelete={mode === 'edit' ? handleDelete : undefined}
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Eliminar Contacto"
+        message="¿Estás seguro de que deseas eliminar este contacto? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+      />
+    </>
   );
 };
