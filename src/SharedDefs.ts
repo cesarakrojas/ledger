@@ -1,11 +1,9 @@
 /**
  * SharedDefs.ts - The Dictionary
- * 
- * Centralized definitions for the entire application.
+ * * Centralized definitions for the entire application.
  * Contains all TypeScript interfaces, constants, utility functions,
  * and style definitions used across all modules.
- * 
- * This file has ZERO dependencies on other app files to prevent circular imports.
+ * * This file has ZERO dependencies on other app files to prevent circular imports.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -39,6 +37,7 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
+  cost: number; // <--- NEW FIELD
   /** Stock quantity for the product */
   quantity: number;
   category?: string;
@@ -98,8 +97,7 @@ export interface Contact {
 /**
  * Centralized localStorage keys for the application
  * This ensures consistency across all services and prevents data loss
- * 
- * Naming Convention: All keys use 'app_' prefix with underscore_case
+ * * Naming Convention: All keys use 'app_' prefix with underscore_case
  * This provides clear namespace and prevents conflicts with other libraries
  */
 export const STORAGE_KEYS = {
