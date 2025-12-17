@@ -38,6 +38,17 @@ html, body {
   overscroll-behavior-y: contain;
 }
 
+/* ===== HIDDEN SCROLLBAR UTILITY ===== */
+/* Hides scrollbar UI while keeping scroll functionality (native-app look) */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.2s ease-out;
