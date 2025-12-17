@@ -18,6 +18,7 @@ export { TransactionService } from './TransactionService';
 export { InventoryService } from './InventoryService';
 export { DebtService } from './DebtService';
 export { ContactService } from './ContactService';
+export { POSService } from './POSService';
 
 // ============================================
 // LEGACY FUNCTION EXPORTS

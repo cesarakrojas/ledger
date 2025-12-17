@@ -37,6 +37,7 @@ const PaymentMethodsPage = React.lazy(() => import('./pages/settings/PaymentMeth
 
 // Other routes
 const ComingSoonPage = React.lazy(() => import('./pages/ComingSoonPage'));
+const POSPage = React.lazy(() => import('./pages/pos/POSPage'));
 const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage'));
 
 // =============================================================================
@@ -76,6 +77,7 @@ export const ROUTES = {
   
   // Other
   COMING_SOON: '/coming-soon',
+  POS: '/pos',
 } as const;
 
 // =============================================================================
@@ -109,6 +111,7 @@ export const paths = {
   settingsPaymentMethods: () => ROUTES.SETTINGS_PAYMENT_METHODS,
   
   comingSoon: () => ROUTES.COMING_SOON,
+  pos: () => ROUTES.POS,
 };
 
 // =============================================================================
@@ -152,6 +155,7 @@ export const router = createBrowserRouter([
       
       // Other
       { path: 'coming-soon', element: <ComingSoonPage /> },
+      { path: 'pos', element: <POSPage /> },
       
       // 404 catch-all
       { path: '*', element: <NotFoundPage /> },

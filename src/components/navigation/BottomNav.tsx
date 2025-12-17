@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { CashIcon, BookOpenIcon, InventoryIcon, QuestionMarkIcon } from '../icons';
+import { CashIcon, BookOpenIcon, InventoryIcon, CreditCardIcon } from '../icons';
 import { ROUTES } from '../../routes';
 
 // =============================================================================
@@ -17,7 +17,7 @@ const navItems = [
   { to: ROUTES.HOME, icon: CashIcon, label: 'Inicio' },
   { to: ROUTES.LIBRETA, icon: BookOpenIcon, label: 'Libreta' },
   { to: ROUTES.INVENTORY, icon: InventoryIcon, label: 'Inventario' },
-  { to: ROUTES.COMING_SOON, icon: QuestionMarkIcon, label: 'Pronto' },
+  { to: ROUTES.POS, icon: CreditCardIcon, label: 'POS' },
 ];
 
 export const BottomNav: React.FC = () => {

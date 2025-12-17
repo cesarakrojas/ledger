@@ -18,6 +18,7 @@ import {
 import { useInventoryStore, initializeInventoryStore } from './inventoryStore';
 import { useDebtStore, initializeDebtStore } from './debtStore';
 import { useContactStore, initializeContactStore } from './contactStore';
+import { usePOSStore, initializePOSStore } from './posStore';
 
 // Config & UI stores
 import { useConfigStore, initializeConfigStore } from './configStore';
@@ -40,6 +41,8 @@ export {
   initializeDebtStore,
   useContactStore, 
   initializeContactStore,
+  usePOSStore,
+  initializePOSStore,
   useConfigStore, 
   initializeConfigStore,
   useUIStore 
@@ -68,6 +71,7 @@ export const initializeAllStores = (): (() => void) => {
   const cleanupInventory = initializeInventoryStore();
   const cleanupDebt = initializeDebtStore();
   const cleanupContact = initializeContactStore();
+  const cleanupPOS = initializePOSStore();
   
   // Return combined cleanup function
   return () => {
@@ -75,5 +79,6 @@ export const initializeAllStores = (): (() => void) => {
     cleanupInventory();
     cleanupDebt();
     cleanupContact();
+    cleanupPOS();
   };
 };
