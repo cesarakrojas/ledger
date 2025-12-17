@@ -92,7 +92,13 @@ const AppLayout: React.FC = () => {
   
   // Determine if bottom nav should be visible
   // Hide on form pages and detail views
+  // Get programmatic hide state from UI store
+  const hideBottomNavOverride = useUIStore((state) => state.hideBottomNav);
+  
   const shouldShowBottomNav = (): boolean => {
+    // Check programmatic override first
+    if (hideBottomNavOverride) return false;
+    
     const path = location.pathname;
     
     // Hide on these paths

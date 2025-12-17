@@ -27,6 +27,10 @@ interface UIState {
   setMenuOpen: (open: boolean) => void;
   toggleMenu: () => void;
   
+  // Bottom nav visibility (for programmatic hiding from components)
+  hideBottomNav: boolean;
+  setHideBottomNav: (hide: boolean) => void;
+  
   // Success Modal
   successModal: SuccessModalState;
   showSuccessModal: (title: string, message: string, type?: 'inflow' | 'expense') => void;
@@ -44,6 +48,11 @@ export const useUIStore = create<UIState>((set) => ({
   setMenuOpen: (open) => set({ isMenuOpen: open }),
   
   toggleMenu: () => set((state) => ({ isMenuOpen: !state.isMenuOpen })),
+  
+  // Bottom nav visibility
+  hideBottomNav: false,
+  
+  setHideBottomNav: (hide) => set({ hideBottomNav: hide }),
   
   // Success modal state
   successModal: {

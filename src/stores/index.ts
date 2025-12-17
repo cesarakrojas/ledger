@@ -19,6 +19,7 @@ import { useInventoryStore, initializeInventoryStore } from './inventoryStore';
 import { useDebtStore, initializeDebtStore } from './debtStore';
 import { useContactStore, initializeContactStore } from './contactStore';
 import { usePOSStore, initializePOSStore } from './posStore';
+export type { CartItem } from './posStore';
 
 // Config & UI stores
 import { useConfigStore, initializeConfigStore } from './configStore';
