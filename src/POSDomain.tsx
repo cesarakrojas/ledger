@@ -83,7 +83,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
             <span className={`text-xl sm:text-2xl font-bold ${TEXT_AMOUNT_INFLOW}`}>
               {formatCurrency(product.price)}
             </span>
-            <div className="text-xs text-slate-500 dark:text-slate-300">Uds</div>
           </div>
         </div>
       </div>
