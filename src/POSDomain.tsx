@@ -284,7 +284,7 @@ export const POSView: React.FC<POSViewProps> = () => {
   };
 
   return (
-    <div className="w-full min-h-screen h-full animate-fade-in flex flex-col text-slate-900 dark:text-slate-100">
+    <div className="w-full space-y-6 animate-fade-in text-slate-900 dark:text-slate-100">
       {/* Header - Hidden when cart view is active */}
       {activeTab !== 'cart' && (
         <div className={`${CARD_STYLES} rounded-b-none`}>
@@ -296,10 +296,10 @@ export const POSView: React.FC<POSViewProps> = () => {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 relative overflow-hidden bg-slate-50 dark:bg-slate-900">
+      <div className="bg-slate-50 dark:bg-slate-900">
         {/* Products View */}
         <div
-          className={`absolute inset-0 flex flex-col transition-transform duration-300 ${
+          className={`flex flex-col transition-transform duration-300 ${
             activeTab === 'products' ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -333,7 +333,7 @@ export const POSView: React.FC<POSViewProps> = () => {
           </div>
 
           {/* Products Grid */}
-          <div className="flex-1 overflow-y-auto p-4 pb-24">
+          <div className="p-4 pb-24">
             {filteredProducts.length === 0 ? (
               <div className="text-center py-12 text-slate-500 dark:text-slate-400">
                 <p>No hay productos disponibles</p>
@@ -351,7 +351,7 @@ export const POSView: React.FC<POSViewProps> = () => {
 
         {/* Cart View */}
         <div
-          className={`absolute inset-0 bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
+          className={`bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
             activeTab === 'cart' ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
