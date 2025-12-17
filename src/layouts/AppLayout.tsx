@@ -166,7 +166,6 @@ const AppLayout: React.FC = () => {
         isOpen={successModal.isOpen}
         onClose={() => {
           hideSuccessModal();
-          navigate(paths.home());
         }}
         title={successModal.title}
         message={successModal.message}
