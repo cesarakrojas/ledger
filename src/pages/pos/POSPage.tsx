@@ -11,12 +11,12 @@ import { formatCurrency } from '../../shared/formatters';
 
 // Local mock data adapted from provided implementation
 const CATEGORIES = [
-  { id: 'all', name: 'All' },
-  { id: 'grains', name: 'Grains & Nuts' },
-  { id: 'drinks', name: 'Soft Drinks' },
-  { id: 'dairy', name: 'Dairy' },
-  { id: 'sweets', name: 'Sweets' },
-  { id: 'wellness', name: 'Wellness' },
+  { id: 'all', name: 'Todos' },
+  { id: 'grains', name: 'Granos y Frutos' },
+  { id: 'drinks', name: 'Bebidas' },
+  { id: 'dairy', name: 'Lácteos' },
+  { id: 'sweets', name: 'Dulces' },
+  { id: 'wellness', name: 'Bienestar' },
 ];
 
 const PRODUCTS = [
@@ -97,6 +97,8 @@ const POSPage: React.FC = () => {
       if (existing) return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
       return [...prev, { ...product, qty: 1 }];
     });
+    // ensure the floating cart button becomes visible after adding
+    setActiveTab('products');
   };
 
   const updateCartItem = (id: string, updates: any) => setCartLocal(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
@@ -140,7 +142,7 @@ const POSPage: React.FC = () => {
           <div className="px-4 py-3 z-10">
             <div className="relative mb-3">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-200" />
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search products..." className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg pl-9 pr-4 py-2 text-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Buscar productos..." className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg pl-9 pr-4 py-2 text-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
@@ -162,17 +164,17 @@ const POSPage: React.FC = () => {
         <div className={`absolute inset-0 bg-white dark:bg-gray-800 flex flex-col transition-transform duration-300 ${activeTab === 'cart' ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-transparent">
             <div className="flex items-center gap-2">
-              <button onClick={() => setActiveTab('products')} className="p-1 -ml-1 text-gray-500 dark:text-gray-300">Back</button>
-              <h2 className="font-bold text-lg text-gray-900 dark:text-gray-100">Current Order</h2>
+              <button onClick={() => setActiveTab('products')} className="p-1 -ml-1 text-gray-500 dark:text-gray-300">Atrás</button>
+              <h2 className="font-bold text-lg text-gray-900 dark:text-gray-100">Orden Actual</h2>
             </div>
-            <div className="text-sm font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full">Guest</div>
+            <div className="text-sm font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full">Invitado</div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
             {cartLocal.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-400 opacity-60">
                 <div className="w-16 h-16 mb-4" />
-                <p>Cart is empty</p>
+                <p>Carrito vacío</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -184,7 +186,7 @@ const POSPage: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-gray-900 dark:text-gray-100">{formatCurrency(item.price * item.qty)}</div>
-                      {editingItem?.id === item.id && <div className="text-xs text-indigo-600 font-medium mt-1">Editing</div>}
+                      {editingItem?.id === item.id && <div className="text-xs text-indigo-600 font-medium mt-1">Editando</div>}
                     </div>
                   </div>
                 ))}
@@ -196,7 +198,7 @@ const POSPage: React.FC = () => {
             {editingItem ? (
               <div className="p-4 bg-white dark:bg-gray-800">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-medium text-gray-500 dark:text-gray-300 text-sm">Editing: <span className="text-gray-900 dark:text-gray-100">{editingItem.name}</span></span>
+                    <span className="font-medium text-gray-500 dark:text-gray-300 text-sm">Editando: <span className="text-gray-900 dark:text-gray-100">{editingItem.name}</span></span>
                   <div className="flex gap-2">
                     <button onClick={() => removeFromCart(editingItem.id)} className="p-2 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg">Remove</button>
                     <button onClick={() => setEditingItem(null)} className="p-2 text-gray-500 dark:text-gray-300 bg-slate-100 dark:bg-gray-700 rounded-lg">Close</button>
@@ -205,11 +207,11 @@ const POSPage: React.FC = () => {
 
                 <div className="flex gap-3 mb-3">
                   <div className="flex-1 bg-gray-50 dark:bg-gray-700 rounded-lg flex flex-col justify-center px-4 py-2">
-                    <span className="text-xs text-gray-500 dark:text-gray-300 uppercase font-semibold tracking-wider">Input</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-300 uppercase font-semibold tracking-wider">Entrada</span>
                     <span className="text-2xl font-mono text-gray-900 dark:text-gray-100">{numpadValue}</span>
                   </div>
                   <div className="flex-none w-24 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col justify-center items-center">
-                    <span className="text-xs text-gray-400 dark:text-gray-300">Current Qty</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-300">Cantidad actual</span>
                     <span className="text-xl font-bold text-emerald-600">{editingItem.qty}</span>
                   </div>
                 </div>
@@ -221,38 +223,38 @@ const POSPage: React.FC = () => {
                 <div className="grid grid-cols-3 gap-3">
                   <button className="flex flex-col items-center justify-center py-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <UserIcon className="w-5 h-5 text-emerald-600 mb-1" />
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Customer</span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Cliente</span>
                   </button>
                   <button className="flex flex-col items-center justify-center py-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <DocumentTextIcon className="w-5 h-5 text-slate-500 dark:text-gray-300 mb-1" />
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Note</span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Nota</span>
                   </button>
                   <button className="flex flex-col items-center justify-center py-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <div className="w-5 h-5 text-slate-500 dark:text-gray-300 mb-1" />
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Actions</span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Acciones</span>
                   </button>
                 </div>
 
                 <div className="space-y-1 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
                   <div className="flex justify-between text-gray-500 dark:text-gray-300 text-sm"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
-                  <div className="flex justify-between text-gray-500 dark:text-gray-300 text-sm"><span>Taxes (10%)</span><span>{formatCurrency(tax)}</span></div>
+                  <div className="flex justify-between text-gray-500 dark:text-gray-300 text-sm"><span>Impuestos (10%)</span><span>{formatCurrency(tax)}</span></div>
                   <div className="flex justify-between text-gray-900 dark:text-gray-100 font-bold text-xl pt-1"><span>Total</span><span>{formatCurrency(total)}</span></div>
                 </div>
 
                 <button onClick={proceedPayment} className="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
                   <CreditCardIcon className="w-5 h-5" />
-                  Payment {formatCurrency(total)}
+                  Pagar {formatCurrency(total)}
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        <div className={`absolute bottom-6 left-4 right-4 z-30 transition-all duration-300 transform ${activeTab === 'products' && cartLocal.length > 0 ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-            <button onClick={() => setActiveTab('cart')} className="w-full bg-slate-900 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between">
+        <div className={`absolute bottom-6 left-4 right-4 z-30 transition-all duration-300 transform ${activeTab !== 'cart' && cartLocal.length > 0 ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+          <button onClick={() => setActiveTab('cart')} className="w-full bg-slate-900 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 dark:bg-white/10 px-3 py-1 rounded-full text-sm font-bold">{cartLocal.reduce((a,b) => a + b.qty, 0)} items</div>
-              <span className="text-sm text-slate-300 dark:text-gray-300">View Cart</span>
+              <div className="bg-white/20 dark:bg-white/10 px-3 py-1 rounded-full text-sm font-bold">{cartLocal.reduce((a,b) => a + b.qty, 0)} artículos</div>
+              <span className="text-sm text-slate-300 dark:text-gray-300">Ver carrito</span>
             </div>
             <div className="font-bold text-lg">{formatCurrency(total)}</div>
           </button>
