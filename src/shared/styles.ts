@@ -144,7 +144,7 @@ export const TEXT_VALUE_XL = 'text-2xl font-bold';
 export const FORM_LABEL = 'block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2';
 
 /** Form footer container */
-export const FORM_FOOTER = 'flex-shrink-0 pt-4 px-4 pb-4 -mx-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 space-y-3 safe-area-inset-bottom';
+export const FORM_FOOTER = 'sticky bottom-0 flex-shrink-0 pt-4 px-6 pb-6 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 space-y-3 safe-area-inset-bottom z-20';
 
 // ============================================
 // BUTTON STYLES
