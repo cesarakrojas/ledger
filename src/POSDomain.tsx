@@ -14,6 +14,7 @@ import {
   DocumentTextIcon,
   TrashIcon,
   XMarkIcon,
+  ChevronLeftIcon,
 } from './components/icons';
 import { POSService } from './services';
 import {
@@ -23,6 +24,9 @@ import {
   TEXT_AMOUNT_INFLOW,
   BTN_FOOTER_DANGER,
   BTN_FOOTER_SECONDARY,
+  DETAIL_VIEW_HEADER,
+  TEXT_DETAIL_HEADER_TITLE,
+  ICON_BTN_CLOSE,
   formatCurrency,
 } from './shared';
 import { usePOSStore, useInventoryStore, useUIStore } from './stores';
@@ -281,13 +285,15 @@ export const POSView: React.FC<POSViewProps> = () => {
 
   return (
     <div className="w-full min-h-screen h-full animate-fade-in flex flex-col text-slate-900 dark:text-slate-100">
-      {/* Header */}
-      <div className={`${CARD_STYLES} rounded-b-none`}>
-        <div className="flex flex-col">
-          <h2 className={TEXT_PAGE_TITLE}>Punto de Venta</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Gestiona tus ventas y cobros</p>
+      {/* Header - Hidden when cart view is active */}
+      {activeTab !== 'cart' && (
+        <div className={`${CARD_STYLES} rounded-b-none`}>
+          <div className="flex flex-col">
+            <h2 className={TEXT_PAGE_TITLE}>Punto de Venta</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Gestiona tus ventas y cobros</p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 relative overflow-hidden bg-slate-50 dark:bg-slate-900">
@@ -350,15 +356,16 @@ export const POSView: React.FC<POSViewProps> = () => {
           }`}
         >
           {/* Cart Header */}
-          <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-transparent">
-            <div className="flex items-center gap-2">
+          <div className={DETAIL_VIEW_HEADER}>
+            <div className="flex items-center">
               <button
                 onClick={() => setActiveTab('products')}
-                className="p-1 -ml-1 text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-100 font-medium"
+                className={ICON_BTN_CLOSE}
+                aria-label="Volver"
               >
-                ← Atrás
+                <ChevronLeftIcon className="w-5 h-5" />
               </button>
-              <h2 className="font-bold text-lg text-slate-900 dark:text-slate-100">Orden Actual</h2>
+              <h2 className={TEXT_DETAIL_HEADER_TITLE}>Orden Actual</h2>
             </div>
             <div className="text-sm font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full">
               Invitado
