@@ -17,6 +17,10 @@ export interface Transaction {
   paymentMethod?: string;
   amount: number;
   timestamp: string;
+  /** Cost of goods sold - only for POS sales (inflows from sales) */
+  costOfGoods?: number;
+  /** Gross profit = amount - costOfGoods */
+  grossProfit?: number;
 }
 
 // ============================================

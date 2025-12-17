@@ -271,11 +271,12 @@ export const POSView: React.FC<POSViewProps> = () => {
   const proceedPayment = () => {
     if (cart.length === 0) return;
 
-    // Map cart items to POSService format
+    // Map cart items to POSService format with cost for COGS tracking
     const items = cart.map((item) => ({
       product: { id: item.id, name: item.name, price: item.price } as Product,
       quantity: item.quantity,
       unitPrice: item.price,
+      cost: item.cost, // Include cost for COGS calculation
     }));
 
     POSService.completeSale(items, 'cash');

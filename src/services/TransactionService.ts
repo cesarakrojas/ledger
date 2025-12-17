@@ -37,15 +37,20 @@ const transactionStorage = createStorageAccessor<Transaction>(
 export const TransactionService = {
   /**
    * Add a new transaction
+   * @param costOfGoods - Optional: Cost of goods sold (for POS sales)
    */
   add: (
     type: 'inflow' | 'outflow',
     description: string,
     amount: number,
     category?: string,
-    paymentMethod?: string
+    paymentMethod?: string,
+    costOfGoods?: number
   ): Transaction | null => {
     const transactions = transactionStorage.get();
+    
+    // Calculate gross profit if COGS is provided
+    const grossProfit = costOfGoods !== undefined ? amount - costOfGoods : undefined;
     
     const newTransaction: Transaction = {
       id: generateId(),
@@ -54,7 +59,9 @@ export const TransactionService = {
       amount,
       timestamp: new Date().toISOString(),
       category,
-      paymentMethod
+      paymentMethod,
+      costOfGoods,
+      grossProfit
     };
     
     transactions.push(newTransaction);

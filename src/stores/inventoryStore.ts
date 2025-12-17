@@ -199,16 +199,27 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
 export const initializeInventoryStore = () => {
   useInventoryStore.getState().loadProducts();
   
-  // Listen for storage changes (multi-tab sync)
+  // Listen for storage changes (cross-tab sync via native StorageEvent)
   const handleStorageChange = (e: StorageEvent) => {
     if (e.key === STORAGE_KEYS.PRODUCTS) {
       useInventoryStore.getState().loadProducts();
     }
   };
   
+  // Listen for same-window storage changes (e.g., from POSService.completeSale)
+  // This is needed because POS calls InventoryService directly, bypassing the store
+  const handleSameWindowChange = () => {
+    useInventoryStore.getState().loadProducts();
+  };
+  
+  // Import the event name dynamically to avoid circular deps
+  const sameWindowEventName = `app:storage-change:${STORAGE_KEYS.PRODUCTS}`;
+  
   window.addEventListener('storage', handleStorageChange);
+  window.addEventListener(sameWindowEventName, handleSameWindowChange);
   
   return () => {
     window.removeEventListener('storage', handleStorageChange);
+    window.removeEventListener(sameWindowEventName, handleSameWindowChange);
   };
 };

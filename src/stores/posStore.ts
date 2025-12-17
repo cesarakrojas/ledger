@@ -16,6 +16,8 @@ export interface CartItem {
   id: string;
   name: string;
   price: number;
+  /** Cost per unit (for COGS calculation) */
+  cost: number;
   quantity: number;
   unit: string;
   category?: string;
@@ -102,6 +104,7 @@ export const usePOSStore = create<POSState>((set, get) => ({
           id: product.id,
           name: product.name,
           price: product.price,
+          cost: product.cost ?? 0,
           quantity: 1,
           unit: 'Uds',
           category: product.category,

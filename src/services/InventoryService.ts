@@ -226,6 +226,39 @@ export const InventoryService = {
   },
 
   /**
+   * Adjust stock quantity by a delta (positive to add, negative to subtract)
+   * Used by POS to decrement stock on sales
+   * @returns Updated product or null if failed
+   */
+  adjustStock: (productId: string, quantityDelta: number): Product | null => {
+    try {
+      const product = InventoryService.getById(productId);
+      if (!product) {
+        reportError(createError('validation', ERROR_MESSAGES.NOT_FOUND, 'Producto no encontrado'));
+        return null;
+      }
+      
+      const newQuantity = Math.max(0, product.quantity + quantityDelta);
+      return InventoryService.update(productId, { quantity: newQuantity });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      reportError(createError('storage', 'Error al ajustar stock', errorMsg));
+      return null;
+    }
+  },
+
+  /**
+   * Batch adjust stock for multiple products (used by POS for multi-item sales)
+   * @returns Array of results, each containing productId and success status
+   */
+  batchAdjustStock: (adjustments: { productId: string; quantityDelta: number }[]): { productId: string; success: boolean }[] => {
+    return adjustments.map(({ productId, quantityDelta }) => ({
+      productId,
+      success: InventoryService.adjustStock(productId, quantityDelta) !== null
+    }));
+  },
+
+  /**
    * Get all unique categories from products
    */
   getCategories: (): string[] => {

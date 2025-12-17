@@ -92,6 +92,23 @@ class StorageCache {
 const storageCache = new StorageCache();
 
 // ============================================
+// STORAGE EVENTS
+// ============================================
+
+/**
+ * Custom event name prefix for same-window storage sync.
+ * StorageEvent only fires in OTHER tabs, so we use custom events
+ * for same-window communication (e.g., POS → Inventory sync).
+ */
+export const STORAGE_CHANGE_EVENT_PREFIX = 'app:storage-change:';
+
+/**
+ * Get the custom event name for a storage key
+ */
+export const getStorageChangeEventName = (key: string) => 
+  `${STORAGE_CHANGE_EVENT_PREFIX}${key}`;
+
+// ============================================
 // STORAGE ACCESSOR
 // ============================================
 
@@ -152,11 +169,12 @@ export const createStorageAccessor = <T>(
       // Invalidate cache
       storageCache.invalidate(storageKey);
       
-      // Dispatch storage event for multi-tab sync if enabled
+      // Dispatch custom event for same-window sync if enabled
+      // Note: Native StorageEvent only fires in OTHER tabs, not the current one
+      // We use a custom event for same-window communication (e.g., POS → Inventory)
       if (options.dispatchEvents || saveOptions?.dispatchEvent) {
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: storageKey,
-          newValue: JSON.stringify(items)
+        window.dispatchEvent(new CustomEvent(getStorageChangeEventName(storageKey), {
+          detail: { key: storageKey }
         }));
       }
       

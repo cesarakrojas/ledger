@@ -31,6 +31,8 @@ export {
   LEGACY_KEYS,
   createStorageAccessor,
   checkStorageAvailability,
+  STORAGE_CHANGE_EVENT_PREFIX,
+  getStorageChangeEventName,
 } from './storage';
 export type { StorageAccessor, CreateStorageAccessorOptions } from './storage';
 
