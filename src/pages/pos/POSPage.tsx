@@ -20,16 +20,16 @@ const CATEGORIES = [
 ];
 
 const PRODUCTS = [
-  { id: '1', name: 'American Almonds', price: 12.71, category: 'grains', unit: 'kg' },
-  { id: '2', name: 'Kombucha (Pineapple)', price: 4.36, category: 'drinks', unit: 'Units' },
-  { id: '3', name: 'Dark Fantasy Choco', price: 13.31, category: 'sweets', unit: 'Units' },
-  { id: '4', name: 'Cheddar Cheese', price: 8.5, category: 'dairy', unit: 'kg' },
-  { id: '5', name: 'Chickpeas Dry', price: 5.2, category: 'grains', unit: 'kg' },
-  { id: '6', name: 'Coca Cola', price: 1.5, category: 'drinks', unit: 'Units' },
-  { id: '7', name: 'Corn Flakes', price: 4.99, category: 'grains', unit: 'Box' },
-  { id: '8', name: 'Energy Drink', price: 2.99, category: 'drinks', unit: 'Can' },
-  { id: '9', name: 'Potato Chips', price: 3.49, category: 'sweets', unit: 'Bag' },
-  { id: '10', name: 'Instant Noodles', price: 1.2, category: 'grains', unit: 'Cup' },
+  { id: '1', name: 'Almendras', price: 12.71, category: 'grains', unit: 'kg' },
+  { id: '2', name: 'Kombucha (Piña)', price: 4.36, category: 'drinks', unit: 'Uds' },
+  { id: '3', name: 'Chocolate Oscuro', price: 13.31, category: 'sweets', unit: 'Uds' },
+  { id: '4', name: 'Queso Cheddar', price: 8.5, category: 'dairy', unit: 'kg' },
+  { id: '5', name: 'Garbanzos Secos', price: 5.2, category: 'grains', unit: 'kg' },
+  { id: '6', name: 'Coca Cola', price: 1.5, category: 'drinks', unit: 'Uds' },
+  { id: '7', name: 'Hojuelas de Maíz', price: 4.99, category: 'grains', unit: 'Caja' },
+  { id: '8', name: 'Bebida Energética', price: 2.99, category: 'drinks', unit: 'Lata' },
+  { id: '9', name: 'Papas Fritas', price: 3.49, category: 'sweets', unit: 'Bolsa' },
+  { id: '10', name: 'Fideos Instantáneos', price: 1.2, category: 'grains', unit: 'Taza' },
 ];
 
 const ProductCard: React.FC<{ product: any; onAdd: (p: any) => void }> = ({ product, onAdd }) => {
@@ -50,7 +50,7 @@ const ProductCard: React.FC<{ product: any; onAdd: (p: any) => void }> = ({ prod
         <div className="flex-1">
           <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm leading-tight mb-1 line-clamp-2">{product.name}</h3>
           <div className="mt-2 flex items-center justify-between">
-            <span className="font-bold text-green-600 dark:text-green-400">{formatCurrency(product.price)}</span>
+            <span className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(product.price)}</span>
             <div className="text-xs text-gray-500 dark:text-gray-300">{product.unit}</div>
           </div>
         </div>
@@ -130,11 +130,12 @@ const POSPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen h-full animate-fade-in flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="w-full min-h-screen h-full animate-fade-in flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-t-2xl">
       <header className="bg-transparent border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="font-bold text-xl text-gray-900 dark:text-gray-100">Punto de Venta</h1>
-        </div>
+        <div className="flex flex-col">
+            <h2 className="font-bold text-xl text-gray-900 dark:text-gray-100">Punto de Venta</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Gestiona tus ventas y cobros</p>
+          </div>
       </header>
 
       <div className="flex-1 relative overflow-hidden">
@@ -147,7 +148,7 @@ const POSPage: React.FC = () => {
 
             <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
               {CATEGORIES.map(cat => (
-                <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat.id ? 'bg-indigo-600 text-white dark:bg-indigo-500' : 'bg-white border border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'}`}>
+                <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat.id ? (cat.id === 'all' ? 'bg-emerald-600 text-white dark:bg-emerald-500' : 'bg-indigo-600 text-white dark:bg-indigo-500') : 'bg-white border border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'}`}>
                   {cat.name}
                 </button>
               ))}
