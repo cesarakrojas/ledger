@@ -284,7 +284,7 @@ export const POSView: React.FC<POSViewProps> = () => {
   };
 
   return (
-    <div className="w-full space-y-6 animate-fade-in text-slate-900 dark:text-slate-100">
+    <div className="w-full animate-fade-in text-slate-900 dark:text-slate-100">
       {/* Header - Hidden when cart view is active */}
       {activeTab !== 'cart' && (
         <div className={`${CARD_STYLES} rounded-b-none`}>
