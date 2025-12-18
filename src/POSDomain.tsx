@@ -296,7 +296,7 @@ export const POSView: React.FC<POSViewProps> = () => {
       )}
 
       {/* Main Content Area */}
-      <div className="bg-slate-50 dark:bg-slate-900">
+      <div className="relative overflow-hidden bg-slate-50 dark:bg-slate-900">
         {/* Products View */}
         <div
           className={`flex flex-col transition-transform duration-300 ${
@@ -351,7 +351,7 @@ export const POSView: React.FC<POSViewProps> = () => {
 
         {/* Cart View */}
         <div
-          className={`absolute inset-0 bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
+          className={`absolute inset-0 z-40 bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
             activeTab === 'cart' ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
