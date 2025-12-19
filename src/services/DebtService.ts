@@ -262,6 +262,15 @@ export const DebtService = {
     const saved = debtStorage.save(debts);
     
     if (!saved) {
+      // Attempt best-effort rollback of the created transaction to avoid orphaned transaction
+      try {
+        const rolled = TransactionService.delete(transaction.id);
+        if (!rolled) {
+          reportError(createError('storage', 'Error crítico: la deuda no se pudo guardar y la reversión de la transacción falló. Requiere reconciliación manual.'));
+        }
+      } catch (err) {
+        reportError(createError('storage', 'Error crítico al intentar revertir la transacción después de fallo al guardar la deuda'));
+      }
       return null;
     }
     
@@ -345,6 +354,15 @@ export const DebtService = {
     const saved = debtStorage.save(debts);
     
     if (!saved) {
+      // Attempt best-effort rollback of the created transaction to avoid orphaned transaction
+      try {
+        const rolled = TransactionService.delete(transaction.id);
+        if (!rolled) {
+          reportError(createError('storage', 'Error crítico: el abono no se pudo guardar y la reversión de la transacción falló. Requiere reconciliación manual.'));
+        }
+      } catch (err) {
+        reportError(createError('storage', 'Error crítico al intentar revertir la transacción después de fallo al guardar el abono'));
+      }
       return null;
     }
     

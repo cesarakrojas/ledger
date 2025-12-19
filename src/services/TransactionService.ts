@@ -75,6 +75,19 @@ export const TransactionService = {
   },
 
   /**
+   * Delete a transaction by id (best-effort rollback)
+   * @returns true if deleted, false otherwise
+   */
+  delete: (transactionId: string): boolean => {
+    const transactions = transactionStorage.get();
+    const idx = transactions.findIndex(t => t.id === transactionId);
+    if (idx === -1) return false;
+    transactions.splice(idx, 1);
+    const saved = transactionStorage.save(transactions);
+    return !!saved;
+  },
+
+  /**
    * Get transactions with optional filters
    */
   getWithFilters: (filters: {
@@ -143,3 +156,4 @@ export const TransactionService = {
 export const addTransaction = TransactionService.add;
 export const getTransactionsWithFilters = TransactionService.getWithFilters;
 export const migrateTransactionCategoryName = TransactionService.migrateCategoryName;
+export const deleteTransaction = TransactionService.delete;

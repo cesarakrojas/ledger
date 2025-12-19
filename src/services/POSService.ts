@@ -58,11 +58,12 @@ export const POSService = {
     }));
     
     const adjustmentResults = InventoryService.batchAdjustStock(stockAdjustments);
-    
-    // Log any failed adjustments (but don't block the sale)
-    const failedAdjustments = adjustmentResults.filter(r => !r.success);
+
+    // Abort the sale if any inventory adjustment failed to avoid corrupting inventory state
+    const failedAdjustments = adjustmentResults.filter((r) => !r.success);
     if (failedAdjustments.length > 0) {
-      console.warn('Some inventory adjustments failed:', failedAdjustments);
+      console.error('Inventory adjustments failed; aborting sale. Failed adjustments:', failedAdjustments);
+      return null;
     }
     
     // Create transaction with COGS data
