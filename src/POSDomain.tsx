@@ -351,7 +351,7 @@ export const POSView: React.FC<POSViewProps> = () => {
 
         {/* Cart View */}
         <div
-          className={`absolute inset-0 z-40 bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
+          className={`absolute inset-0 z-70 bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
             activeTab === 'cart' ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
@@ -483,7 +483,8 @@ export const POSView: React.FC<POSViewProps> = () => {
 
         {/* Floating Cart Button */}
         <div
-          className={`fixed bottom-20 left-4 right-4 z-30 transition-all duration-300 transform ${
+          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}
+          className={`fixed left-4 right-4 z-60 transition-all duration-300 transform ${
             activeTab !== 'cart' && cart.length > 0 ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
           }`}
         >
