@@ -42,7 +42,8 @@ import {
   XMarkIcon,
   SearchIcon,
   RefreshIcon,
-  ConfirmationModal
+  ConfirmationModal,
+  ChevronLeftIcon,
 } from './components';
 import { InventoryService } from './services';
 import { useInventoryStore, useConfigStore, useUIStore } from './stores';
@@ -454,10 +455,12 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   return (
     <div className={DETAIL_VIEW_CONTAINER}>
       <div className={DETAIL_VIEW_HEADER}>
-        <h2 className={TEXT_DETAIL_HEADER_TITLE}>Producto</h2>
-        <button onClick={onClose} className={ICON_BTN_CLOSE} aria-label="Cerrar">
-          <XMarkIcon className="w-5 h-5" />
-        </button>
+        <div className="flex items-center">
+          <button onClick={onClose} className={ICON_BTN_CLOSE} aria-label="Volver">
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <h2 className={TEXT_DETAIL_HEADER_TITLE}>Producto</h2>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900 scroll-container">
@@ -614,7 +617,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }
 
   return (
-    <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
+    <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
       <ProductDetailView
         product={product}
         currencyCode={currencyCode}
@@ -668,13 +671,19 @@ export const ProductFormPage: React.FC<ProductFormPageProps> = ({ mode, productI
 
   return (
     <>
-      <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
+      <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
         <div className={`w-full ${CARD_FORM}`}>
           <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
-            <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-            <button onClick={onBack} className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`} aria-label="Cerrar">
-              <XMarkIcon className="w-6 h-6" />
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onBack}
+                className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
+                aria-label="Volver"
+              >
+                <ChevronLeftIcon className="w-6 h-6" />
+              </button>
+              <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Producto' : 'Nuevo Producto'}</h2>
+            </div>
           </div>
           <div className="flex-1 overflow-hidden px-6">
             <ProductForm

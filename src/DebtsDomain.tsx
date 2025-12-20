@@ -52,7 +52,8 @@ import {
   AlertCircleSmallIcon,
   DocumentTextIcon,
   CalendarSmallIcon,
-  ConfirmationModal
+  ConfirmationModal,
+  ChevronLeftIcon,
 } from './components';
 import { ContactService } from './services';
 import { useDebtStore, useConfigStore, useUIStore } from './stores';
@@ -612,10 +613,12 @@ export const DebtDetailView: React.FC<DebtDetailViewProps> = (props) => {
   return (
     <div className={DETAIL_VIEW_CONTAINER}>
       <div className={DETAIL_VIEW_HEADER}>
-        <h2 className={TEXT_DETAIL_HEADER_TITLE}>Deuda</h2>
-        <button onClick={handleClose} className={ICON_BTN_CLOSE} aria-label="Cerrar">
-          <XMarkIcon className="w-5 h-5" />
-        </button>
+        <div className="flex items-center">
+          <button onClick={handleClose} className={ICON_BTN_CLOSE} aria-label="Volver">
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <h2 className={TEXT_DETAIL_HEADER_TITLE}>Deuda</h2>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900 scroll-container">

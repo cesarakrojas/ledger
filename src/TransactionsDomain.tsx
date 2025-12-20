@@ -42,7 +42,8 @@ import {
   ExclamationCircleIcon,
   SearchIcon,
   TransactionItem,
-  DetailRow
+  DetailRow,
+  ChevronLeftIcon,
 } from './components';
 import { 
   useTransactionStore, 
@@ -673,11 +674,12 @@ export const TransactionDetailView: React.FC<TransactionDetailViewProps> = ({
     <div className={DETAIL_VIEW_CONTAINER}>
       
       <div className={DETAIL_VIEW_HEADER}>
-        <h2 className={TEXT_DETAIL_HEADER_TITLE}>Detalles</h2>
-
-        <button onClick={onClose} aria-label="Cerrar" className={ICON_BTN_CLOSE}>
-          <XMarkIcon className="w-5 h-5" />
-        </button>
+        <div className="flex items-center">
+          <button onClick={onClose} aria-label="Volver" className={ICON_BTN_CLOSE}>
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <h2 className={TEXT_DETAIL_HEADER_TITLE}>Detalles</h2>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900 scroll-container">
@@ -788,7 +790,7 @@ export const TransactionDetailPage: React.FC<TransactionDetailPageProps> = (prop
   };
 
   return (
-    <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
+    <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
       <TransactionDetailView
         transaction={transaction}
         onClose={handleClose}

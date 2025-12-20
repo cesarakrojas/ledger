@@ -13,7 +13,7 @@ const DebtDetailPage: React.FC = () => {
   // DebtDetailView now uses stores and router directly
   // Just pass the debt ID, it will look up the debt from store
   return (
-    <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
+    <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
       <DebtDetailView debtId={id} />
     </div>
   );

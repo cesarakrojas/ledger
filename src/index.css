@@ -61,6 +61,11 @@ html, body {
   .animate-slide-up {
     animation: slideUp 0.3s ease-out;
   }
+
+  /* Horizontal slide-in from the right for page-like panels */
+  .animate-slide-in-right {
+    animation: slideInRight 0.25s ease-out;
+  }
 }
 
 @keyframes fadeIn {
@@ -80,6 +85,17 @@ html, body {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
