@@ -349,12 +349,14 @@ export const POSView: React.FC<POSViewProps> = () => {
           </div>
         </div>
 
-        {/* Cart View */}
-        <div
-          className={`absolute inset-0 z-70 bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
-            activeTab === 'cart' ? 'translate-x-0' : 'translate-x-full'
-          }`}
-        >
+{/* Cart View */}
+      <div
+        // CHANGE 1: Use 'fixed' instead of 'absolute' so it covers the viewport
+        // CHANGE 2: Add 'h-[100dvh]' to force full dynamic height
+        className={`fixed inset-0 z-70 h-[100dvh] bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
+          activeTab === 'cart' ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
           {/* Cart Header */}
           <div className={DETAIL_VIEW_HEADER}>
             <div className="flex items-center">
