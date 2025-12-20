@@ -10,7 +10,7 @@
 // ============================================
 
 /** Base card styles (internal use) */
-const CARD_BASE = 'bg-white dark:bg-slate-800 shadow-lg rounded-2xl';
+const CARD_BASE = 'bg-white dark:bg-slate-800 shadow-lg';
 
 /** Standard card with padding */
 export const CARD_STYLES = `${CARD_BASE} p-6`;
@@ -54,7 +54,7 @@ export const CART_SUMMARY_OUTFLOW = 'bg-red-50 dark:bg-red-900/20 border border-
 export const DETAIL_VIEW_HEADER = 'flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0 z-10';
 
 /** Detail View Container (outer wrapper for detail modals) */
-export const DETAIL_VIEW_CONTAINER = 'w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 rounded-t-[2rem] overflow-hidden shadow-2xl';
+export const DETAIL_VIEW_CONTAINER = 'w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden shadow-2xl';
 
 /** Detail View Footer (action area at bottom) */
 export const DETAIL_VIEW_FOOTER = 'bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-4 safe-area-inset-bottom flex-shrink-0';
