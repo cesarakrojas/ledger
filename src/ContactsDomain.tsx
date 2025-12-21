@@ -570,31 +570,33 @@ export const ContactFormPage: React.FC<ContactFormPageProps> = ({ mode, contactI
   return (
     <>
       <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
-      <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
-        <div className={`w-full ${CARD_FORM}`}>
-          <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
-            <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Contacto' : 'Nuevo Contacto'}</h2>
-            <button onClick={onBack} className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`} aria-label="Cerrar">
-              <XMarkIcon className="w-6 h-6" />
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={onBack}
-                            className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
-                            aria-label="Volver"
-                          >
-                            <ChevronLeftIcon className="w-6 h-6" />
-                          </button>
-                          <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Contacto' : 'Nuevo Contacto'}</h2>
-                        </div>
-            </button>
-          </div>
-          <div className="flex-1 overflow-hidden px-6">
-            <ContactForm
-              contact={contact}
-              onSave={handleSave}
-              onCancel={onBack}
-              onDelete={mode === 'edit' ? handleDelete : undefined}
-            />
+        <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
+          <div className={`w-full ${CARD_FORM}`}>
+            <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={onBack}
+                  className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
+                  aria-label="Volver"
+                >
+                  <ChevronLeftIcon className="w-6 h-6" />
+                </button>
+                <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Contacto' : 'Nuevo Contacto'}</h2>
+              </div>
+
+              <button onClick={onBack} className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`} aria-label="Cerrar">
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-hidden px-6">
+              <ContactForm
+                contact={contact}
+                onSave={handleSave}
+                onCancel={onBack}
+                onDelete={mode === 'edit' ? handleDelete : undefined}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -36,7 +36,6 @@ import {
 import {
   ArrowUpIcon,
   ArrowDownIcon,
-  XMarkIcon,
   PencilIcon,
   PrinterIcon,
   ExclamationCircleIcon,

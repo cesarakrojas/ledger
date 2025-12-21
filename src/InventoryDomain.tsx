@@ -39,7 +39,6 @@ import {
   TrashIcon,
   ExclamationCircleIcon,
   PencilIcon,
-  XMarkIcon,
   SearchIcon,
   RefreshIcon,
   ConfirmationModal,
