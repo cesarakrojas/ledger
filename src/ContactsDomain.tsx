@@ -25,7 +25,6 @@ import {
   DETAIL_VIEW_FOOTER,
   TEXT_DETAIL_HEADER_TITLE,
   ICON_BTN_CLOSE,
-  CARD_FORM,
   TRANSITION_COLORS,
   DIVIDER,
   TOGGLE_BTN_BASE,
@@ -40,13 +39,12 @@ import {
   ExclamationCircleIcon,
   TrashIcon,
   PencilIcon,
-  XMarkIcon,
   PhoneIcon,
   ConfirmationModal,
   ChevronLeftIcon,
 } from './components';
 import { ContactService } from './services';
-import { useContactStore } from './stores';
+import { useContactStore, useUIStore } from './stores';
 import { paths } from './routes';
 
 // =============================================================================
@@ -540,6 +538,19 @@ export interface ContactFormPageProps {
 export const ContactFormPage: React.FC<ContactFormPageProps> = ({ mode, contactId, onBack }) => {
   const [contact, setContact] = useState<Contact | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const setHideAppShell = useUIStore(state => state.setHideAppShell);
+  const setHideBottomNav = useUIStore(state => state.setHideBottomNav);
+
+  // Hide app shell and bottom nav when mounted (full-screen overlay pattern)
+  useEffect(() => {
+    setHideAppShell(true);
+    setHideBottomNav(true);
+    
+    return () => {
+      setHideAppShell(false);
+      setHideBottomNav(false);
+    };
+  }, [setHideAppShell, setHideBottomNav]);
 
   useEffect(() => {
     if (mode === 'edit' && contactId) {
@@ -569,34 +580,30 @@ export const ContactFormPage: React.FC<ContactFormPageProps> = ({ mode, contactI
 
   return (
     <>
-      <div className="w-full h-full mx-auto animate-fade-in flex items-stretch">
-        <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
-          <div className={`w-full ${CARD_FORM}`}>
-            <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={onBack}
-                  className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
-                  aria-label="Volver"
-                >
-                  <ChevronLeftIcon className="w-6 h-6" />
-                </button>
-                <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Contacto' : 'Nuevo Contacto'}</h2>
-              </div>
+      <div className="w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden animate-fade-in">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onBack}
+              className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`}
+              aria-label="Volver"
+            >
+              <ChevronLeftIcon className="w-6 h-6" />
+            </button>
+            <h2 className={TEXT_PAGE_TITLE}>{mode === 'edit' ? 'Editar Contacto' : 'Nuevo Contacto'}</h2>
+          </div>
+        </div>
 
-              <button onClick={onBack} className={`p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg ${TRANSITION_COLORS}`} aria-label="Cerrar">
-                <XMarkIcon className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-hidden px-6">
-              <ContactForm
-                contact={contact}
-                onSave={handleSave}
-                onCancel={onBack}
-                onDelete={mode === 'edit' ? handleDelete : undefined}
-              />
-            </div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-800">
+          <div className="px-6 py-4">
+            <ContactForm
+              contact={contact}
+              onSave={handleSave}
+              onCancel={onBack}
+              onDelete={mode === 'edit' ? handleDelete : undefined}
+            />
           </div>
         </div>
       </div>

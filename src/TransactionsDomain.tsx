@@ -760,6 +760,19 @@ export const TransactionDetailPage: React.FC<TransactionDetailPageProps> = (prop
   // Use stores with selectors for performance
   const transactions = useTransactionStore(state => state.transactions);
   const storeCurrencyCode = useConfigStore(state => state.currencyCode);
+  const setHideAppShell = useUIStore(state => state.setHideAppShell);
+  const setHideBottomNav = useUIStore(state => state.setHideBottomNav);
+  
+  // Hide app shell and bottom nav when mounted (full-screen overlay pattern)
+  React.useEffect(() => {
+    setHideAppShell(true);
+    setHideBottomNav(true);
+    
+    return () => {
+      setHideAppShell(false);
+      setHideBottomNav(false);
+    };
+  }, [setHideAppShell, setHideBottomNav]);
   
   // Resolve transaction - from props or by looking up ID in store
   const transaction = props.transaction ?? 
@@ -789,7 +802,7 @@ export const TransactionDetailPage: React.FC<TransactionDetailPageProps> = (prop
   };
 
   return (
-    <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
+    <div className="w-full h-full animate-fade-in">
       <TransactionDetailView
         transaction={transaction}
         onClose={handleClose}

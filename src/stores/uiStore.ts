@@ -27,6 +27,10 @@ interface UIState {
   setMenuOpen: (open: boolean) => void;
   toggleMenu: () => void;
   
+  // App shell visibility (for full-screen overlay pages)
+  hideAppShell: boolean;
+  setHideAppShell: (hide: boolean) => void;
+  
   // Bottom nav visibility (for programmatic hiding from components)
   hideBottomNav: boolean;
   setHideBottomNav: (hide: boolean) => void;
@@ -48,6 +52,11 @@ export const useUIStore = create<UIState>((set) => ({
   setMenuOpen: (open) => set({ isMenuOpen: open }),
   
   toggleMenu: () => set((state) => ({ isMenuOpen: !state.isMenuOpen })),
+  
+  // App shell visibility (header + gradient background)
+  hideAppShell: false,
+  
+  setHideAppShell: (hide) => set({ hideAppShell: hide }),
   
   // Bottom nav visibility
   hideBottomNav: false,

@@ -226,18 +226,23 @@ export const POSView: React.FC<POSViewProps> = () => {
   // UI store
   const showSuccessModal = useUIStore((state) => state.showSuccessModal);
   const setHideBottomNav = useUIStore((state) => state.setHideBottomNav);
+  const setHideAppShell = useUIStore((state) => state.setHideAppShell);
 
   // Load products on mount
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
 
-  // Hide bottom nav when cart view is active
+  // Hide bottom nav and app shell when cart view is active (full-screen overlay)
   useEffect(() => {
     setHideBottomNav(activeTab === 'cart');
+    setHideAppShell(activeTab === 'cart');
     // Reset when unmounting
-    return () => setHideBottomNav(false);
-  }, [activeTab, setHideBottomNav]);
+    return () => {
+      setHideBottomNav(false);
+      setHideAppShell(false);
+    };
+  }, [activeTab, setHideBottomNav, setHideAppShell]);
 
   // Filter products by category and search
   const filteredProducts = useMemo(() => {
@@ -349,11 +354,9 @@ export const POSView: React.FC<POSViewProps> = () => {
           </div>
         </div>
 
-{/* Cart View */}
+{/* Cart View - Full screen overlay above everything except modals */}
       <div
-        // CHANGE 1: Use 'fixed' instead of 'absolute' so it covers the viewport
-        // CHANGE 2: Add 'h-[100dvh]' to force full dynamic height
-        className={`fixed inset-0 z-70 h-[100dvh] bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
+        className={`fixed inset-0 z-[60] bg-white dark:bg-slate-800 flex flex-col transition-transform duration-300 ${
           activeTab === 'cart' ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -483,10 +486,10 @@ export const POSView: React.FC<POSViewProps> = () => {
           </div>
         </div>
 
-        {/* Floating Cart Button */}
+        {/* Floating Cart Button - Above bottom nav (z-50), below cart overlay */}
         <div
           style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}
-          className={`fixed left-4 right-4 z-60 transition-all duration-300 transform ${
+          className={`fixed left-4 right-4 z-[55] transition-all duration-300 transform ${
             activeTab !== 'cart' && cart.length > 0 ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
           }`}
         >

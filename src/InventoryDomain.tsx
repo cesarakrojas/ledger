@@ -569,6 +569,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const updateProduct = useInventoryStore(state => state.updateProduct);
   const storeCurrencyCode = useConfigStore(state => state.currencyCode);
   const showSuccessModal = useUIStore(state => state.showSuccessModal);
+  const setHideAppShell = useUIStore(state => state.setHideAppShell);
+  const setHideBottomNav = useUIStore(state => state.setHideBottomNav);
+  
+  // Hide app shell and bottom nav when mounted (full-screen overlay pattern)
+  useEffect(() => {
+    setHideAppShell(true);
+    setHideBottomNav(true);
+    
+    return () => {
+      setHideAppShell(false);
+      setHideBottomNav(false);
+    };
+  }, [setHideAppShell, setHideBottomNav]);
   
   // Resolve product - from props or by looking up ID in store
   const product = props.product ?? 
@@ -616,7 +629,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }
 
   return (
-    <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
+    <div className="w-full h-full animate-fade-in">
       <ProductDetailView
         product={product}
         currencyCode={currencyCode}

@@ -70,7 +70,7 @@ const calculateTotals = (cart: CartItem[]) => {
 // Store Implementation
 // ============================================
 
-export const usePOSStore = create<POSState>((set, get) => ({
+export const usePOSStore = create<POSState>((set) => ({
   // Initial cart state
   cart: [],
   subtotal: 0,

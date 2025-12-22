@@ -41,6 +41,7 @@ const AppLayout: React.FC = () => {
   const setMenuOpen = useUIStore(state => state.setMenuOpen);
   const successModal = useUIStore(state => state.successModal);
   const hideSuccessModal = useUIStore(state => state.hideSuccessModal);
+  const hideAppShell = useUIStore(state => state.hideAppShell);
   
   // Sync theme from DOM on mount (stores are initialized in main.tsx)
   useEffect(() => {
@@ -122,6 +123,38 @@ const AppLayout: React.FC = () => {
   };
   
   const showBottomNav = shouldShowBottomNav();
+  
+  // When app shell is hidden (full-screen overlay pages), render minimal layout
+  if (hideAppShell) {
+    return (
+      <div className="h-screen text-slate-900 dark:text-slate-200 transition-colors duration-300 font-sans flex flex-col overflow-hidden">
+        {/* Main Content Area - Full screen for overlay pages */}
+        <main className="flex flex-col items-center flex-1 overflow-hidden min-h-0">
+          <React.Suspense fallback={
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+            </div>
+          }>
+            <Outlet />
+          </React.Suspense>
+        </main>
+        
+        {/* Success Modal - Still available for overlay pages */}
+        <SuccessModal
+          isOpen={successModal.isOpen}
+          onClose={() => {
+            hideSuccessModal();
+          }}
+          title={successModal.title}
+          message={successModal.message}
+          type={successModal.type}
+        />
+        
+        {/* Global Error Notifications */}
+        <ErrorNotification />
+      </div>
+    );
+  }
   
   return (
     <div className="h-screen text-slate-900 dark:text-slate-200 transition-colors duration-300 font-sans flex flex-col overflow-hidden">

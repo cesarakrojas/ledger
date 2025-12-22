@@ -1,19 +1,33 @@
 /**
  * DebtDetailPage.tsx - Page for viewing debt details
- * Now simplified - DebtDetailView uses stores directly
+ * Full-screen overlay pattern - hides app shell header and bottom nav
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { DebtDetailView } from '../../DebtsDomain';
+import { useUIStore } from '../../stores';
 
 const DebtDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const setHideAppShell = useUIStore(state => state.setHideAppShell);
+  const setHideBottomNav = useUIStore(state => state.setHideBottomNav);
+  
+  // Hide app shell and bottom nav when mounted (full-screen overlay pattern)
+  useEffect(() => {
+    setHideAppShell(true);
+    setHideBottomNav(true);
+    
+    return () => {
+      setHideAppShell(false);
+      setHideBottomNav(false);
+    };
+  }, [setHideAppShell, setHideBottomNav]);
   
   // DebtDetailView now uses stores and router directly
   // Just pass the debt ID, it will look up the debt from store
   return (
-    <div className="w-full h-full mx-auto animate-fade-in animate-slide-in-right flex items-stretch">
+    <div className="w-full h-full animate-fade-in">
       <DebtDetailView debtId={id} />
     </div>
   );

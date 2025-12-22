@@ -50,11 +50,14 @@ export const CART_SUMMARY_OUTFLOW = 'bg-red-50 dark:bg-red-900/20 border border-
 // DETAIL VIEW STYLES
 // ============================================
 
+/** Full-screen overlay container for detail/form pages - covers entire viewport */
+export const FULL_SCREEN_OVERLAY = 'w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden';
+
 /** Detail View Header (TransactionDetailView, ProductDetailView, DebtDetailView, ContactDetailView) */
 export const DETAIL_VIEW_HEADER = 'flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0 z-10';
 
-/** Detail View Container (outer wrapper for detail modals) */
-export const DETAIL_VIEW_CONTAINER = 'w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden shadow-2xl';
+/** Detail View Container (outer wrapper for detail modals) - now uses full screen */
+export const DETAIL_VIEW_CONTAINER = 'w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden';
 
 /** Detail View Footer (action area at bottom) */
 export const DETAIL_VIEW_FOOTER = 'bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-4 safe-area-inset-bottom flex-shrink-0';
