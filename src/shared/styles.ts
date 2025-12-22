@@ -172,7 +172,7 @@ export const BTN_HEADER_OUTFLOW = 'flex items-center justify-center gap-2 bg-red
 export const BTN_ACTION_PRIMARY = 'flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/30 transition-transform transform hover:scale-105';
 
 /** Page action button - secondary */
-export const BTN_ACTION_SECONDARY = 'flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500 text-slate-700 dark:text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105';
+export const BTN_ACTION_SECONDARY = 'flex items-center justify-center gap-2 bg-orange-500 text-white border border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700 dark:text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105';
 
 // ============================================
 // TOGGLE BUTTON STYLES

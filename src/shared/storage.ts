@@ -23,6 +23,9 @@ export const STORAGE_KEYS = {
   // Inventory/Product data
   PRODUCTS: 'app_products',
   
+  // Purchase records (for drill-down from expense transactions)
+  PURCHASES: 'app_purchases',
+  
   // Debt management data
   DEBTS: 'app_debts',
   

@@ -19,6 +19,8 @@ export { InventoryService } from './InventoryService';
 export { DebtService } from './DebtService';
 export { ContactService } from './ContactService';
 export { POSService } from './POSService';
+export { PurchaseService } from './PurchaseService';
+export type { PurchaseRecord, PurchaseRecordItem } from './PurchaseService';
 
 // ============================================
 // LEGACY FUNCTION EXPORTS

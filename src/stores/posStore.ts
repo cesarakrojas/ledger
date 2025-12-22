@@ -33,6 +33,9 @@ interface POSState {
   total: number;
   itemCount: number;
   
+  // Sale options
+  paymentMethod: string;
+  
   // UI state
   activeTab: 'products' | 'cart';
   selectedCategory: string;
@@ -45,6 +48,9 @@ interface POSState {
   updateCartItem: (id: string, updates: Partial<Pick<CartItem, 'quantity' | 'price'>>) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
+  
+  // Sale option actions
+  setPaymentMethod: (method: string) => void;
   
   // UI actions
   setActiveTab: (tab: 'products' | 'cart') => void;
@@ -77,6 +83,9 @@ export const usePOSStore = create<POSState>((set) => ({
   tax: 0,
   total: 0,
   itemCount: 0,
+  
+  // Initial sale options
+  paymentMethod: 'Efectivo',
   
   // Initial UI state
   activeTab: 'products',
@@ -166,11 +175,15 @@ export const usePOSStore = create<POSState>((set) => ({
       tax: 0,
       total: 0,
       itemCount: 0,
+      paymentMethod: 'Efectivo',
       editingItem: null,
       numpadValue: '0',
       activeTab: 'products',
     });
   },
+  
+  // Sale option actions
+  setPaymentMethod: (method) => set({ paymentMethod: method }),
   
   // UI actions
   setActiveTab: (tab) => set({ activeTab: tab }),

@@ -47,7 +47,8 @@ export const InventoryService = {
       products = products.filter(p => 
         p.name.toLowerCase().includes(term) || 
         p.description?.toLowerCase().includes(term) ||
-        p.category?.toLowerCase().includes(term)
+        p.category?.toLowerCase().includes(term) ||
+        p.barcode?.toLowerCase().includes(term)
       );
     }
     
@@ -94,7 +95,8 @@ export const InventoryService = {
     cost: number,
     quantity: number = 0,
     description?: string,
-    category?: string
+    category?: string,
+    barcode?: string
   ): Product | null => {
     try {
       // Validation
@@ -125,6 +127,7 @@ export const InventoryService = {
         cost,
         quantity: Math.max(0, quantity),
         category: category?.trim(),
+        barcode: barcode?.trim(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -153,6 +156,7 @@ export const InventoryService = {
       cost?: number;
       category?: string;
       quantity?: number;
+      barcode?: string;
     }
   ): Product | null => {
     try {

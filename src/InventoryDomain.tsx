@@ -31,7 +31,8 @@ import {
   ICON_BG_EMERALD,
   TEXT_AMOUNT_INFLOW,
   formatCurrency,
-  formatDate
+  formatDate,
+  BTN_ACTION_SECONDARY
 } from './shared';
 import {
   PlusIcon,
@@ -39,11 +40,11 @@ import {
   TrashIcon,
   ExclamationCircleIcon,
   PencilIcon,
-  SearchIcon,
   RefreshIcon,
   ConfirmationModal,
   ChevronLeftIcon,
 } from './components';
+import { BarcodeScanButton } from './components/barcode';
 import { InventoryService } from './services';
 import { useInventoryStore, useConfigStore, useUIStore } from './stores';
 import { paths } from './routes';
@@ -102,14 +103,34 @@ export const InventoryView: React.FC<InventoryViewProps> = (props) => {
                 Gestiona tus productos
               </p>
             </div>
-            <button className="p-2 text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-              <SearchIcon className="w-6 h-6" />
+            <BarcodeScanButton
+              onScan={(result) => {
+                // Find product by barcode and navigate to detail
+                const product = products.find(p => p.barcode === result.barcode);
+                if (product) {
+                  handleViewProduct(product);
+                } else {
+                  // Show feedback if not found
+                  alert(`Producto con código ${result.barcode} no encontrado`);
+                }
+              }}
+              title="Buscar Producto"
+              subtitle="Escanea el código de barras para ver el producto"
+              variant="ghost"
+              iconOnly
+              size="lg"
+            />
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button onClick={() => navigate(paths.inventoryPurchase())} className={BTN_ACTION_SECONDARY}>
+              <RefreshIcon className="w-4 h-4" />
+              Registrar Compra
+            </button>
+            <button onClick={handleCreateProduct} className={BTN_ACTION_PRIMARY}>
+              <PlusIcon className="w-5 h-5" />
+              Nuevo Producto
             </button>
           </div>
-          <button onClick={handleCreateProduct} className={BTN_ACTION_PRIMARY}>
-            <PlusIcon className="w-5 h-5" />
-            Nuevo Producto
-          </button>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center mb-6">
@@ -220,6 +241,7 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
   const [cost, setCost] = useState('');
   const [category, setCategory] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [barcode, setBarcode] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -231,6 +253,7 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
       setCost(product.cost !== undefined && product.cost !== null ? product.cost.toString() : '0');
       setCategory(product.category || '');
       setQuantity(product.quantity !== undefined && product.quantity !== null ? product.quantity.toString() : '');
+      setBarcode(product.barcode || '');
     } else {
       setName('');
       setDescription('');
@@ -238,6 +261,7 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
       setCost('');
       setCategory('');
       setQuantity('');
+      setBarcode('');
     }
   }, [product]);
 
@@ -296,7 +320,8 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
           price: parseFloat(price),
           cost: parseFloat(cost),
           category: category || undefined,
-          quantity: parseInt(quantity)
+          quantity: parseInt(quantity),
+          barcode: barcode || undefined
         });
       } else {
         result = createProduct(
@@ -305,7 +330,8 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
           parseFloat(cost),
           parseInt(quantity),
           description || undefined,
-          category || undefined
+          category || undefined,
+          barcode || undefined
         );
       }
       
@@ -371,6 +397,31 @@ export const ProductForm: React.FC<ProductFormProps> = (props) => {
             <label className={FORM_LABEL}>Cantidad Disponible <span className="text-red-500">*</span></label>
             <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" min="0" required className={INPUT_BASE_CLASSES} />
           </div>
+        </div>
+
+        {/* Barcode Field with Scanner */}
+        <div>
+          <label className={FORM_LABEL}>Código de Barras</label>
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              value={barcode} 
+              onChange={(e) => setBarcode(e.target.value)} 
+              placeholder="Ej: 7501234567890" 
+              className={`${INPUT_BASE_CLASSES} flex-1`} 
+            />
+            <BarcodeScanButton
+              onScan={(result) => setBarcode(result.barcode)}
+              title="Escanear Código"
+              subtitle="Escanea el código de barras del producto"
+              variant="secondary"
+              iconOnly
+              size="md"
+            />
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Escanea o ingresa el código de barras/SKU del producto
+          </p>
         </div>
       </div>
 

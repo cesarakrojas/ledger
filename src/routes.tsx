@@ -18,6 +18,7 @@ const TransactionDetailPage = React.lazy(() => import('./pages/TransactionDetail
 const InventoryPage = React.lazy(() => import('./pages/inventory/InventoryPage'));
 const ProductDetailPage = React.lazy(() => import('./pages/inventory/ProductDetailPage'));
 const ProductFormPage = React.lazy(() => import('./pages/inventory/ProductFormPage'));
+const PurchasePage = React.lazy(() => import('./pages/inventory/PurchasePage'));
 
 // Libreta (Debts) routes
 const LibretaPage = React.lazy(() => import('./pages/libreta/LibretaPage'));
@@ -56,6 +57,7 @@ export const ROUTES = {
   INVENTORY_NEW: '/inventory/new',
   INVENTORY_EDIT: '/inventory/:id/edit',
   INVENTORY_DETAIL: '/inventory/:id',
+  INVENTORY_PURCHASE: '/inventory/purchase',
   
   // Libreta (Debts)
   LIBRETA: '/libreta',
@@ -94,6 +96,7 @@ export const paths = {
   inventoryNew: () => ROUTES.INVENTORY_NEW,
   inventoryEdit: (id: string) => `/inventory/${id}/edit`,
   inventoryDetail: (id: string) => `/inventory/${id}`,
+  inventoryPurchase: () => ROUTES.INVENTORY_PURCHASE,
   
   libreta: () => ROUTES.LIBRETA,
   libretaNew: () => ROUTES.LIBRETA_NEW,
@@ -132,6 +135,7 @@ export const router = createBrowserRouter([
       // Inventory
       { path: 'inventory', element: <InventoryPage /> },
       { path: 'inventory/new', element: <ProductFormPage /> },
+      { path: 'inventory/purchase', element: <PurchasePage /> },
       { path: 'inventory/:id/edit', element: <ProductFormPage /> },
       { path: 'inventory/:id', element: <ProductDetailPage /> },
       

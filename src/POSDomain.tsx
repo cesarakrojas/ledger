@@ -16,6 +16,7 @@ import {
   XMarkIcon,
   ChevronLeftIcon,
 } from './components/icons';
+import { BarcodeScanButton } from './components/barcode';
 import { POSService } from './services';
 import {
   CARD_STYLES,
@@ -29,7 +30,7 @@ import {
   ICON_BTN_CLOSE,
   formatCurrency,
 } from './shared';
-import { usePOSStore, useInventoryStore, useUIStore } from './stores';
+import { usePOSStore, useInventoryStore, useUIStore, useConfigStore } from './stores';
 import type { Product } from './shared';
 import type { CartItem } from './stores/posStore';
 
@@ -211,6 +212,7 @@ export const POSView: React.FC<POSViewProps> = () => {
   const searchQuery = usePOSStore((state) => state.searchQuery);
   const editingItem = usePOSStore((state) => state.editingItem);
   const numpadValue = usePOSStore((state) => state.numpadValue);
+  const paymentMethod = usePOSStore((state) => state.paymentMethod);
 
   // POS actions
   const addToCart = usePOSStore((state) => state.addToCart);
@@ -222,6 +224,10 @@ export const POSView: React.FC<POSViewProps> = () => {
   const setSearchQuery = usePOSStore((state) => state.setSearchQuery);
   const setEditingItem = usePOSStore((state) => state.setEditingItem);
   const setNumpadValue = usePOSStore((state) => state.setNumpadValue);
+  const setPaymentMethod = usePOSStore((state) => state.setPaymentMethod);
+
+  // Config store for payment methods
+  const paymentMethods = useConfigStore((state) => state.paymentMethods);
 
   // UI store
   const showSuccessModal = useUIStore((state) => state.showSuccessModal);
@@ -283,7 +289,7 @@ export const POSView: React.FC<POSViewProps> = () => {
       cost: item.cost, // Include cost for COGS calculation
     }));
 
-    POSService.completeSale(items, 'cash');
+    POSService.completeSale(items, paymentMethod);
     clearCart();
     showSuccessModal('Venta Completada', `Total cobrado: ${formatCurrency(total)}`);
   };
@@ -310,13 +316,33 @@ export const POSView: React.FC<POSViewProps> = () => {
         >
           {/* Search and Categories */}
           <div className="px-4 py-3 z-10 bg-white dark:bg-slate-800">
-            <div className="relative mb-3">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-200" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar productos..."
-                className={`${INPUT_BASE_CLASSES} pl-9`}
+            <div className="flex gap-2 mb-3">
+              <div className="relative flex-1">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-200" />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar productos..."
+                  className={`${INPUT_BASE_CLASSES} pl-9`}
+                />
+              </div>
+              <BarcodeScanButton
+                onScan={(result) => {
+                  // Find product by barcode and add to cart
+                  const product = products.find(p => p.barcode === result.barcode);
+                  if (product) {
+                    addToCart(product);
+                    showSuccessModal('Producto Agregado', `${product.name} añadido al carrito`);
+                  } else {
+                    // Fall back to search if no exact match
+                    setSearchQuery(result.barcode);
+                  }
+                }}
+                title="Escanear Producto"
+                subtitle="Escanea el código de barras para agregar al carrito"
+                variant="primary"
+                iconOnly
+                size="md"
               />
             </div>
 
@@ -456,6 +482,28 @@ export const POSView: React.FC<POSViewProps> = () => {
                     <div className="w-5 h-5 text-slate-500 dark:text-slate-300 mb-1" />
                     <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Acciones</span>
                   </button>
+                </div>
+
+                {/* Payment Method Selector */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    Método de Pago
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {paymentMethods.map((method) => (
+                      <button
+                        key={method}
+                        onClick={() => setPaymentMethod(method)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          paymentMethod === method
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
+                        }`}
+                      >
+                        {method}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-1 pt-2 border-t border-dashed border-slate-200 dark:border-slate-700">

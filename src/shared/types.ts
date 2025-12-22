@@ -21,6 +21,8 @@ export interface Transaction {
   costOfGoods?: number;
   /** Gross profit = amount - costOfGoods */
   grossProfit?: number;
+  /** Reference to purchase record - for inventory purchases (outflows) */
+  purchaseId?: string;
 }
 
 // ============================================
@@ -50,6 +52,8 @@ export interface Product {
   /** Stock quantity for the product */
   quantity: number;
   category?: string;
+  /** Barcode/SKU for the product */
+  barcode?: string;
   createdAt: string;
   updatedAt: string;
 }

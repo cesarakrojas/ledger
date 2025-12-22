@@ -32,7 +32,8 @@ interface InventoryState {
     cost: number,
     quantity?: number,
     description?: string,
-    category?: string
+    category?: string,
+    barcode?: string
   ) => Product | null;
   updateProduct: (
     productId: string,
@@ -43,6 +44,7 @@ interface InventoryState {
       cost?: number;
       category?: string;
       quantity?: number;
+      barcode?: string;
     }
   ) => Product | null;
   deleteProduct: (productId: string) => boolean;
@@ -84,8 +86,8 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   /**
    * Create a new product with optimistic update
    */
-  createProduct: (name, price, cost, quantity = 0, description, category) => {
-    const result = InventoryService.create(name, price, cost, quantity, description, category);
+  createProduct: (name, price, cost, quantity = 0, description, category, barcode) => {
+    const result = InventoryService.create(name, price, cost, quantity, description, category, barcode);
     if (result) {
       // Optimistic update: add new product to state
       set(state => ({

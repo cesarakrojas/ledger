@@ -22,3 +22,6 @@ export * from './navigation';
 
 // List components
 export * from './list';
+
+// Barcode components
+export * from './barcode';
