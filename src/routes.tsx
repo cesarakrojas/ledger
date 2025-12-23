@@ -165,6 +165,8 @@ export const router = createBrowserRouter([
       { path: '*', element: <NotFoundPage /> },
     ],
   },
-]);
+], {
+  basename: "/ledger" // This aligns your app with the GitHub Pages subfolder
+});
 
 export default router;
