@@ -1,0 +1,1 @@
+import{j as o}from"./index-BtpNWAWx.js";import{H as r}from"./TransactionsDomain-v5cpisV2.js";import"./styles-CB0P9xDY.js";import"./formatters-BcPrGXqa.js";import"./index-CFVEre9y.js";import"./DetailRow-C46saKBt.js";const a=()=>o.jsx(r,{});export{a as default};

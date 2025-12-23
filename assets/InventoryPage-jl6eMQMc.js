@@ -1,1 +1,0 @@
-import{j as r}from"./index-Bh3Pq5fI.js";import{I as t}from"./InventoryDomain-DZVXJDLb.js";import"./styles-QfzEYZlC.js";import"./formatters-BwYXHfTr.js";import"./index-DI_LCI5M.js";import"./ConfirmationModal-Ddw5aS5i.js";const s=()=>r.jsx(t,{});export{s as default};
