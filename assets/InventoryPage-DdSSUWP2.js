@@ -1,0 +1,1 @@
+import{j as r}from"./index-CD6owFN-.js";import{I as t}from"./InventoryDomain-C4tf7pA5.js";import"./styles-CB0P9xDY.js";import"./formatters-DWUGc6Uu.js";import"./index-CBIxuy-n.js";import"./ConfirmationModal-GX6oKTMN.js";import"./BarcodeScanner-CswRsYnW.js";const a=()=>r.jsx(t,{});export{a as default};

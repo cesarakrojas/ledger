@@ -1,1 +1,0 @@
-import{D as a,A as n}from"./index-BtpNWAWx.js";const s=(t,e=a)=>{if(t===void 0)return"$0.00";const r=n(e),o=t.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,",");return`${r} ${o}`},c=t=>new Date(t).toLocaleDateString("es-ES",{year:"numeric",month:"long",day:"numeric"}),m=t=>new Date(t).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});export{c as a,m as b,s as f};

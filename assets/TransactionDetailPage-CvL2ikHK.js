@@ -1,1 +1,0 @@
-import{f as a,j as r}from"./index-BtpNWAWx.js";import{T as o}from"./TransactionsDomain-v5cpisV2.js";import"./styles-CB0P9xDY.js";import"./formatters-BcPrGXqa.js";import"./index-CFVEre9y.js";import"./DetailRow-C46saKBt.js";const c=()=>{const{id:t}=a();return r.jsx(o,{transactionId:t})};export{c as default};
