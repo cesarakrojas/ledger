@@ -1,0 +1,1 @@
+import{j as t}from"./index-D08kE7DX.js";import{C as o}from"./ContactsDomain-C7y-fcQb.js";import"./styles-CB0P9xDY.js";import"./formatters-D9zA15X6.js";import"./index-Cn89rPqp.js";import"./ConfirmationModal-D8-a72df.js";const a=()=>t.jsx(o,{});export{a as default};

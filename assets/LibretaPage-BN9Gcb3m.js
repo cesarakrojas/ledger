@@ -1,1 +1,0 @@
-import{j as r}from"./index-CD6owFN-.js";import{L as t}from"./DebtsDomain-C5AGKy70.js";import"./styles-CB0P9xDY.js";import"./formatters-DWUGc6Uu.js";import"./index-CBIxuy-n.js";import"./ConfirmationModal-GX6oKTMN.js";import"./DetailRow-D8yzI8xM.js";const x=()=>r.jsx(t,{});export{x as default};

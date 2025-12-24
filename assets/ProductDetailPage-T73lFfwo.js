@@ -1,1 +1,0 @@
-import{f as r,j as o}from"./index-CD6owFN-.js";import{P as a}from"./InventoryDomain-C4tf7pA5.js";import"./styles-CB0P9xDY.js";import"./formatters-DWUGc6Uu.js";import"./index-CBIxuy-n.js";import"./ConfirmationModal-GX6oKTMN.js";import"./BarcodeScanner-CswRsYnW.js";const P=()=>{const{id:t}=r();return o.jsx(a,{productId:t})};export{P as default};
