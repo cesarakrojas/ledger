@@ -24,7 +24,7 @@ import { BarcodeScanButton } from './components/barcode';
 import { PurchaseService } from './services';
 import {
   DETAIL_VIEW_HEADER,
-  TEXT_DETAIL_HEADER_TITLE,
+  TEXT_PAGE_TITLE,
   ICON_BTN_CLOSE,
   INPUT_BASE_CLASSES,
   BTN_FOOTER_DANGER,
@@ -563,7 +563,7 @@ export const PurchaseView: React.FC<PurchaseViewProps> = ({ onClose }) => {
           <button onClick={handleClose} className={ICON_BTN_CLOSE} aria-label="Volver">
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
-          <h2 className={TEXT_DETAIL_HEADER_TITLE}>Registrar Compra</h2>
+          <h2 className={TEXT_PAGE_TITLE}>Registrar Compra</h2>
         </div>
         
         {/* Low Stock Toggle */}
@@ -692,7 +692,7 @@ export const PurchaseView: React.FC<PurchaseViewProps> = ({ onClose }) => {
             <button onClick={() => setActiveTab('products')} className={ICON_BTN_CLOSE} aria-label="Volver">
               <ChevronLeftIcon className="w-5 h-5" />
             </button>
-            <h2 className={TEXT_DETAIL_HEADER_TITLE}>Carrito de Compra</h2>
+            <h2 className={TEXT_PAGE_TITLE}>Carrito de Compra</h2>
           </div>
           <div className="text-sm font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full">
             {itemCount} productos

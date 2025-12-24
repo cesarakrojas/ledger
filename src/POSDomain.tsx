@@ -26,7 +26,6 @@ import {
   BTN_FOOTER_DANGER,
   BTN_FOOTER_SECONDARY,
   DETAIL_VIEW_HEADER,
-  TEXT_DETAIL_HEADER_TITLE,
   ICON_BTN_CLOSE,
   formatCurrency,
 } from './shared';
@@ -396,7 +395,7 @@ export const POSView: React.FC<POSViewProps> = () => {
               >
                 <ChevronLeftIcon className="w-5 h-5" />
               </button>
-              <h2 className={TEXT_DETAIL_HEADER_TITLE}>Orden Actual</h2>
+              <h2 className={TEXT_PAGE_TITLE}>Orden Actual</h2>
             </div>
             <div className="text-sm font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full">
               Invitado
